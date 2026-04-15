@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Country {
+  id           String     @id @default(cuid())
+  name         String
+  code         String     @unique
+  flag         String?
+  region       String?
+  continent    String?
+  visaRules    VisaRule[] @relation("FromCountry")
+  visaRulesTo  VisaRule[] @relation("ToCountry")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model VisaRule {
+  id                    String              @id @default(cuid())
+  fromCountryId          String
+  toCountryId           String
+  fromCountry          Country             @relation("FromCountry", fields: [fromCountryId], references: [id])
+  toCountry           Country             @relation("ToCountry", fields: [toCountryId], references: [id])
+  visaType             String
+  processingTime       String
+  processingTimeDays  Int
+  price               Decimal            @db.Decimal(10, 2)
+  currency           String             @default("USD")
+  maxStayDays         Int
+  validityDays        Int
+  entryType           String
+  requirements       Json
+  documentsRequired   Json
+  allowedActivities  Json?
+  additionalInfo     String?           @db.Text
+  isActive          Boolean           @default(true)
+  sortOrder         Int               @default(0)
+  applications     Application[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@unique([fromCountryId, toCountryId, visaType])
+}
+
+model Application {
+  id                    String        @id @default(cuid())
+  visaRuleId            String
+  visaRule            VisaRule      @relation(fields: [visaRuleId], references: [id])
+  applicationNumber   String       @unique
+  status             String       @default("pending")
+  formData           Json
+  totalAmount        Decimal      @db.Decimal(10, 2)
+  currency          String       @default("USD")
+  paymentStatus     String       @default("pending")
+  paymentMethod    String?
+  documents        Document[]
+  createdAt         DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model Document {
+  id             String       @id @default(cu  id())
+  applicationId  String
+  application    Application  @relation(fields: [applicationId], references: [id])
+  type          String
+  originalName   String
+  fileName     String
+  filePath     String
+  fileSize    Int
+  mimeType    String
+  createdAt   DateTime     @default(now())
+}
