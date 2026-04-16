@@ -25,7 +25,7 @@ export async function GET() {
       where: { paymentStatus: 'paid' },
       select: { totalAmount: true },
     });
-    const totalRevenue = applicationsWithRevenue.reduce((sum, app) => sum + app.totalAmount, 0);
+    const totalRevenue = applicationsWithRevenue.reduce((sum, app) => sum + Number(app.totalAmount), 0);
 
     const recentApps = await prisma.application.findMany({
       take: 10,
