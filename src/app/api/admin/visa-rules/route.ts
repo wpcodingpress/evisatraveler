@@ -10,10 +10,12 @@ const visaRuleSchema = z.object({
   price: z.number().min(0, 'Price must be positive'),
   currency: z.string().default('USD'),
   processingTime: z.string().min(1, 'Processing time is required'),
+  processingDays: z.number().optional().default(3),
   requirements: z.string().optional(),
-  validity: z.number().optional(),
-  maxStay: z.number().optional(),
-  entryType: z.string().optional(),
+  validityDays: z.number().optional().default(90),
+  maxStayDays: z.number().optional().default(30),
+  entryType: z.string().optional().default("single"),
+  documents: z.any().optional(),
   isActive: z.boolean().default(true),
 });
 
@@ -90,7 +92,14 @@ export async function POST(request: Request) {
     }
 
     const rule = await prisma.visaRule.create({
-      data: validation.data,
+      data: {
+        ...validation.data,
+        processingDays: validation.data.processingDays || 3,
+        validityDays: validation.data.validityDays || 90,
+        maxStayDays: validation.data.maxStayDays || 30,
+        entryType: validation.data.entryType || 'single',
+        documents: validation.data.documents || [],
+      },
     });
 
     return NextResponse.json(rule, { status: 201 });
