@@ -187,7 +187,7 @@ export default function ApplicationsPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-slate-500">Amount</p>
-                  <p className="font-bold text-lg text-slate-900">${app.totalAmount}</p>
+                  <p className="font-bold text-lg text-slate-900">${Number(app.totalAmount)}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-slate-500">Date</p>
@@ -267,7 +267,7 @@ export default function ApplicationsPage() {
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-sm text-slate-500">Amount Paid</p>
-                    <p className="text-2xl font-bold text-slate-900">${selectedApp.totalAmount}</p>
+                    <p className="text-2xl font-bold text-slate-900">${Number(selectedApp.totalAmount)}</p>
                   </div>
                   <span className={`px-4 py-2 rounded-full text-sm font-semibold capitalize ${statusColors[selectedApp.status] || 'bg-slate-100 text-slate-700'}`}>
                     {selectedApp.status}

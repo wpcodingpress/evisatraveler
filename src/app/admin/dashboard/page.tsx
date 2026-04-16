@@ -227,7 +227,7 @@ export default function DashboardPage() {
                         {app.status}
                       </span>
                     </td>
-                    <td className="px-4 lg:px-6 py-4 text-right font-semibold text-slate-900">${app.totalAmount}</td>
+                    <td className="px-4 lg:px-6 py-4 text-right font-semibold text-slate-900">${Number(app.totalAmount)}</td>
                   </tr>
                 ))}
               </tbody>

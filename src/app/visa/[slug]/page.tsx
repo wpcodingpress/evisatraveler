@@ -139,7 +139,7 @@ async function getVisaRules(slug: string): Promise<MockVisaRule | null> {
         visaType: rule.visaType,
         processingTime: rule.processingTime,
         processingDays: rule.processingDays,
-        price: rule.price,
+        price: Number(rule.price),
         currency: rule.currency,
         maxStayDays: rule.maxStayDays,
         validityDays: rule.validityDays,
