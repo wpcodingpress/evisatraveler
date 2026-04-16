@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 const visaRuleSchema = z.object({
@@ -94,7 +95,7 @@ export async function POST(request: Request) {
     const rule = await prisma.visaRule.create({
       data: {
         ...validation.data,
-        price: new globalThis.Number(validation.data.price),
+        price: new Prisma.Decimal(String(validation.data.price)),
         processingDays: validation.data.processingDays || 3,
         validityDays: validation.data.validityDays || 90,
         maxStayDays: validation.data.maxStayDays || 30,
