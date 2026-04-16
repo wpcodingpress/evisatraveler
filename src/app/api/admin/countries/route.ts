@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     const { code, name, flag, region, continent } = validation.data;
 
     const existing = await prisma.country.findUnique({
-      where: { code_upper: code.toUpperCase() },
+      where: { code: code.toUpperCase() as any },
     });
 
     if (existing) {
