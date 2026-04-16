@@ -1,0 +1,110 @@
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+
+const updateSchema = z.object({
+  id: z.string(),
+  status: z.enum(['pending', 'processing', 'approved', 'rejected']).optional(),
+  paymentStatus: z.enum(['pending', 'paid', 'failed', 'refunded']).optional(),
+  notes: z.string().optional(),
+  processedAt: z.string().optional(),
+});
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+    const status = searchParams.get('status');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { applicationNumber: { contains: search, mode: 'insensitive' } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
+        { user: { firstName: { contains: search, mode: 'insensitive' } } },
+        { user: { lastName: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
+    if (status) where.status = status;
+
+    const [applications, total] = await Promise.all([
+      prisma.application.findMany({
+        where,
+        include: {
+          user: { select: { id: true, firstName: true, lastName: true, email: true } },
+          visaRule: {
+            include: {
+              fromCountry: { select: { code: true, name: true, flag: true } },
+              toCountry: { select: { code: true, name: true, flag: true } },
+            },
+          },
+          documents: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.application.count({ where }),
+    ]);
+
+    const stats = await prisma.application.groupBy({
+      by: ['status'],
+      _count: true,
+    });
+
+    return NextResponse.json({
+      applications,
+      stats: stats.reduce((acc, s) => ({ ...acc, [s.status]: s._count }), {}),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Admin applications fetch error:', error);
+    return NextResponse.json({ error: 'Failed to fetch applications' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    const validation = updateSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.errors },
+        { status: 400 }
+      );
+    }
+
+    const { id, status, paymentStatus, notes, processedAt } = validation.data;
+    const updateData: any = {};
+
+    if (status) {
+      updateData.status = status;
+      if (processedAt || status === 'approved' || status === 'rejected') {
+        updateData.processedAt = processedAt ? new Date(processedAt) : new Date();
+      }
+    }
+    if (paymentStatus) updateData.paymentStatus = paymentStatus;
+    if (notes) {
+      const existing = await prisma.application.findUnique({ where: { id } });
+      updateData.notes = notes;
+    }
+
+    const application = await prisma.application.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return NextResponse.json(application);
+  } catch (error) {
+    console.error('Application update error:', error);
+    return NextResponse.json({ error: 'Failed to update application' }, { status: 500 });
+  }
+}

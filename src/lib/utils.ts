@@ -5,8 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number | string, currency = 'USD'): string {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+export function formatCurrency(amount: number | string | { toNumber(): number }, currency = 'USD'): string {
+  let num: number;
+  if (typeof amount === 'object' && 'toNumber' in amount) {
+    num = amount.toNumber();
+  } else if (typeof amount === 'string') {
+    num = parseFloat(amount);
+  } else {
+    num = amount;
+  }
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
