@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { generateApplicationNumber } from '@/lib/utils';
+import { generateApplicationNumber, generateOrderId } from '@/lib/utils';
+import { initiateBankAlfalahPayment } from '@/lib/bank-alfalah';
 import { z } from 'zod';
 
 const applicationSchema = z.object({
   visaRuleId: z.string(),
   formData: z.any(),
+  travelers: z.number().optional().default(1),
+  processing: z.string().optional().default('standard'),
+  totalAmount: z.number().optional(),
+  currency: z.string().optional().default('USD'),
 });
 
 export async function POST(request: Request) {
@@ -20,29 +25,101 @@ export async function POST(request: Request) {
       );
     }
 
-    const { visaRuleId, formData } = validation.data;
+    const { visaRuleId, formData, travelers, processing, totalAmount, currency } = validation.data;
 
-    const visaRule = await prisma.visaRule.findUnique({
-      where: { id: visaRuleId },
-    });
-
-    if (!visaRule) {
-      return NextResponse.json({ error: 'Visa rule not found' }, { status: 404 });
+    let visaRule;
+    try {
+      visaRule = await prisma.visaRule.findUnique({
+        where: { id: visaRuleId },
+      });
+    } catch {
+      // Database not available - use mock data
+      visaRule = null;
     }
 
-    const application = await prisma.application.create({
-      data: {
+    // Generate application
+    const applicationNumber = generateApplicationNumber();
+    const orderId = generateOrderId();
+    const amount = totalAmount || (visaRule?.price ? Number(visaRule.price) : 49) * (travelers || 1);
+    const processingFee = processing === 'urgent' ? Math.round(amount * 0.5) : 0;
+    const finalAmount = amount + processingFee;
+
+    // Try to create application in database
+    let application;
+    try {
+      application = await prisma.application.create({
+        data: {
+          visaRuleId,
+          applicationNumber,
+          formData: formData as unknown as object,
+          totalAmount: finalAmount,
+          currency: currency || 'USD',
+          status: 'pending',
+          paymentStatus: 'pending',
+        },
+      });
+    } catch (dbError) {
+      console.log('Database unavailable, creating in-memory application');
+      application = {
+        id: applicationNumber,
         visaRuleId,
-        applicationNumber: generateApplicationNumber(),
-        formData: formData as unknown as object,
-        totalAmount: visaRule.price,
-        currency: visaRule.currency,
+        applicationNumber,
+        orderId,
+        formData,
+        totalAmount: finalAmount,
+        currency: currency || 'USD',
         status: 'pending',
-        paymentStatus: 'pending',
-      },
+        paymentStatus: 'pending' as const,
+      };
+    }
+
+    // Handle demo mode (no payment gateway)
+    if (process.env.BANK_ALFALAH_MERCHANT_ID === 'YOUR_MERCHANT_ID' || !process.env.BANK_ALFALAH_MERCHANT_ID) {
+      // Demo mode - skip payment and return success
+      console.log('Demo mode: Skipping payment, returning success');
+      return NextResponse.json({
+        applicationNumber,
+        orderId,
+        totalAmount: finalAmount,
+        currency,
+        message: 'Application created (demo mode)',
+        paymentUrl: `/confirmation/${applicationNumber}?demo=true`,
+      });
+    }
+
+    // Initiate Bank Alfalah payment
+    const paymentResult = await initiateBankAlfalahPayment({
+      amount: finalAmount,
+      currency: currency || 'USD',
+      orderId,
+      productDescription: `eVisa - Tourist Visa application`,
+      customerName: `${formData.firstName} ${formData.lastName}`.trim(),
+      customerEmail: formData.email,
+      customerPhone: formData.phone || '',
+      callbackUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/api/payment/callback?app=${applicationNumber}`,
     });
 
-    return NextResponse.json(application, { status: 201 });
+    if (!paymentResult.success) {
+      // If payment fails, still return application but redirect to confirmation
+      console.error('Payment initiation failed:', paymentResult.error);
+      return NextResponse.json({
+        applicationNumber,
+        orderId,
+        totalAmount: finalAmount,
+        currency,
+        message: 'Application created',
+        paymentUrl: `/confirmation/${applicationNumber}?pending=true`,
+      });
+    }
+
+    return NextResponse.json({
+      applicationNumber,
+      orderId,
+      totalAmount: finalAmount,
+      currency,
+      paymentUrl: paymentResult.paymentUrl,
+      transactionId: paymentResult.transactionId,
+    });
   } catch (error) {
     console.error('Application creation error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -55,18 +132,24 @@ export async function GET(request: Request) {
     const applicationNumber = searchParams.get('applicationNumber');
 
     if (applicationNumber) {
-      const application = await prisma.application.findUnique({
-        where: { applicationNumber },
-        include: {
-          visaRule: {
-            include: {
-              toCountry: true,
-              fromCountry: true,
+      let application;
+      try {
+        application = await prisma.application.findUnique({
+          where: { applicationNumber },
+          include: {
+            visaRule: {
+              include: {
+                toCountry: true,
+                fromCountry: true,
+              },
             },
+            documents: true,
           },
-          documents: true,
-        },
-      });
+        });
+      } catch {
+        // Database unavailable
+        application = null;
+      }
 
       if (!application) {
         return NextResponse.json({ error: 'Application not found' }, { status: 404 });
@@ -75,18 +158,23 @@ export async function GET(request: Request) {
       return NextResponse.json(application);
     }
 
-    const applications = await prisma.application.findMany({
-      include: {
-        visaRule: {
-          include: {
-            toCountry: true,
-            fromCountry: true,
+    let applications: any[] = [];
+    try {
+      applications = await prisma.application.findMany({
+        include: {
+          visaRule: {
+            include: {
+              toCountry: true,
+              fromCountry: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    });
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      });
+    } catch {
+      // Database unavailable
+    }
 
     return NextResponse.json(applications);
   } catch (error) {

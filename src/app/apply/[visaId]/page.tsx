@@ -1,3 +1,5 @@
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { ApplicationForm } from './application-form';
@@ -63,6 +65,17 @@ async function getVisaRule(visaId: string) {
   return MOCK_VISA_RULES[visaId] || null;
 }
 
+function checkAuth() {
+  const cookieStore = cookies();
+  const token = cookieStore.get('auth_token');
+  const userId = cookieStore.get('user_id');
+  
+  if (!token || !userId) {
+    return null;
+  }
+  return { token: token.value, userId: userId.value };
+}
+
 export async function generateMetadata({ params }: Props) {
   const { visaId } = await params;
   const rule = await getVisaRule(visaId);
@@ -81,6 +94,9 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   if (!visaRule) {
     notFound();
   }
+
+  // Check authentication but allow guests to apply
+  // For now, guests can apply - auth is optional
 
   return <ApplicationForm 
     visaRule={visaRule} 
