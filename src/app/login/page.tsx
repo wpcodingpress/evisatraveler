@@ -1,14 +1,40 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callback') || '/dashboard';
+  const from = searchParams.get('from');
+  
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Build display message based on where user came from
+  useEffect(() => {
+    if (from) {
+      const fromLabels: Record<string, string> = {
+        'apply': 'Complete your visa application',
+        'visa': 'Continue to visa details',
+        'track': 'Track your application',
+      };
+      if (fromLabels[from]) {
+        setError(fromLabels[from]);
+      }
+    }
+  }, [from]);
+
+  // Handle successful registration message
+  useEffect(() => {
+    const registered = searchParams.get('registered');
+    if (registered === 'true') {
+      setError('Account created! Please log in to continue.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +52,12 @@ export default function LoginPage() {
       if (!res.ok) {
         setError(data.error || 'Login failed');
       } else {
+        // Professional redirect based on where user came from
         if (data.user.role === 'admin') {
           router.push('/pro-console');
+        } else if (callbackUrl && callbackUrl !== '/dashboard' && callbackUrl !== '/login') {
+          // Redirect to where user wanted to go
+          router.push(callbackUrl);
         } else {
           router.push('/dashboard');
         }

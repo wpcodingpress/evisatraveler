@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { usePathname as usePathnameServer } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 function NavLink({ href, children, isActive }: { href: string; children: React.ReactNode; isActive: boolean }) {
   return (
@@ -17,6 +16,70 @@ function NavLink({ href, children, isActive }: { href: string; children: React.R
     >
       {children}
     </Link>
+  );
+}
+
+// User Menu for logged in users
+function UserMenu({ user, onLogout }: { user: { firstName: string; email: string }; onLogout: () => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      onLogout();
+      router.push('/');
+      router.refresh();
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-violet-50 transition-colors"
+      >
+        <div className="w-8 h-8 bg-gradient-to-r from-violet-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+          {user.firstName.charAt(0).toUpperCase()}
+        </div>
+        <span className="text-sm font-medium text-slate-700 hidden xl:block">{user.firstName}</span>
+        <svg className={`w-4 h-4 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-50">
+            <div className="px-4 py-2 border-b border-slate-100">
+              <p className="font-semibold text-slate-900">{user.firstName}</p>
+              <p className="text-xs text-slate-500 truncate">{user.email}</p>
+            </div>
+            <Link href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50" onClick={() => setIsOpen(false)}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-2 2l-2-2m2 2l2 2" /></svg>
+              My Dashboard
+            </Link>
+            <Link href="/dashboard/applications" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50" onClick={() => setIsOpen(false)}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              My Applications
+            </Link>
+            <Link href="/dashboard/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50" onClick={() => setIsOpen(false)}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              My Profile
+            </Link>
+            <div className="border-t border-slate-100 mt-2 pt-2">
+              <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -148,6 +211,31 @@ function MobileMenuButton() {
 }
 
 export function Header() {
+  const [user, setUser] = useState<{ firstName: string; email: string } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+      }
+    } catch (error) {
+      console.log('Auth check failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/95 border-b border-slate-200/80 shadow-sm">
       <div className="container-custom">
@@ -241,12 +329,20 @@ export function Header() {
 
           {/* Auth Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-4">
-            <Link href="/login" className="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:text-violet-600 transition-colors">
-              Log In
-            </Link>
-            <Link href="/register" className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-purple-700 rounded-xl hover:from-violet-500 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]">
-              Sign Up Free
-            </Link>
+            {loading ? (
+              <div className="w-20 h-10 bg-slate-100 animate-pulse rounded-xl" />
+            ) : user ? (
+              <UserMenu user={user} onLogout={handleLogout} />
+            ) : (
+              <>
+                <Link href="/login" className="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:text-violet-600 transition-colors">
+                  Log In
+                </Link>
+                <Link href="/register" className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-purple-700 rounded-xl hover:from-violet-500 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]">
+                  Sign Up Free
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}

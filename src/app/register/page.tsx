@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { z } from 'zod';
 
@@ -19,6 +19,10 @@ const registerSchema = z.object({
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callback') || '/dashboard';
+  const from = searchParams.get('from');
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -84,7 +88,8 @@ export default function RegisterPage() {
       if (!res.ok) {
         setGeneralError(data.error || 'Registration failed');
       } else {
-        router.push('/login?registered=true');
+        // After registration, redirect to login with callback to where user wanted to go
+        router.push('/login?registered=true&callback=' + encodeURIComponent(callbackUrl));
       }
     } catch {
       setGeneralError('An error occurred. Please try again.');
