@@ -13,6 +13,32 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check if already logged in
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated) {
+          setIsLoggedIn(true);
+          // Already logged in - redirect
+          if (callbackUrl && callbackUrl !== '/dashboard') {
+            router.push(callbackUrl);
+          } else {
+            router.push('/dashboard');
+          }
+        }
+      }
+    } catch {
+      // Not logged in
+    }
+  };
 
   // Build display message based on where user came from
   useEffect(() => {
