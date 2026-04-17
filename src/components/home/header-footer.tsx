@@ -66,22 +66,22 @@ function UserMenu({ user, onLogout, pendingApps = 0 }: { user: { firstName: stri
               <p className="text-xs text-slate-500 truncate">{user.email}</p>
             </div>
             {pendingApps > 0 && (
-              <Link href="/dashboard/applications" className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-50 text-amber-700" onClick={() => setIsOpen(false)}>
+              <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-50 text-amber-700" onClick={() => setIsOpen(false)}>
                 <span className="w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center text-white text-xs">!</span>
-                {pendingApps} Incomplete Application{pendingApps > 1 ? 's' : ''}
+                Finish {pendingApps} Application{pendingApps > 1 ? 's' : ''}
               </Link>
             )}
             <Link href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50" onClick={() => setIsOpen(false)}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-2 2l-2-2m2 2l2 2" /></svg>
               My Dashboard
             </Link>
-            <Link href="/dashboard/applications" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50" onClick={() => setIsOpen(false)}>
+            <Link href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50" onClick={() => setIsOpen(false)}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               My Applications
             </Link>
-            <Link href="/dashboard/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50" onClick={() => setIsOpen(false)}>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-              My Profile
+            <Link href="/support" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50" onClick={() => setIsOpen(false)}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              Get Support
             </Link>
             <div className="border-t border-slate-100 mt-2 pt-2">
               <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
@@ -227,6 +227,7 @@ export function Header() {
   const [user, setUser] = useState<{ firstName: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingApps, setPendingApps] = useState(0);
+  const [showIncompleteBanner, setShowIncompleteBanner] = useState(false);
 
   useEffect(() => {
     checkAuth();
