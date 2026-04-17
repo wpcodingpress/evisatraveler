@@ -29,7 +29,7 @@ export async function GET(request: Request) {
       orderBy: { sortOrder: 'asc' },
     });
 
-    return NextResponse.json(visaRules);
+    return NextResponse.json({ rules: visaRules });
   } catch (error) {
     console.error('Visa rules fetch error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
