@@ -1,18 +1,58 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
-interface ApplicationStatus {
+interface Application {
   applicationNumber?: string;
   status?: string;
   paymentStatus?: string;
   error?: string;
+  visaRule?: {
+    toCountry?: { name: string; flag: string };
+    visaType?: string;
+  };
 }
 
 export default function TrackPage() {
+  const router = useRouter();
   const [appId, setAppId] = useState('');
-  const [status, setStatus] = useState<ApplicationStatus | null>(null);
+  const [status, setStatus] = useState<Application | null>(null);
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<{ firstName: string } | null>(null);
+  const [myApps, setMyApps] = useState<Application[]>([]);
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const checkUser = async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated) {
+          setUser(data.user);
+          loadMyApps();
+        }
+      }
+    } catch {
+      // Not logged in
+    }
+  };
+
+  const loadMyApps = async () => {
+    try {
+      const res = await fetch('/api/applications');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setMyApps(data);
+      }
+    } catch {
+      // Ignore
+    }
+  };
 
   const handleTrack = async () => {
     if (!appId.trim()) return;
@@ -29,41 +69,12 @@ export default function TrackPage() {
     setLoading(false);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  const getStatusColor = (s: string) => {
+    switch (s) {
       case 'approved': return 'text-green-600 bg-green-50 border-green-200';
       case 'processing': return 'text-violet-600 bg-violet-50 border-violet-200';
       case 'rejected': return 'text-red-600 bg-red-50 border-red-200';
       default: return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return (
-          <svg className="w-12 h-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        );
-      case 'processing':
-        return (
-          <svg className="w-12 h-12 text-violet-500 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        );
-      case 'rejected':
-        return (
-          <svg className="w-12 h-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        );
-      default:
-        return (
-          <svg className="w-12 h-12 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        );
     }
   };
 
@@ -77,6 +88,29 @@ export default function TrackPage() {
             </h1>
             <p className="text-lg text-slate-600">Enter your application ID to check the status of your visa</p>
           </div>
+
+          {/* Show logged-in user's applications */}
+          {myApps.length > 0 && (
+            <div className="mb-8 bg-white rounded-2xl shadow-lg border border-violet-100 p-6">
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Your Recent Applications</h2>
+              <div className="space-y-2">
+                {myApps.slice(0, 5).map((app, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setAppId(app.applicationNumber || '')}
+                    className="w-full text-left p-3 rounded-xl border border-violet-100 hover:border-violet-300 hover:bg-violet-50 transition-all"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-slate-900">{app.applicationNumber}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(app.status || '')}`}>
+                        {app.status}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="relative bg-white rounded-2xl shadow-xl p-8 border border-violet-100">
             <div className="absolute -top-3 -left-3 w-24 h-24 bg-gradient-to-br from-violet-500/20 to-purple-500/20 rounded-full blur-xl" />
@@ -115,7 +149,23 @@ export default function TrackPage() {
                   ) : status.applicationNumber ? (
                     <div className="flex items-start gap-6">
                       <div className="flex-shrink-0">
-                        {getStatusIcon(status.status || '')}
+                        {status.status === 'approved' ? (
+                          <svg className="w-12 h-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        ) : status.status === 'processing' ? (
+                          <svg className="w-12 h-12 text-violet-500 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                        ) : status.status === 'rejected' ? (
+                          <svg className="w-12 h-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-12 h-12 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        )}
                       </div>
                       <div className="flex-1">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4 pb-4 border-b border-violet-100">
