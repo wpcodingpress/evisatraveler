@@ -7,6 +7,8 @@ import { formatCurrency } from '@/lib/utils';
 
 interface ApplicationFormProps {
   visaRule: VisaRule;
+  travelers?: number;
+  processing?: string;
 }
 
 const steps = [
@@ -16,10 +18,16 @@ const steps = [
   { id: 4, title: 'Review', description: 'Confirm your application' },
 ];
 
-export function ApplicationForm({ visaRule }: ApplicationFormProps) {
+export function ApplicationForm({ visaRule, travelers = 1, processing = 'standard' }: ApplicationFormProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [travelerCount] = useState(travelers);
+  const [processingOption] = useState(processing);
+  const basePrice = typeof visaRule.price === 'number' ? visaRule.price : Number(visaRule.price);
+  const urgentFee = processingOption === 'urgent' ? basePrice * 0.5 : 0;
+  const totalPrice = (basePrice + urgentFee) * travelerCount;
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
