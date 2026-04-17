@@ -87,7 +87,7 @@ export function VisaDetailsClient({ visaRules, slug }: VisaDetailsClientProps) {
                             </div>
                           )}
                           <span className={req.required ? 'text-slate-700' : 'text-slate-400'}>
-                            {req.text || req}
+                            {typeof req === 'string' ? req : (req.text || req.name || '')}
                           </span>
                         </li>
                       ))}
