@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,7 +20,7 @@ interface VisaRule {
   toCountry: { name: string; code: string; flag: string };
 }
 
-const visaPageContent = () => {
+export default function VisaPage() {
   const [visaRules, setVisaRules] = useState<VisaRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -43,8 +45,6 @@ const visaPageContent = () => {
     rule.toCountry?.name?.toLowerCase().includes(search.toLowerCase()) ||
     rule.fromCountry?.name?.toLowerCase().includes(search.toLowerCase())
   );
-
-  const countries = [...new Set(visaRules.map(r => r.toCountry?.name).filter(Boolean))];
 
   return (
     <main className="flex-1 py-12 md:py-20 bg-gradient-to-b from-violet-50/30 to-white">
@@ -125,6 +125,4 @@ const visaPageContent = () => {
       </div>
     </main>
   );
-};
-
-export default visaPageContent;
+}
