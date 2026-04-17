@@ -227,14 +227,9 @@ export function Header() {
   const [user, setUser] = useState<{ firstName: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingApps, setPendingApps] = useState(0);
-  const [showIncompleteBanner, setShowIncompleteBanner] = useState(false);
 
   useEffect(() => {
     checkAuth();
-    
-    // Check pending applications every 30 seconds
-    const interval = setInterval(checkPendingApps, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const checkAuth = async () => {
@@ -255,16 +250,24 @@ export function Header() {
   const checkPendingApps = async () => {
     if (!user) return;
     try {
-      // Check from cookie-based tracking
-      const res = await fetch('/api/applications/start', { method: 'GET' });
+      const res = await fetch('/api/applications/start');
       if (res.ok) {
         const data = await res.json();
         setPendingApps(data.count || 0);
       }
     } catch {
-      // Ignore
+      setPendingApps(0);
     }
   };
+
+  // Poll for pending apps every 30 seconds when logged in
+  useEffect(() => {
+    if (user) {
+      checkPendingApps();
+      const interval = setInterval(checkPendingApps, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   const handleLogout = () => {
     setUser(null);
@@ -367,7 +370,19 @@ export function Header() {
             {loading ? (
               <div className="w-20 h-10 bg-slate-100 animate-pulse rounded-xl" />
             ) : user ? (
-              <UserMenu user={user} onLogout={handleLogout} pendingApps={pendingApps} />
+              pendingApps > 0 ? (
+                <div className="relative">
+                  <UserMenu user={user} onLogout={handleLogout} pendingApps={pendingApps} />
+                  <Link 
+                    href="/dashboard" 
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse"
+                  >
+                    {pendingApps}
+                  </Link>
+                </div>
+              ) : (
+                <UserMenu user={user} onLogout={handleLogout} pendingApps={0} />
+              )
             ) : (
               <>
                 <Link href="/login" className="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:text-violet-600 transition-colors">
