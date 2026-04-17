@@ -178,9 +178,9 @@ function VisaApplySidebar({ visaRule }: { visaRule: MockVisaRule }) {
   const totalUrgent = urgentPrice * travelers;
 
   return (
-    <div className="lg:col-span-1 space-y-6">
+    <div className="lg:col-span-1 space-y-4">
       {/* Main Apply Card */}
-      <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden sticky top-24">
+      <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden sticky top-24 z-10">
         {/* Header */}
         <div className="bg-gradient-to-r from-violet-600 to-purple-600 p-6 text-white">
           <h3 className="text-xl font-bold mb-1">{visaRule.visaType}</h3>
@@ -314,34 +314,66 @@ function VisaApplySidebar({ visaRule }: { visaRule: MockVisaRule }) {
       </div>
 
       {/* Need Help Card */}
-      <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200">
-        <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+      <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h4 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
           <svg className="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
           Need Help?
         </h4>
-        <p className="text-sm text-slate-600 mb-3">Our visa experts are available 24/7 to assist you.</p>
-        <Link href="/contact" className="block w-full py-2.5 bg-white border-2 border-violet-200 text-violet-700 font-semibold rounded-xl text-center hover:bg-violet-50 hover:border-violet-300 transition-colors text-sm">
+        <p className="text-sm text-slate-600 mb-3">Our visa experts are available 24/7 to assist you with any questions.</p>
+        <Link href="/contact" className="block w-full py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl text-center hover:from-violet-500 hover:to-purple-500 transition-all shadow-md text-sm">
           Contact Support
         </Link>
       </div>
 
       {/* Visa Info Card */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200">
-        <h4 className="font-semibold text-slate-900 mb-3">Visa Details</h4>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
+      <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <svg className="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Visa Details
+        </h4>
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-slate-500">Max Stay</span>
-            <span className="font-medium text-slate-900">{visaRule.maxStayDays} Days</span>
+            <span className="font-bold text-slate-900">{visaRule.maxStayDays} Days</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-slate-500">Validity</span>
-            <span className="font-medium text-slate-900">{visaRule.validityDays} Days</span>
+            <span className="font-bold text-slate-900">{visaRule.validityDays} Days</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-slate-500">Entry Type</span>
-            <span className="font-medium text-slate-900">{visaRule.entryType}</span>
+            <span className="font-bold text-slate-900">{visaRule.entryType}</span>
+          </div>
+          <div className="flex justify-between items-center py-2">
+            <span className="text-slate-500">Processing</span>
+            <span className="font-bold text-violet-600">{visaRule.processingTime}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Why Choose Us */}
+      <div className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-2xl p-5 text-white">
+        <h4 className="font-bold mb-4">Why Choose eVisaTraveler?</h4>
+        <div className="space-y-3 text-sm">
+          <div className="flex items-center gap-3">
+            <span className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">✓</span>
+            <span>99.9% Approval Rate</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">✓</span>
+            <span>Instant E-Visa Delivery</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">✓</span>
+            <span>24/7 Customer Support</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">✓</span>
+            <span>Secure Payment</span>
           </div>
         </div>
       </div>
@@ -399,9 +431,9 @@ export default async function VisaPage({ params, searchParams }: Props) {
       </div>
 
       <div className="container-custom py-12">
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8 items-start">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-8 order-2 lg:order-1">
             {/* Quick Info */}
             <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-200">
               <h2 className="text-2xl font-bold text-slate-900 mb-6">Visa Overview</h2>
@@ -497,3 +529,4 @@ export default async function VisaPage({ params, searchParams }: Props) {
     </div>
   );
 }
+VisaApplySidebar.displayName = 'VisaApplySidebar';
