@@ -20,7 +20,7 @@ function NavLink({ href, children, isActive }: { href: string; children: React.R
 }
 
 // User Menu for logged in users
-function UserMenu({ user, onLogout }: { user: { firstName: string; email: string }; onLogout: () => void }) {
+function UserMenu({ user, onLogout, pendingApps = 0 }: { user: { firstName: string; email: string }; onLogout: () => void; pendingApps?: number }) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   
@@ -41,8 +41,15 @@ function UserMenu({ user, onLogout }: { user: { firstName: string; email: string
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-violet-50 transition-colors"
       >
-        <div className="w-8 h-8 bg-gradient-to-r from-violet-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-          {user.firstName.charAt(0).toUpperCase()}
+        <div className="relative">
+          <div className="w-8 h-8 bg-gradient-to-r from-violet-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+            {user.firstName.charAt(0).toUpperCase()}
+          </div>
+          {pendingApps > 0 && (
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+              <span className="text-[10px] text-white font-bold">{pendingApps}</span>
+            </div>
+          )}
         </div>
         <span className="text-sm font-medium text-slate-700 hidden xl:block">{user.firstName}</span>
         <svg className={`w-4 h-4 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -58,6 +65,12 @@ function UserMenu({ user, onLogout }: { user: { firstName: string; email: string
               <p className="font-semibold text-slate-900">{user.firstName}</p>
               <p className="text-xs text-slate-500 truncate">{user.email}</p>
             </div>
+            {pendingApps > 0 && (
+              <Link href="/dashboard/applications" className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-50 text-amber-700" onClick={() => setIsOpen(false)}>
+                <span className="w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center text-white text-xs">!</span>
+                {pendingApps} Incomplete Application{pendingApps > 1 ? 's' : ''}
+              </Link>
+            )}
             <Link href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50" onClick={() => setIsOpen(false)}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-2 2l-2-2m2 2l2 2" /></svg>
               My Dashboard
@@ -213,9 +226,14 @@ function MobileMenuButton() {
 export function Header() {
   const [user, setUser] = useState<{ firstName: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pendingApps, setPendingApps] = useState(0);
 
   useEffect(() => {
     checkAuth();
+    
+    // Check pending applications every 30 seconds
+    const interval = setInterval(checkPendingApps, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const checkAuth = async () => {
@@ -224,6 +242,7 @@ export function Header() {
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
+        checkPendingApps();
       }
     } catch (error) {
       console.log('Auth check failed');
@@ -232,8 +251,22 @@ export function Header() {
     }
   };
 
+  const checkPendingApps = async () => {
+    if (!user) return;
+    try {
+      const res = await fetch('/api/applications?status=pending');
+      if (res.ok) {
+        const data = await res.json();
+        setPendingApps(data.length || 0);
+      }
+    } catch {
+      // Ignore
+    }
+  };
+
   const handleLogout = () => {
     setUser(null);
+    setPendingApps(0);
   };
 
   return (
@@ -332,7 +365,7 @@ export function Header() {
             {loading ? (
               <div className="w-20 h-10 bg-slate-100 animate-pulse rounded-xl" />
             ) : user ? (
-              <UserMenu user={user} onLogout={handleLogout} />
+              <UserMenu user={user} onLogout={handleLogout} pendingApps={pendingApps} />
             ) : (
               <>
                 <Link href="/login" className="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:text-violet-600 transition-colors">
