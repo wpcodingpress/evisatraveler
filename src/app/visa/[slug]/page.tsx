@@ -1,4 +1,8 @@
+'use client';
+
+import { useState, Suspense } from 'react';
 import { prisma } from '@/lib/prisma';
+import Link from 'next/link';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -148,8 +152,8 @@ async function getVisaRules(slug: string): Promise<MockVisaRule | null> {
         documents: rule.documents as string[],
         allowedActivities: rule.allowedActivities as string[],
         additionalInfo: rule.additionalInfo || '',
-        fromCountry: { name: rule.fromCountry.name, code: rule.fromCountry.code, flag: '🌍' },
-        toCountry: { name: rule.toCountry.name, code: rule.toCountry.code, flag: '🌍' },
+        fromCountry: { name: rule.fromCountry.name, code: rule.fromCountry.code, flag: rule.fromCountry.flag || '🌍' },
+        toCountry: { name: rule.toCountry.name, code: rule.toCountry.code, flag: rule.toCountry.flag || '🌍' },
       };
     }
   } catch (error) {
@@ -162,6 +166,187 @@ async function getVisaRules(slug: string): Promise<MockVisaRule | null> {
 
 function formatCurrency(amount: number, currency: string = 'USD'): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+}
+
+function VisaApplySidebar({ visaRule }: { visaRule: MockVisaRule }) {
+  const [travelers, setTravelers] = useState(1);
+  const [processingOption, setProcessingOption] = useState<'standard' | 'urgent'>('standard');
+
+  const basePrice = visaRule.price;
+  const urgentPrice = Math.round(basePrice * 1.5);
+  const totalStandard = basePrice * travelers;
+  const totalUrgent = urgentPrice * travelers;
+
+  return (
+    <div className="lg:col-span-1 space-y-6">
+      {/* Main Apply Card */}
+      <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden sticky top-24">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-violet-600 to-purple-600 p-6 text-white">
+          <h3 className="text-xl font-bold mb-1">{visaRule.visaType}</h3>
+          <p className="text-violet-100 text-sm">{visaRule.toCountry.name}, {visaRule.fromCountry.name}</p>
+        </div>
+
+        <div className="p-6">
+          {/* Processing Time Selector */}
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-slate-700 mb-3">Processing Time</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setProcessingOption('standard')}
+                className={`p-3 rounded-xl border-2 font-semibold text-sm transition-all ${
+                  processingOption === 'standard'
+                    ? 'border-violet-500 bg-violet-50 text-violet-700'
+                    : 'border-slate-200 text-slate-600 hover:border-violet-300'
+                }`}
+              >
+                <span className="block">{visaRule.processingTime}</span>
+                <span className="text-xs opacity-75">Standard</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setProcessingOption('urgent')}
+                className={`p-3 rounded-xl border-2 font-medium text-sm transition-all ${
+                  processingOption === 'urgent'
+                    ? 'border-amber-500 bg-amber-50 text-amber-700'
+                    : 'border-slate-200 text-slate-600 hover:border-violet-300'
+                }`}
+              >
+                <span className="block">Express</span>
+                <span className="text-xs text-slate-400">+${urgentPrice - basePrice}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Traveler Count */}
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-slate-700 mb-3">Travelers</label>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setTravelers(Math.max(1, travelers - 1))}
+                className="w-10 h-10 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-600 hover:border-violet-500 hover:text-violet-600 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+              </button>
+              <span className="text-2xl font-bold text-slate-900 w-12 text-center">{travelers}</span>
+              <button
+                type="button"
+                onClick={() => setTravelers(Math.min(10, travelers + 1))}
+                className="w-10 h-10 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-600 hover:border-violet-500 hover:text-violet-600 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Price Breakdown */}
+          <div className="bg-slate-50 rounded-xl p-4 mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-slate-600">Visa Fee × {travelers}</span>
+              <span className="font-semibold text-slate-900">
+                ${processingOption === 'urgent' ? urgentPrice * travelers : basePrice * travelers}
+              </span>
+            </div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-slate-600">Service Fee</span>
+              <span className="font-semibold text-green-600">Free</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-200">
+              <span className="font-bold text-slate-900">Total</span>
+              <span className="text-2xl font-bold text-violet-600">
+                ${processingOption === 'urgent' ? totalUrgent : totalStandard}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-2">All fees included. No hidden charges.</p>
+          </div>
+
+          {/* CTA Button */}
+          <Link
+            href={`/apply/${visaRule.id}?travelers=${travelers}&processing=${processingOption}`}
+            className="block w-full py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold text-lg rounded-xl text-center hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Apply Now
+            <span className="block text-sm font-normal opacity-80">
+              {processingOption === 'urgent' ? 'Express' : 'Standard'} processing
+            </span>
+          </Link>
+
+          {/* Quick Info */}
+          <div className="mt-4 flex items-center justify-center gap-4 text-xs text-slate-500">
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              Instant Confirmation
+            </span>
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              E-Visa to Email
+            </span>
+          </div>
+        </div>
+
+        {/* Trust Badges */}
+        <div className="px-6 pb-6">
+          <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100">
+            <div className="text-center">
+              <div className="text-2xl mb-1">🛡️</div>
+              <div className="text-xs text-slate-500">99.9%<br/>Approved</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl mb-1">🔒</div>
+              <div className="text-xs text-slate-500">Secure<br/>Payment</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl mb-1">💬</div>
+              <div className="text-xs text-slate-500">24/7<br/>Support</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Need Help Card */}
+      <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200">
+        <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+          <svg className="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          Need Help?
+        </h4>
+        <p className="text-sm text-slate-600 mb-3">Our visa experts are available 24/7 to assist you.</p>
+        <Link href="/contact" className="block w-full py-2.5 bg-white border-2 border-violet-200 text-violet-700 font-semibold rounded-xl text-center hover:bg-violet-50 hover:border-violet-300 transition-colors text-sm">
+          Contact Support
+        </Link>
+      </div>
+
+      {/* Visa Info Card */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200">
+        <h4 className="font-semibold text-slate-900 mb-3">Visa Details</h4>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-slate-500">Max Stay</span>
+            <span className="font-medium text-slate-900">{visaRule.maxStayDays} Days</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-500">Validity</span>
+            <span className="font-medium text-slate-900">{visaRule.validityDays} Days</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-500">Entry Type</span>
+            <span className="font-medium text-slate-900">{visaRule.entryType}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default async function VisaPage({ params, searchParams }: Props) {
@@ -178,10 +363,10 @@ export default async function VisaPage({ params, searchParams }: Props) {
           <p className="text-xl text-slate-400 mb-8">
             We don&apos;t have visa information for this route yet. Our team is working on adding more destinations.
           </p>
-          <a href="/" className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all shadow-xl">
+          <Link href="/" className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all shadow-xl">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -193,7 +378,7 @@ export default async function VisaPage({ params, searchParams }: Props) {
       <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 py-16 md:py-24">
         <div className="container-custom">
           <div className="flex items-center gap-4 text-white/80 text-sm mb-6">
-            <a href="/" className="hover:text-white transition-colors">Home</a>
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <span>/</span>
             <span>Visa</span>
             <span>/</span>
@@ -305,43 +490,8 @@ export default async function VisaPage({ params, searchParams }: Props) {
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-3xl p-8 text-white sticky top-24 shadow-2xl">
-              <h3 className="text-2xl font-bold mb-2">Apply for Visa</h3>
-              <p className="text-violet-200 mb-6">Start your application process</p>
-              
-              <div className="mb-6">
-                <div className="text-sm text-violet-200 mb-1">Processing Time</div>
-                <div className="text-3xl font-bold">{visaRule.processingTime}</div>
-              </div>
-
-              <div className="mb-8">
-                <div className="text-sm text-violet-200 mb-1">Total Price</div>
-                <div className="text-5xl font-bold">{formatCurrency(visaRule.price, visaRule.currency)}</div>
-                <div className="text-sm text-violet-200 mt-1">per person</div>
-              </div>
-
-              <a href={`/apply?from=${visaRule.fromCountry.code}&to=${visaRule.toCountry.code}&type=${encodeURIComponent(visaRule.visaType)}`} className="block w-full py-4 bg-white text-violet-700 font-bold text-lg rounded-xl text-center hover:bg-violet-50 transition-colors shadow-lg">
-                Apply Now
-              </a>
-
-              <div className="mt-8 pt-6 border-t border-white/20">
-                <div className="flex items-center gap-3 text-sm text-violet-200">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                  99.9% Approval Rate
-                </div>
-                <div className="flex items-center gap-3 text-sm text-violet-200 mt-3">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                  Secure & Encrypted
-                </div>
-                <div className="flex items-center gap-3 text-sm text-violet-200 mt-3">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                  24/7 Support
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Sidebar - Client Component */}
+          <VisaApplySidebar visaRule={visaRule} />
         </div>
       </div>
     </div>
