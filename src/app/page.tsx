@@ -234,66 +234,72 @@ export default function HomePage() {
 
       <StatsBar />
 
-      {/* Popular Destinations - Redesigned */}
-      <section className="py-16 lg:py-24 bg-gradient-to-b from-slate-50 via-white to-slate-50">
-        <div className="container-custom">
-          <div className="text-center mb-12 lg:mb-16">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-5">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      {/* Popular Destinations - New Design */}
+      <section className="py-16 md:py-24 bg-slate-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-violet-100 text-violet-700 rounded-full text-sm font-medium mb-4">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.802 2.035c-.734.56-1.658.568-2.402 0l-1.89-1.878a1 1 0 00-1.618 1.523L8.82 12.94c.277.714.102 1.564-.392 1.899L5.86 16.22c-.494.334-.73.942-.528 1.36a1 1 0 001.196 1.196c.418-.202 1.026-.034 1.36.528l2.035 2.802c.57.783 1.165 1.06 1.899.392l2.777-2.432a1 1 0 011.523-1.618l1.89 1.89c.56.734.568 1.658 0 2.402L15.14 19.54c-.56.494-1.026.392-1.36-.392l-2.035-2.802a1 1 0 00-1.899.392L7.6 13.88c-.56-.494-.392-1.026.098-1.36l2.432-2.777a1 1 0 011.618 0l1.89 1.89c.56.733.568 1.658 0 2.401l-2.802 2.036c-.734.559-.95.69-1.618.098.277-.714.102-1.564-.392-1.899l-2.035-2.802c-.494-.559-.392-1.026.098-1.36" />
               </svg>
-              Popular Destinations
-            </span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 tracking-tight">Where are you traveling?</h2>
-            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto px-4">Choose your dream destination and check visa requirements</p>
+              Trusted by 50,000+ Travelers
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+              Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">Destinations</span>
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Explore our most popular visa destinations. Fast processing, best prices, and hassle-free applications.
+            </p>
           </div>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5 max-w-6xl mx-auto px-4">
-            {POPULAR_DESTINATIONS.map((country, index) => (
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {[
+              { name: 'Thailand', flag: '🇹🇭', code: 'TH', price: 49, time: '24-72 hours', days: 30, gradient: 'from-green-500 to-emerald-600' },
+              { name: 'Vietnam', flag: '🇻🇳', code: 'VN', price: 59, time: '3-5 days', days: 90, gradient: 'from-red-500 to-rose-600' },
+              { name: 'UAE', flag: '🇦🇪', code: 'AE', price: 115, time: '3-5 days', days: 30, gradient: 'from-amber-500 to-orange-600' },
+              { name: 'Turkey', flag: '🇹🇷', code: 'TR', price: 60, time: '24-48 hours', days: 30, gradient: 'from-red-600 to-pink-600' },
+              { name: 'Singapore', flag: '🇸🇬', code: 'SG', price: 29, time: '1-2 days', days: 30, gradient: 'from-cyan-500 to-blue-600' },
+              { name: 'Malaysia', flag: '🇲🇾', code: 'MY', price: 39, time: '24-48 hours', days: 30, gradient: 'from-indigo-500 to-purple-600' },
+            ].map((dest) => (
               <Link 
-                key={country.code} 
-                href={`/visa/US-to-${country.code}`} 
-                className="group relative bg-white rounded-2xl p-4 sm:p-6 text-center border border-slate-200 hover:border-violet-300 hover:shadow-xl hover:shadow-violet-500/15 transition-all duration-300 hover:-translate-y-2 overflow-hidden"
+                key={dest.code} 
+                href={`/visa/US-to-${dest.code}`}
+                className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
               >
-                <div className="absolute inset-0 bg-gradient-to-b from-violet-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative z-10">
-                  <div className="relative inline-block mb-3 sm:mb-4">
-                    <span className="text-4xl sm:text-5xl">{country.flag}</span>
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-violet-100 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <svg className="w-3 h-3 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
+                <div className={`absolute inset-0 bg-gradient-to-br ${dest.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className="relative p-6 min-h-[240px] flex flex-col">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-3xl bg-slate-100 group-hover:bg-white/30 transition-all`}>
+                      {dest.flag}
+                    </div>
+                    <div className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+                      {dest.time}
                     </div>
                   </div>
-                  <h3 className="font-bold text-slate-900 text-base sm:text-lg mb-2 group-hover:text-violet-700 transition-colors">{country.name}</h3>
-                  <div className="text-sm font-semibold">
-                    {country.price === 0 ? (
-                      <span className="text-emerald-600 flex items-center justify-center gap-1">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Visa Free
-                      </span>
-                    ) : (
-                      <span className="text-slate-600">
-                        From <span className="text-violet-600 font-bold">${country.price}</span>
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-2 text-xs text-slate-400 flex items-center justify-center gap-1">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {country.time}
+                  <div className="mt-auto">
+                    <h3 className="text-2xl font-bold text-slate-900 group-hover:text-white mb-1">{dest.name}</h3>
+                    <p className="text-sm text-slate-500 group-hover:text-white/80 mb-4">
+                      Tourist Visa • {dest.days} Days Stay • Single Entry
+                    </p>
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-200/50">
+                      <div>
+                        <span className="text-3xl font-bold text-slate-900 group-hover:text-white">${dest.price}</span>
+                        <span className="text-sm ml-1 text-slate-500 group-hover:text-white/70">/ person</span>
+                      </div>
+                      <button className="px-5 py-2.5 rounded-xl font-semibold text-sm bg-violet-600 text-white hover:bg-violet-700 transition-all">
+                        Apply Now
+                      </button>
+                    </div>
                   </div>
                 </div>
+                <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${dest.gradient} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left`} />
               </Link>
             ))}
           </div>
-          
-          <div className="text-center mt-10 sm:mt-14">
-            <Link href="/visa" className="inline-flex items-center gap-2.5 px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl hover:from-violet-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]">
-              Explore All 180+ Countries
+
+          <div className="text-center mt-10">
+            <Link href="/visa" className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-violet-200 text-violet-600 rounded-xl font-semibold hover:bg-violet-50 hover:border-violet-300 transition-all">
+              View All Destinations
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
