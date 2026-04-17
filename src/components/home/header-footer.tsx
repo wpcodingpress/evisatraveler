@@ -254,10 +254,11 @@ export function Header() {
   const checkPendingApps = async () => {
     if (!user) return;
     try {
-      const res = await fetch('/api/applications?status=pending');
+      // Check from cookie-based tracking
+      const res = await fetch('/api/applications/start', { method: 'GET' });
       if (res.ok) {
         const data = await res.json();
-        setPendingApps(data.length || 0);
+        setPendingApps(data.count || 0);
       }
     } catch {
       // Ignore

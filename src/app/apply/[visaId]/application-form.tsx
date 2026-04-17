@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { VisaRule } from '@/types';
@@ -27,6 +27,29 @@ const steps = [
 
 export function ApplicationForm({ visaRule, travelers = 1, processing = 'standard' }: ApplicationFormProps) {
   const router = useRouter();
+
+  // Track this as incomplete application when form loads
+  useEffect(() => {
+    trackIncomplete(1);
+  }, []);
+
+  const trackIncomplete = async (step: number) => {
+    try {
+      await fetch('/api/applications/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          visaRuleId: visaRule.id,
+          step,
+          callbackUrl: `/apply/${visaRule.id}?travelers=${travelers}&processing=${processing}`,
+          travelers,
+          processing,
+        }),
+      });
+    } catch {
+      // Silent fail
+    }
+  };
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,12 +96,18 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
     }
   };
 
-  const handleNext = () => {
-    if (canProceed() && currentStep < 4) setCurrentStep(currentStep + 1);
+  const handleNext = async () => {
+    if (canProceed() && currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+      await trackIncomplete(currentStep + 1);
+    }
   };
 
-  const handleBack = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  const handleBack = async () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      await trackIncomplete(currentStep - 1);
+    }
   };
 
   const initiatePayment = async () => {

@@ -78,14 +78,11 @@ export default function LoginPage() {
       if (!res.ok) {
         setError(data.error || 'Login failed');
       } else {
-        // Professional redirect based on where user came from
-        if (data.user.role === 'admin') {
-          router.push('/pro-console');
-        } else if (callbackUrl && callbackUrl !== '/dashboard' && callbackUrl !== '/login') {
-          // Redirect to where user wanted to go
-          router.push(callbackUrl);
+        // Force page reload to update header instantly
+        if (callbackUrl && callbackUrl !== '/dashboard' && callbackUrl !== '/login') {
+          window.location.href = callbackUrl;
         } else {
-          router.push('/dashboard');
+          window.location.href = data.user.role === 'admin' ? '/pro-console' : '/dashboard';
         }
       }
     } catch {
