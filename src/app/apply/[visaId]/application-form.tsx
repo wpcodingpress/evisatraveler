@@ -104,13 +104,16 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
       const result = await res.json();
       
       if (!res.ok) {
-        if (result.paymentUrl) {
-          window.location.href = result.paymentUrl;
-          return;
-        }
         throw new Error(result.error || 'Failed to create application');
       }
       
+      // If payment URL exists, redirect to Bank Alfalah
+      if (result.paymentUrl) {
+        window.location.href = result.paymentUrl;
+        return;
+      }
+      
+      // Otherwise redirect to confirmation (demo mode)
       router.push(`/confirmation/${result.applicationNumber}`);
     } catch (err: any) {
       setError(err.message || 'Payment failed. Please try again.');
@@ -318,6 +321,31 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
               Secure payment via Bank Alfalah
+            </div>
+
+            {/* Payment Banner */}
+            <div className="mt-4 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 rounded-xl p-4 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M3 3h18v18H3V3zm16.5 16.5v-15h-15v15h15zM9 9h6v6H9V9z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-bold">Bank Alfalah</p>
+                    <p className="text-xs text-white/80">Secure Payment Gateway</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                  <span>Protected</span>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center justify-between text-xs text-white/70">
+                <span>🔒 256-bit SSL Encryption</span>
+                <span>✅ Verified Merchant</span>
+              </div>
             </div>
           </div>
         );

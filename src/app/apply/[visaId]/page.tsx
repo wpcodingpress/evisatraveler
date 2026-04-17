@@ -95,8 +95,11 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     notFound();
   }
 
-  // Check authentication but allow guests to apply
-  // For now, guests can apply - auth is optional
+  // Check authentication - redirect to login if not authenticated
+  const user = checkAuth();
+  if (!user) {
+    redirect('/login?callback=/apply/' + visaId + '?travelers=' + (travelers || '1') + '&processing=' + (processing || 'standard'));
+  }
 
   return <ApplicationForm 
     visaRule={visaRule} 
