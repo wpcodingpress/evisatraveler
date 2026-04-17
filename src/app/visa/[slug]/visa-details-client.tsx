@@ -64,7 +64,14 @@ export function VisaDetailsClient({ visaRules, slug }: VisaDetailsClientProps) {
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-4">Visa Requirements</h3>
                     <ul className="space-y-3">
-                      {(selectedVisa.requirements as { id: string; text: string; required: boolean }[]).map((req) => (
+                      {(Array.isArray(selectedVisa.requirements) 
+                        ? selectedVisa.requirements.map((req: any, i: number) => 
+                            typeof req === 'string' 
+                              ? { id: String(i), text: req, required: true }
+                              : req
+                          )
+                        : []
+                      ).map((req: any) => (
                         <li key={req.id} className="flex items-start gap-3">
                           {req.required ? (
                             <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -80,7 +87,7 @@ export function VisaDetailsClient({ visaRules, slug }: VisaDetailsClientProps) {
                             </div>
                           )}
                           <span className={req.required ? 'text-slate-700' : 'text-slate-400'}>
-                            {req.text}
+                            {req.text || req}
                           </span>
                         </li>
                       ))}
