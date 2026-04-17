@@ -178,50 +178,52 @@ function VisaApplySidebar({ visaRule }: { visaRule: MockVisaRule }) {
   const totalUrgent = urgentPrice * travelers;
 
   return (
-    <div className="lg:col-span-1 space-y-4">
-      {/* Main Apply Card */}
-      <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden sticky top-24 z-10">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-violet-600 to-purple-600 p-6 text-white">
-          <h3 className="text-xl font-bold mb-1">{visaRule.visaType}</h3>
-          <p className="text-violet-100 text-sm">{visaRule.toCountry.name}, {visaRule.fromCountry.name}</p>
-        </div>
-
-        <div className="p-6">
-          {/* Processing Time Selector */}
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-slate-700 mb-3">Processing Time</label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setProcessingOption('standard')}
-                className={`p-3 rounded-xl border-2 font-semibold text-sm transition-all ${
-                  processingOption === 'standard'
-                    ? 'border-violet-500 bg-violet-50 text-violet-700'
-                    : 'border-slate-200 text-slate-600 hover:border-violet-300'
-                }`}
-              >
-                <span className="block">{visaRule.processingTime}</span>
-                <span className="text-xs opacity-75">Standard</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setProcessingOption('urgent')}
-                className={`p-3 rounded-xl border-2 font-medium text-sm transition-all ${
-                  processingOption === 'urgent'
-                    ? 'border-amber-500 bg-amber-50 text-amber-700'
-                    : 'border-slate-200 text-slate-600 hover:border-violet-300'
-                }`}
-              >
-                <span className="block">Express</span>
-                <span className="text-xs text-slate-400">+${urgentPrice - basePrice}</span>
-              </button>
-            </div>
+    <div className="lg:col-span-1">
+      {/* Main Sticky Container - ALL sidebar content scrolls together */}
+      <div className="sticky top-24 space-y-4">
+        {/* Main Apply Card */}
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-violet-600 to-purple-600 p-6 text-white">
+            <h3 className="text-xl font-bold mb-1">{visaRule.visaType}</h3>
+            <p className="text-violet-100 text-sm">{visaRule.toCountry.name}, {visaRule.fromCountry.name}</p>
           </div>
 
-          {/* Traveler Count */}
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-slate-700 mb-3">Travelers</label>
+          <div className="p-6">
+            {/* Processing Time Selector */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-slate-700 mb-3">Processing Time</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setProcessingOption('standard')}
+                  className={`p-3 rounded-xl border-2 font-semibold text-sm transition-all ${
+                    processingOption === 'standard'
+                      ? 'border-violet-500 bg-violet-50 text-violet-700'
+                      : 'border-slate-200 text-slate-600 hover:border-violet-300'
+                  }`}
+                >
+                  <span className="block">{visaRule.processingTime}</span>
+                  <span className="text-xs opacity-75">Standard</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProcessingOption('urgent')}
+                  className={`p-3 rounded-xl border-2 font-medium text-sm transition-all ${
+                    processingOption === 'urgent'
+                      ? 'border-amber-500 bg-amber-50 text-amber-700'
+                      : 'border-slate-200 text-slate-600 hover:border-violet-300'
+                  }`}
+                >
+                  <span className="block">Express</span>
+                  <span className="text-xs text-slate-400">+${urgentPrice - basePrice}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Traveler Count */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-slate-700 mb-3">Travelers</label>
             <div className="flex items-center gap-4">
               <button
                 type="button"
@@ -354,28 +356,6 @@ function VisaApplySidebar({ visaRule }: { visaRule: MockVisaRule }) {
           </div>
         </div>
       </div>
-
-      {/* Why Choose Us */}
-      <div className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-2xl p-5 text-white">
-        <h4 className="font-bold mb-4">Why Choose eVisaTraveler?</h4>
-        <div className="space-y-3 text-sm">
-          <div className="flex items-center gap-3">
-            <span className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">✓</span>
-            <span>99.9% Approval Rate</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">✓</span>
-            <span>Instant E-Visa Delivery</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">✓</span>
-            <span>24/7 Customer Support</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">✓</span>
-            <span>Secure Payment</span>
-          </div>
-        </div>
       </div>
     </div>
   );
