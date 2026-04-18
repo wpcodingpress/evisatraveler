@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Header, Footer } from '@/components/home/header-footer';
+import { ScrollToTop } from '@/components/home/scroll-to-top';
 
 export const metadata: Metadata = {
   title: 'eVisaTraveler | Visa Approved in 24-72 Hours | Apply Online',
@@ -25,6 +26,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <ScrollToTop />
       </body>
     </html>
   );

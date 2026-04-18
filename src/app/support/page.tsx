@@ -63,7 +63,7 @@ export default function SupportPage() {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold">Email Us</h3>
-                    <p className="text-violet-200">support@evisatraveler.com</p>
+                    <p className="text-violet-200">sheikhshoaibahmed81@gmail.com</p>
                   </div>
                 </div>
                 <p className="text-sm text-violet-200">We respond within 24 hours</p>
@@ -82,10 +82,10 @@ export default function SupportPage() {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold">Call Us</h3>
-                    <p className="text-purple-200">+1 (888) 123-4567</p>
+                    <p className="text-purple-200">+92 300 968 5072</p>
                   </div>
                 </div>
-                <p className="text-sm text-purple-200">Mon-Fri: 9AM - 6PM EST</p>
+                <p className="text-sm text-purple-200">Mon-Fri: 9AM - 6PM PKT</p>
               </div>
             </div>
           </div>
