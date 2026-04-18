@@ -115,9 +115,9 @@ const MOCK_VISA_RULES: Record<string, MockVisaRule> = {
   },
 };
 
-async function getVisaRules(slug: string): Promise<MockVisaRule | null> {
+async function getVisaRules(slug: string): Promise<{ mainRule: MockVisaRule | null; allRules: MockVisaRule[] }> {
   const parts = slug.split('-to-');
-  if (parts.length !== 2) return null;
+  if (parts.length !== 2) return { mainRule: null, allRules: [] };
   
   const fromCode = parts[0].toUpperCase();
   const toCode = parts[1].toUpperCase();
@@ -137,8 +137,7 @@ async function getVisaRules(slug: string): Promise<MockVisaRule | null> {
     });
 
     if (rules.length > 0) {
-      const rule = rules[0];
-      return {
+      const allRules = rules.map(rule => ({
         id: rule.id,
         visaType: rule.visaType,
         processingTime: rule.processingTime,
@@ -154,25 +153,37 @@ async function getVisaRules(slug: string): Promise<MockVisaRule | null> {
         additionalInfo: rule.additionalInfo || '',
         fromCountry: { name: rule.fromCountry.name, code: rule.fromCountry.code, flag: rule.fromCountry.flag || '🌍' },
         toCountry: { name: rule.toCountry.name, code: rule.toCountry.code, flag: rule.toCountry.flag || '🌍' },
-      };
+      }));
+      return { mainRule: allRules[0], allRules };
     }
   } catch (error) {
     console.log('Database not available, using mock data');
   }
 
   const mockKey = `${fromCode}-to-${toCode}`;
-  return MOCK_VISA_RULES[mockKey] || null;
+  const mockRule = MOCK_VISA_RULES[mockKey] || null;
+  return { mainRule: mockRule, allRules: mockRule ? [mockRule] : [] };
 }
 
 function formatCurrency(amount: number, currency: string = 'USD'): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 }
 
-function VisaApplySidebar({ visaRule }: { visaRule: MockVisaRule }) {
+function VisaApplySidebar({ visaRule, allRules }: { visaRule: MockVisaRule; allRules?: MockVisaRule[] }) {
   const [travelers, setTravelers] = useState(1);
   const [processingOption, setProcessingOption] = useState<'standard' | 'urgent'>('standard');
+  const [selectedVisaType, setSelectedVisaType] = useState(visaRule.visaType);
 
-  const basePrice = visaRule.price;
+  // Get unique visa types from available rules
+  const availableVisaTypes = allRules?.length ? 
+    [...new Set(allRules.map(r => r.visaType))] as string[] : 
+    [visaRule.visaType];
+  
+  const visaTypes = availableVisaTypes.length > 0 ? availableVisaTypes : [visaRule.visaType];
+  
+  // Find selected visa rule based on visa type
+  const currentRule = allRules?.find(r => r.visaType === selectedVisaType) || visaRule;
+  const basePrice = currentRule.price;
   const urgentPrice = Math.round(basePrice * 1.5);
   const totalStandard = basePrice * travelers;
   const totalUrgent = urgentPrice * travelers;
@@ -185,11 +196,38 @@ function VisaApplySidebar({ visaRule }: { visaRule: MockVisaRule }) {
         <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-violet-600 to-purple-600 p-6 text-white">
-            <h3 className="text-xl font-bold mb-1">{visaRule.visaType}</h3>
-            <p className="text-violet-100 text-sm">{visaRule.toCountry.name}, {visaRule.fromCountry.name}</p>
+            <h3 className="text-xl font-bold mb-1">{selectedVisaType}</h3>
+            <p className="text-violet-100 text-sm">{currentRule.toCountry.name}, {currentRule.fromCountry.name}</p>
           </div>
 
           <div className="p-6">
+            {/* Visa Type Selector */}
+            {visaTypes.length > 1 && (
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-slate-700 mb-3">Visa Type</label>
+                <div className="space-y-2">
+                  {visaTypes.map((vType) => {
+                    const rule = allRules?.find(r => r.visaType === vType);
+                    return (
+                      <button
+                        key={vType}
+                        type="button"
+                        onClick={() => setSelectedVisaType(vType)}
+                        className={`w-full p-3 rounded-xl border-2 font-semibold text-sm transition-all text-left ${
+                          selectedVisaType === vType
+                            ? 'border-violet-500 bg-violet-50 text-violet-700'
+                            : 'border-slate-200 text-slate-600 hover:border-violet-300'
+                        }`}
+                      >
+                        <span className="block">{vType}</span>
+                        <span className="text-xs opacity-75">From ${rule?.price || basePrice}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Processing Time Selector */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-slate-700 mb-3">Processing Time</label>
@@ -203,7 +241,7 @@ function VisaApplySidebar({ visaRule }: { visaRule: MockVisaRule }) {
                       : 'border-slate-200 text-slate-600 hover:border-violet-300'
                   }`}
                 >
-                  <span className="block">{visaRule.processingTime}</span>
+                  <span className="block">{currentRule.processingTime}</span>
                   <span className="text-xs opacity-75">Standard</span>
                 </button>
                 <button
@@ -364,7 +402,7 @@ function VisaApplySidebar({ visaRule }: { visaRule: MockVisaRule }) {
 export default async function VisaPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const { from, to, date, travelers } = await searchParams;
-  const visaRule = await getVisaRules(slug);
+  const { mainRule: visaRule, allRules } = await getVisaRules(slug);
 
   if (!visaRule) {
     return (
@@ -503,7 +541,7 @@ export default async function VisaPage({ params, searchParams }: Props) {
           </div>
 
           {/* Sidebar - Client Component */}
-          <VisaApplySidebar visaRule={visaRule} />
+          <VisaApplySidebar visaRule={visaRule} allRules={allRules} />
         </div>
       </div>
     </div>
