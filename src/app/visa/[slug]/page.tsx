@@ -28,7 +28,7 @@ interface MockVisaRule {
 }
 
 const MOCK_VISA_RULES: Record<string, MockVisaRule> = {
-  // Pakistan routes
+// Pakistan to Thailand
   'PK-to-TH': {
     id: 'pk-th-1',
     visaType: 'Tourist Visa',
@@ -42,10 +42,28 @@ const MOCK_VISA_RULES: Record<string, MockVisaRule> = {
     requirements: ['Valid passport (6+ months)', 'Passport-size photos', 'Proof of accommodation', 'Return flight ticket'],
     documents: ['Passport copy', 'Photo (3.5x4.5cm)', 'Flight itinerary', 'Hotel booking'],
     allowedActivities: ['Tourism', 'Leisure', 'Visiting friends/family'],
-    additionalInfo: 'Thailand offers visa-on-arrival for Pakistani citizens.',
+    additionalInfo: 'Thailand tourist visa for Pakistani citizens.',
     fromCountry: { name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
     toCountry: { name: 'Thailand', code: 'TH', flag: '🇹🇭' },
   },
+  'PK-to-TH-business': {
+    id: 'pk-th-2',
+    visaType: 'Business Visa',
+    processingTime: '3-5 days',
+    processingDays: 5,
+    price: 150,
+    currency: 'USD',
+    maxStayDays: 90,
+    validityDays: 180,
+    entryType: 'Multiple Entry',
+    requirements: ['Valid passport', 'Business invitation letter', 'Company letter'],
+    documents: ['Passport copy', 'Business letter'],
+    allowedActivities: ['Business meetings', 'Conferences'],
+    additionalInfo: 'Thailand business visa for Pakistani citizens.',
+    fromCountry: { name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
+    toCountry: { name: 'Thailand', code: 'TH', flag: '🇹🇭' },
+  },
+// Pakistan to Singapore (Visa Free)
   'PK-to-SG': {
     id: 'pk-sg-1',
     visaType: 'Tourist Visa',
@@ -56,13 +74,14 @@ const MOCK_VISA_RULES: Record<string, MockVisaRule> = {
     maxStayDays: 30,
     validityDays: 30,
     entryType: 'Visa Free',
-    requirements: ['Valid passport', 'Return ticket', 'Hotel booking'],
+    requirements: ['Valid passport'],
     documents: ['Passport'],
     allowedActivities: ['Tourism', 'Business'],
-    additionalInfo: 'Pakistanis can enter Singapore visa-free for 30 days.',
+    additionalInfo: 'Singapore visa-free for Pakistani citizens for 30 days.',
     fromCountry: { name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
     toCountry: { name: 'Singapore', code: 'SG', flag: '🇸🇬' },
   },
+// Pakistan to Vietnam
   'PK-to-VN': {
     id: 'pk-vn-1',
     visaType: 'Tourist Visa',
@@ -73,13 +92,14 @@ const MOCK_VISA_RULES: Record<string, MockVisaRule> = {
     maxStayDays: 90,
     validityDays: 90,
     entryType: 'Single Entry',
-    requirements: ['Valid passport', 'Photo', ' Hotel booking', 'Return ticket'],
-    documents: ['Passport copy', 'Photo', 'Hotel booking'],
+    requirements: ['Valid passport', 'Photo', 'Hotel booking'],
+    documents: ['Passport copy', 'Photo'],
     allowedActivities: ['Tourism', 'Business'],
     additionalInfo: 'Vietnam e-visa for Pakistani citizens.',
     fromCountry: { name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
     toCountry: { name: 'Vietnam', code: 'VN', flag: '🇻🇳' },
   },
+// Pakistan to Malaysia
   'PK-to-MY': {
     id: 'pk-my-1',
     visaType: 'Tourist Visa',
@@ -90,13 +110,14 @@ const MOCK_VISA_RULES: Record<string, MockVisaRule> = {
     maxStayDays: 30,
     validityDays: 90,
     entryType: 'Single Entry',
-    requirements: ['Valid passport', 'Photo', 'Hotel booking', 'Flight ticket'],
+    requirements: ['Valid passport', 'Photo', 'Hotel booking'],
     documents: ['Passport copy', 'Photo'],
     allowedActivities: ['Tourism', 'Business'],
     additionalInfo: 'Malaysia e-visa for Pakistani citizens.',
     fromCountry: { name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
     toCountry: { name: 'Malaysia', code: 'MY', flag: '🇲🇲' },
   },
+// Pakistan to UAE
   'PK-to-AE': {
     id: 'pk-ae-1',
     visaType: 'Tourist Visa',
@@ -107,13 +128,14 @@ const MOCK_VISA_RULES: Record<string, MockVisaRule> = {
     maxStayDays: 30,
     validityDays: 60,
     entryType: 'Single Entry',
-    requirements: ['Valid passport', 'Photo', 'Hotel booking', 'Bank statement'],
+    requirements: ['Valid passport', 'Photo', 'Hotel booking'],
     documents: ['Passport copy', 'Photo'],
     allowedActivities: ['Tourism', 'Business'],
     additionalInfo: 'UAE visa for Pakistani citizens.',
     fromCountry: { name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
     toCountry: { name: 'UAE', code: 'AE', flag: '🇦🇪' },
   },
+// Pakistan to Turkey
   'PK-to-TR': {
     id: 'pk-tr-1',
     visaType: 'Tourist Visa',
@@ -127,10 +149,11 @@ const MOCK_VISA_RULES: Record<string, MockVisaRule> = {
     requirements: ['Valid passport', 'Photo', 'Hotel booking'],
     documents: ['Passport copy', 'Photo'],
     allowedActivities: ['Tourism', 'Business'],
-    additionalInfo: 'Turkey e-visa available for Pakistani citizens.',
+    additionalInfo: 'Turkey e-visa for Pakistani citizens.',
     fromCountry: { name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
     toCountry: { name: 'Turkey', code: 'TR', flag: '🇹🇷' },
   },
+// Pakistan to India
   'PK-to-IN': {
     id: 'pk-in-1',
     visaType: 'Tourist Visa',
@@ -141,13 +164,14 @@ const MOCK_VISA_RULES: Record<string, MockVisaRule> = {
     maxStayDays: 30,
     validityDays: 60,
     entryType: 'Single Entry',
-    requirements: ['Valid passport', 'Photo', 'Hotel booking', ' flight ticket'],
+    requirements: ['Valid passport', 'Photo', 'Hotel booking'],
     documents: ['Passport copy', 'Photo'],
     allowedActivities: ['Tourism', 'Business'],
     additionalInfo: 'India e-visa for Pakistani citizens.',
     fromCountry: { name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
     toCountry: { name: 'India', code: 'IN', flag: '🇮🇳' },
   },
+// Pakistan to Sri Lanka
   'PK-to-LK': {
     id: 'pk-lk-1',
     visaType: 'Tourist Visa',
@@ -161,10 +185,11 @@ const MOCK_VISA_RULES: Record<string, MockVisaRule> = {
     requirements: ['Valid passport', 'Photo', 'Hotel booking'],
     documents: ['Passport copy', 'Photo'],
     allowedActivities: ['Tourism'],
-    additionalInfo: 'Sri Lanka ETA available for Pakistani citizens.',
+    additionalInfo: 'Sri Lanka ETA for Pakistani citizens.',
     fromCountry: { name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
     toCountry: { name: 'Sri Lanka', code: 'LK', flag: '🇱🇰' },
   },
+// Pakistan to Indonesia
   'PK-to-ID': {
     id: 'pk-id-1',
     visaType: 'Tourist Visa',
@@ -182,7 +207,7 @@ const MOCK_VISA_RULES: Record<string, MockVisaRule> = {
     fromCountry: { name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
     toCountry: { name: 'Indonesia', code: 'ID', flag: '🇮🇩' },
   },
-  // US routes
+// US routes
   'US-to-TH': {
     id: '1',
     visaType: 'Tourist Visa',
@@ -463,7 +488,7 @@ function VisaApplySidebar({ visaRule, allRules }: { visaRule: MockVisaRule; allR
 
           {/* CTA Button */}
           <Link
-            href={`/apply/${visaRule.id}?travelers=${travelers}&processing=${processingOption}`}
+            href={`/apply/${currentRule.id}?travelers=${travelers}&processing=${processingOption}`}
             className="block w-full py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold text-lg rounded-xl text-center hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
           >
             Apply Now
