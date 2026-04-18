@@ -4,27 +4,48 @@ import { useState, useEffect } from 'react';
 import { EnhancedSearchForm } from '@/components/home/enhanced-search-form';
 import Link from 'next/link';
 
-const MOCK_COUNTRIES = [
-  { id: '1', name: 'United States', code: 'US', flag: '🇺🇸' },
-  { id: '2', name: 'United Kingdom', code: 'GB', flag: '🇬🇧' },
-  { id: '3', name: 'Canada', code: 'CA', flag: '🇨🇦' },
-  { id: '4', name: 'Australia', code: 'AU', flag: '🇦🇺' },
-  { id: '5', name: 'Germany', code: 'DE', flag: '🇩🇪' },
-  { id: '6', name: 'France', code: 'FR', flag: '🇫🇷' },
-  { id: '7', name: 'Japan', code: 'JP', flag: '🇯🇵' },
-  { id: '8', name: 'South Korea', code: 'KR', flag: '🇰🇷' },
-  { id: '9', name: 'UAE', code: 'AE', flag: '🇦🇪' },
-  { id: '10', name: 'Singapore', code: 'SG', flag: '🇸🇬' },
-  { id: '11', name: 'Thailand', code: 'TH', flag: '🇹🇭' },
-  { id: '12', name: 'Vietnam', code: 'VN', flag: '🇻🇳' },
-  { id: '13', name: 'India', code: 'IN', flag: '🇮🇳' },
-  { id: '14', name: 'Turkey', code: 'TR', flag: '🇹🇷' },
-  { id: '15', name: 'Sri Lanka', code: 'LK', flag: '🇱🇰' },
-  { id: '16', name: 'Malaysia', code: 'MY', flag: '🇲🇲' },
-  { id: '17', name: 'Indonesia', code: 'ID', flag: '🇮🇩' },
-  { id: '18', name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
-  { id: '19', name: 'China', code: 'CN', flag: '🇨🇳' },
-  { id: '20', name: 'Saudi Arabia', code: 'SA', flag: '🇸🇦' },
+interface Country {
+  id: string;
+  name: string;
+  code: string;
+  flag?: string;
+}
+
+// Countries for search dropdown (loaded from database)
+const POPULAR_COUNTRIES: Country[] = [
+  { id: '1', name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
+  { id: '2', name: 'United States', code: 'US', flag: '🇺🇸' },
+  { id: '3', name: 'United Kingdom', code: 'GB', flag: '🇬🇧' },
+  { id: '4', name: 'Canada', code: 'CA', flag: '🇨🇦' },
+  { id: '5', name: 'Australia', code: 'AU', flag: '🇦🇺' },
+  { id: '6', name: 'Germany', code: 'DE', flag: '🇩🇪' },
+  { id: '7', name: 'France', code: 'FR', flag: '🇫🇷' },
+  { id: '8', name: 'Japan', code: 'JP', flag: '🇯🇵' },
+  { id: '9', name: 'China', code: 'CN', flag: '🇨🇳' },
+  { id: '10', name: 'India', code: 'IN', flag: '🇮🇳' },
+  { id: '11', name: 'Bangladesh', code: 'BD', flag: '🇧🇩' },
+  { id: '12', name: 'Saudi Arabia', code: 'SA', flag: '🇸🇦' },
+  { id: '13', name: 'UAE', code: 'AE', flag: '🇦🇪' },
+  { id: '14', name: 'Nigeria', code: 'NG', flag: '🇳🇬' },
+  { id: '15', name: 'South Africa', code: 'ZA', flag: '🇿🇦' },
+  { id: '16', name: 'Kenya', code: 'KE', flag: '🇰🇪' },
+  { id: '17', name: 'Egypt', code: 'EG', flag: '🇪🇬' },
+  { id: '18', name: 'Morocco', code: 'MA', flag: '🇲🇦' },
+  { id: '19', name: 'Indonesia', code: 'ID', flag: '🇮🇩' },
+  { id: '20', name: 'Malaysia', code: 'MY', flag: '🇲🇾' },
+];
+
+const POPULAR_DESTINATIONS = [
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭', price: 49, time: '24-72 hours', days: '30' },
+  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', price: 59, time: '3-5 days', days: '30' },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇲', price: 39, time: '24-48 hours', days: '30' },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬', price: 0, time: 'Visa Free', days: '30' },
+  { code: 'AE', name: 'UAE', flag: '🇦🇪', price: 115, time: '3-5 days', days: '30' },
+  { code: 'TR', name: 'Turkey', flag: '🇹🇷', price: 60, time: '24-48 hours', days: '30' },
+  { code: 'IN', name: 'India', flag: '🇮🇳', price: 50, time: '2-4 days', days: '30' },
+  { code: 'LK', name: 'Sri Lanka', flag: '🇱🇰', price: 35, time: '24 hours', days: '30' },
+  { code: 'KH', name: 'Cambodia', flag: '🇰🇭', price: 30, time: '24 hours', days: '30' },
+  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', price: 50, time: '2-3 days', days: '30' },
 ];
 
 const POPULAR_DESTINATIONS = [
@@ -107,7 +128,7 @@ function HeroSection() {
 
         {/* Search Form */}
         <div className="max-w-5xl mx-auto">
-          <EnhancedSearchForm countries={MOCK_COUNTRIES} />
+          <EnhancedSearchForm countries={POPULAR_COUNTRIES} />
         </div>
 
         {/* Trust Badges */}
