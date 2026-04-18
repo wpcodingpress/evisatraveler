@@ -188,7 +188,7 @@ function PopularDestinations() {
           {POPULAR_DESTINATIONS.map((dest) => (
             <Link
               key={dest.code}
-              href={`/visa?from=PK&to=${dest.code}`}
+              href={`/visa/PK-to-${dest.code}`}
               className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 transition-all duration-300"
             >
               <div className="flex items-center justify-between mb-3">
