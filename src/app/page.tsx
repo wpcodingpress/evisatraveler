@@ -48,19 +48,6 @@ const POPULAR_DESTINATIONS = [
   { code: 'ID', name: 'Indonesia', flag: '🇮🇩', price: 50, time: '2-3 days', days: '30' },
 ];
 
-const POPULAR_DESTINATIONS = [
-  { code: 'TH', name: 'Thailand', flag: '🇹🇭', price: 49, time: '24-72 hours', days: '30' },
-  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', price: 59, time: '3-5 days', days: '30' },
-  { code: 'MY', name: 'Malaysia', flag: '🇲🇲', price: 39, time: '24-48 hours', days: '30' },
-  { code: 'SG', name: 'Singapore', flag: '🇸🇬', price: 0, time: 'Visa Free', days: '30' },
-  { code: 'AE', name: 'UAE', flag: '🇦🇪', price: 115, time: '3-5 days', days: '30' },
-  { code: 'TR', name: 'Turkey', flag: '🇹🇷', price: 60, time: '24-48 hours', days: '30' },
-  { code: 'IN', name: 'India', flag: '🇮🇳', price: 50, time: '2-4 days', days: '30' },
-  { code: 'LK', name: 'Sri Lanka', flag: '🇱🇰', price: 35, time: '24 hours', days: '30' },
-  { code: 'KH', name: 'Cambodia', flag: '🇰🇭', price: 30, time: '24 hours', days: '30' },
-  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', price: 50, time: '2-3 days', days: '30' },
-];
-
 function HeroSection() {
   return (
     <section className="relative min-h-[90vh] lg:min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-violet-950">
