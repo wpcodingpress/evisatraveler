@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               <p className="text-green-400 mb-2">Check your email!</p>
-              <p className="text-slate-400 text-sm">We've sent you password reset instructions.</p>
+              <p className="text-slate-400 text-sm">We&apos;ve sent you password reset instructions.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

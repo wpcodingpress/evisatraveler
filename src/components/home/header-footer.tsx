@@ -106,7 +106,7 @@ function NavLinks() {
   
   const navItems = [
     { href: '/', label: 'Home', icon: '🏠' },
-    { href: '/visa', label: 'Popular Destinations', icon: '🌟' },
+    { href: '/visa', label: 'All Destinations', icon: '🌍' },
     { href: '/track', label: 'Track Visa', icon: '📋' },
     { href: '/support', label: 'Help Center', icon: '💬' },
   ];
@@ -143,7 +143,7 @@ function MobileMenuButton() {
 
   const navItems = [
     { href: '/', label: 'Home', icon: '🏠' },
-    { href: '/visa', label: 'Popular Destinations', icon: '🌟' },
+    { href: '/visa', label: 'All Destinations', icon: '🌍' },
     { href: '/track', label: 'Track Visa', icon: '📋' },
     { href: '/support', label: 'Help Center', icon: '💬' },
   ];
