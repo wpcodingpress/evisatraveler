@@ -4,16 +4,17 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
-function NavLink({ href, children, isActive }: { href: string; children: React.ReactNode; isActive: boolean }) {
+function NavLink({ href, children, isActive, icon }: { href: string; children: React.ReactNode; isActive: boolean; icon?: string }) {
   return (
     <Link
       href={href}
-      className={`px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 ${
+      className={`px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center gap-2 ${
         isActive
           ? 'text-white bg-gradient-to-r from-violet-600 to-purple-600 shadow-lg shadow-violet-500/25'
-          : 'text-slate-600 hover:text-violet-600 hover:bg-violet-50'
+          : 'text-slate-700 hover:text-violet-600 hover:bg-violet-50 border border-transparent hover:border-violet-200'
       }`}
     >
+      {icon && <span className="text-base">{icon}</span>}
       {children}
     </Link>
   );
@@ -104,16 +105,16 @@ function NavLinks() {
   const pathname = usePathname();
   
   const navItems = [
-    { href: '/', label: 'Home' },
-    { href: '/visa', label: 'Visa Types' },
-    { href: '/track', label: 'Track' },
-    { href: '/support', label: 'Support' },
+    { href: '/', label: 'Home', icon: '🏠' },
+    { href: '/visa', label: 'All Visas', icon: '🌍' },
+    { href: '/track', label: 'Track Visa', icon: '📋' },
+    { href: '/support', label: 'Help Center', icon: '💬' },
   ];
 
   return (
     <>
       {navItems.map((item) => (
-        <NavLink key={item.href} href={item.href} isActive={pathname === item.href}>
+        <NavLink key={item.href} href={item.href} isActive={pathname === item.href} icon={item.icon}>
           {item.label}
         </NavLink>
       ))}
@@ -141,10 +142,10 @@ function MobileMenuButton() {
   }, [pathname]);
 
   const navItems = [
-    { href: '/', label: 'Home' },
-    { href: '/visa', label: 'Visa Types' },
-    { href: '/track', label: 'Track' },
-    { href: '/support', label: 'Support' },
+    { href: '/', label: 'Home', icon: '🏠' },
+    { href: '/visa', label: 'All Visas', icon: '🌍' },
+    { href: '/track', label: 'Track Visa', icon: '📋' },
+    { href: '/support', label: 'Help Center', icon: '💬' },
   ];
 
   return (
@@ -195,12 +196,13 @@ function MobileMenuButton() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`block px-4 py-3.5 text-base font-medium rounded-xl transition-all duration-300 ${
+                  className={`block px-4 py-3.5 text-base font-semibold rounded-xl transition-all duration-300 flex items-center gap-3 ${
                     isActive
                       ? 'text-white bg-gradient-to-r from-violet-600 to-purple-600 shadow-lg shadow-violet-500/25'
-                      : 'text-slate-600 hover:text-violet-600 hover:bg-violet-50'
+                      : 'text-slate-700 hover:text-violet-600 hover:bg-violet-50'
                   }`}
                 >
+                  {item.icon && <span className="text-lg">{item.icon}</span>}
                   {item.label}
                 </Link>
               );
