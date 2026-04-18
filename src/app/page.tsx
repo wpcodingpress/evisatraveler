@@ -11,76 +11,21 @@ interface Country {
   flag?: string;
 }
 
-// Countries for search dropdown (loaded from database)
-const POPULAR_COUNTRIES: Country[] = [
-  { id: '1', name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
-  { id: '2', name: 'United States', code: 'US', flag: '🇺🇸' },
-  { id: '3', name: 'United Kingdom', code: 'GB', flag: '🇬🇧' },
-  { id: '4', name: 'Canada', code: 'CA', flag: '🇨🇦' },
-  { id: '5', name: 'Australia', code: 'AU', flag: '🇦🇺' },
-  { id: '6', name: 'Germany', code: 'DE', flag: '🇩🇪' },
-  { id: '7', name: 'France', code: 'FR', flag: '🇫🇷' },
-  { id: '8', name: 'Japan', code: 'JP', flag: '🇯🇵' },
-  { id: '9', name: 'China', code: 'CN', flag: '🇨🇳' },
-  { id: '10', name: 'India', code: 'IN', flag: '🇮🇳' },
-  { id: '11', name: 'Bangladesh', code: 'BD', flag: '🇧🇩' },
-  { id: '12', name: 'Saudi Arabia', code: 'SA', flag: '🇸🇦' },
-  { id: '13', name: 'UAE', code: 'AE', flag: '🇦🇪' },
-  { id: '14', name: 'Nigeria', code: 'NG', flag: '🇳🇬' },
-  { id: '15', name: 'South Africa', code: 'ZA', flag: '🇿🇦' },
-  { id: '16', name: 'Kenya', code: 'KE', flag: '🇰🇪' },
-  { id: '17', name: 'Egypt', code: 'EG', flag: '🇪🇬' },
-  { id: '18', name: 'Morocco', code: 'MA', flag: '🇲🇦' },
-  { id: '19', name: 'Indonesia', code: 'ID', flag: '🇮🇩' },
-  { id: '20', name: 'Malaysia', code: 'MY', flag: '🇲🇾' },
-];
-
-const POPULAR_DESTINATIONS = [
-  { code: 'TH', name: 'Thailand', flag: '🇹🇭', price: 49, time: '24-72 hours', days: '30' },
-  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', price: 59, time: '3-5 days', days: '30' },
-  { code: 'MY', name: 'Malaysia', flag: '🇲🇲', price: 39, time: '24-48 hours', days: '30' },
-  { code: 'SG', name: 'Singapore', flag: '🇸🇬', price: 0, time: 'Visa Free', days: '30' },
-  { code: 'AE', name: 'UAE', flag: '🇦🇪', price: 115, time: '3-5 days', days: '30' },
-  { code: 'TR', name: 'Turkey', flag: '🇹🇷', price: 60, time: '24-48 hours', days: '30' },
-  { code: 'IN', name: 'India', flag: '🇮🇳', price: 50, time: '2-4 days', days: '30' },
-  { code: 'LK', name: 'Sri Lanka', flag: '🇱🇰', price: 35, time: '24 hours', days: '30' },
-  { code: 'KH', name: 'Cambodia', flag: '🇰🇭', price: 30, time: '24 hours', days: '30' },
-  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', price: 50, time: '2-3 days', days: '30' },
-];
-
-function HeroSection() {
+function HeroSection({ countries }: { countries: Country[] }) {
   return (
     <section className="relative min-h-[90vh] lg:min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-violet-950">
-      {/* Animated Background */}
       <div className="absolute inset-0">
-        {/* Gradient Orbs */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-          <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-600/20 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/15 rounded-full blur-[100px] animate-pulse delay-1000" />
-          <div className="absolute top-[30%] right-[20%] w-[300px] h-[300px] bg-fuchsia-600/10 rounded-full blur-[80px] animate-pulse delay-500" />
-          
-          {/* Grid Pattern */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{ 
-            backgroundImage: `linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)`,
-            backgroundSize: '60px 60px'
-          }} />
-          
-          {/* Diagonal Lines */}
-          <div className="absolute inset-0 opacity-[0.02]" style={{
-            background: 'repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(139, 92, 246, 0.5) 40px, rgba(139, 92, 246, 0.5) 41px)'
-          }} />
-        </div>
-        
-        {/* Floating Cards */}
-        <div className="absolute top-[15%] left-[5%] w-16 h-20 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 animate-float-1 hidden md:block" />
-        <div className="absolute top-[25%] right-[8%] w-14 h-14 bg-gradient-to-br from-violet-500/20 to-purple-500/20 rounded-xl border border-white/10 animate-float-2 hidden md:block" />
-        <div className="absolute bottom-[30%] left-[10%] w-12 h-16 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 animate-float-3 hidden md:block" />
-        <div className="absolute bottom-[20%] right-[15%] w-20 h-20 border border-violet-500/20 rounded-full animate-pulse hidden md:block" />
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-600/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/15 rounded-full blur-[100px] animate-pulse delay-1000" />
+        <div className="absolute top-[30%] right-[20%] w-[300px] h-[300px] bg-fuchsia-600/10 rounded-full blur-[80px] animate-pulse delay-500" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ 
+          backgroundImage: `linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)`,
+          backgroundSize: '60px 60px'
+        }} />
       </div>
 
       <div className="relative z-10 container-custom py-12 lg:py-16">
         <div className="text-center max-w-4xl mx-auto mb-8 lg:mb-12">
-          {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium mb-6 animate-fade-in">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -89,7 +34,6 @@ function HeroSection() {
             Trusted by 100,000+ Travelers Worldwide
           </div>
 
-          {/* Main Headline */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 lg:mb-6 leading-tight">
             Get Your{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400">
@@ -98,13 +42,11 @@ function HeroSection() {
             in Record Time
           </h1>
 
-          {/* Subheadline */}
           <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto mb-8 leading-relaxed px-4">
             Apply for tourist, business, or transit visa online. 
             <span className="text-violet-400 font-semibold"> Fast approval in 24-72 hours</span> with 99.9% success rate.
           </p>
 
-          {/* Processing Time Badge */}
           <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl text-white font-bold text-lg shadow-lg shadow-orange-500/25 mb-8">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -113,12 +55,10 @@ function HeroSection() {
           </div>
         </div>
 
-        {/* Search Form */}
         <div className="max-w-5xl mx-auto">
-          <EnhancedSearchForm countries={POPULAR_COUNTRIES} />
+          <EnhancedSearchForm countries={countries} />
         </div>
 
-        {/* Trust Badges */}
         <div className="flex flex-wrap justify-center gap-4 lg:gap-8 mt-8 lg:mt-10">
           {[
             { label: '99.9% Approval', icon: '✓' },
@@ -134,7 +74,6 @@ function HeroSection() {
         </div>
       </div>
 
-      {/* Scroll Indicator */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce">
         <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
           <div className="w-1 h-2 bg-white/50 rounded-full animate-pulse" />
@@ -169,6 +108,19 @@ function StatsBar() {
     </section>
   );
 }
+
+const POPULAR_DESTINATIONS = [
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭', price: 49, time: '24-72 hours', days: '30' },
+  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', price: 59, time: '3-5 days', days: '30' },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇲', price: 39, time: '24-48 hours', days: '30' },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬', price: 0, time: 'Visa Free', days: '30' },
+  { code: 'AE', name: 'UAE', flag: '🇦🇪', price: 115, time: '3-5 days', days: '30' },
+  { code: 'TR', name: 'Turkey', flag: '🇹🇷', price: 60, time: '24-48 hours', days: '30' },
+  { code: 'IN', name: 'India', flag: '🇮🇳', price: 50, time: '2-4 days', days: '30' },
+  { code: 'LK', name: 'Sri Lanka', flag: '🇱🇰', price: 35, time: '24 hours', days: '30' },
+  { code: 'KH', name: 'Cambodia', flag: '🇰🇭', price: 30, time: '24 hours', days: '30' },
+  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', price: 50, time: '2-3 days', days: '30' },
+];
 
 function PopularDestinations() {
   const [destinations, setDestinations] = useState<any[]>([]);
@@ -453,9 +405,46 @@ function CTASection() {
 }
 
 export default function HomePage() {
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/countries')
+      .then(res => res.json())
+      .then(data => {
+        if (data.countries && data.countries.length > 0) {
+          setCountries(data.countries);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setCountries([
+          { id: '1', name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
+          { id: '2', name: 'United States', code: 'US', flag: '🇺🇸' },
+          { id: '3', name: 'United Kingdom', code: 'GB', flag: '🇬🇧' },
+          { id: '4', name: 'Canada', code: 'CA', flag: '🇨🇦' },
+          { id: '5', name: 'Australia', code: 'AU', flag: '🇦🇺' },
+          { id: '6', name: 'Germany', code: 'DE', flag: '🇩🇪' },
+          { id: '7', name: 'France', code: 'FR', flag: '🇫🇷' },
+          { id: '8', name: 'Japan', code: 'JP', flag: '🇯🇵' },
+          { id: '9', name: 'China', code: 'CN', flag: '🇨🇳' },
+          { id: '10', name: 'India', code: 'IN', flag: '🇮🇳' },
+        ]);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-violet-600 text-lg">Loading...</div>
+      </main>
+    );
+  }
+
   return (
     <main>
-      <HeroSection />
+      <HeroSection countries={countries} />
       <StatsBar />
       <PopularDestinations />
       <VisaTypes />
