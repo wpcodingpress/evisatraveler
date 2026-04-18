@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     const fromCountry = searchParams.get('from');
     const toCountry = searchParams.get('to');
     const activeOnly = searchParams.get('active') !== 'false';
+    const limit = parseInt(searchParams.get('limit') || '100');
 
     const where: Record<string, unknown> = {};
     
@@ -26,10 +27,13 @@ export async function GET(request: Request) {
         fromCountry: true,
         toCountry: true,
       },
-      orderBy: { sortOrder: 'asc' },
+      orderBy: { price: 'asc' },
+      take: parseInt(limit) || 100,
     });
 
-    return NextResponse.json({ rules: visaRules });
+    const response = NextResponse.json({ rules: visaRules });
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    return response;
   } catch (error) {
     console.error('Visa rules fetch error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

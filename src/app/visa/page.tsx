@@ -31,7 +31,7 @@ export default function VisaPage() {
 
   const fetchVisaRules = async () => {
     try {
-      const res = await fetch('/api/visa');
+      const res = await fetch('/api/visa?limit=50');
       const data = await res.json();
       setVisaRules(data.rules || []);
     } catch (err) {
