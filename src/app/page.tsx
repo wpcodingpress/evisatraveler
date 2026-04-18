@@ -122,19 +122,8 @@ const POPULAR_DESTINATIONS = [
   { code: 'ID', name: 'Indonesia', flag: '🇮🇩', price: 50, time: '2-3 days', days: '30' },
 ];
 
-function PopularDestinations() {
-  const [destinations, setDestinations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/api/popular-destinations')
-      .then(res => res.json())
-      .then(data => {
-        if (data.destinations) setDestinations(data.destinations);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+function PopularDestinations({ destinations }: { destinations: any[] }) {
+  const [loading, setLoading] = useState(false);
 
   const formatPrice = (price: number) => {
     if (price === 0) return 'Free';
@@ -406,32 +395,37 @@ function CTASection() {
 
 export default function HomePage() {
   const [countries, setCountries] = useState<Country[]>([]);
+  const [destinations, setDestinations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/countries')
-      .then(res => res.json())
-      .then(data => {
-        if (data.countries && data.countries.length > 0) {
-          setCountries(data.countries);
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setCountries([
-          { id: '1', name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
-          { id: '2', name: 'United States', code: 'US', flag: '🇺🇸' },
-          { id: '3', name: 'United Kingdom', code: 'GB', flag: '🇬🇧' },
-          { id: '4', name: 'Canada', code: 'CA', flag: '🇨🇦' },
-          { id: '5', name: 'Australia', code: 'AU', flag: '🇦🇺' },
-          { id: '6', name: 'Germany', code: 'DE', flag: '🇩🇪' },
-          { id: '7', name: 'France', code: 'FR', flag: '🇫🇷' },
-          { id: '8', name: 'Japan', code: 'JP', flag: '🇯🇵' },
-          { id: '9', name: 'China', code: 'CN', flag: '🇨🇳' },
-          { id: '10', name: 'India', code: 'IN', flag: '🇮🇳' },
-        ]);
-        setLoading(false);
-      });
+    Promise.all([
+      fetch('/api/countries').then(r => r.json()),
+      fetch('/api/popular-destinations').then(r => r.json())
+    ]).then(([countriesData, destinationsData]) => {
+      if (countriesData.countries && countriesData.countries.length > 0) {
+        setCountries(countriesData.countries);
+      }
+      if (destinationsData.destinations) {
+        setDestinations(destinationsData.destinations);
+      }
+      setLoading(false);
+    }).catch((err) => {
+      console.error('Failed to fetch data:', err);
+      setCountries([
+        { id: '1', name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
+        { id: '2', name: 'United States', code: 'US', flag: '🇺🇸' },
+        { id: '3', name: 'United Kingdom', code: 'GB', flag: '🇬🇧' },
+        { id: '4', name: 'Canada', code: 'CA', flag: '🇨🇦' },
+        { id: '5', name: 'Australia', code: 'AU', flag: '🇦🇺' },
+        { id: '6', name: 'Germany', code: 'DE', flag: '🇩🇪' },
+        { id: '7', name: 'France', code: 'FR', flag: '🇫🇷' },
+        { id: '8', name: 'Japan', code: 'JP', flag: '🇯🇵' },
+        { id: '9', name: 'China', code: 'CN', flag: '🇨🇳' },
+        { id: '10', name: 'India', code: 'IN', flag: '🇮🇳' },
+      ]);
+      setLoading(false);
+    });
   }, []);
 
   if (loading) {
@@ -446,7 +440,7 @@ export default function HomePage() {
     <main>
       <HeroSection countries={countries} />
       <StatsBar />
-      <PopularDestinations />
+      <PopularDestinations destinations={destinations} />
       <VisaTypes />
       <HowItWorks />
       <CTASection />
