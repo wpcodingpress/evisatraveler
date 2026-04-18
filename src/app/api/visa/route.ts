@@ -7,7 +7,8 @@ export async function GET(request: Request) {
     const fromCountry = searchParams.get('from');
     const toCountry = searchParams.get('to');
     const activeOnly = searchParams.get('active') !== 'false';
-    const limit = parseInt(searchParams.get('limit') || '100');
+    const limitParam = searchParams.get('limit');
+    const limit = limitParam ? Math.min(parseInt(limitParam) || 100, 100) : 100;
 
     const where: Record<string, unknown> = {};
     
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
         toCountry: true,
       },
       orderBy: { price: 'asc' },
-      take: parseInt(limit) || 100,
+      take: limit,
     });
 
     const response = NextResponse.json({ rules: visaRules });
