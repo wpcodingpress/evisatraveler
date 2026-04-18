@@ -5,8 +5,17 @@ export async function GET() {
   try {
     const popularDestinations = ['TH', 'VN', 'MY', 'SG', 'AE', 'TR', 'IN', 'LK', 'KH', 'ID'];
     
+    const pkCountry = await prisma.country.findUnique({
+      where: { code: 'PK' }
+    });
+
+    if (!pkCountry) {
+      return NextResponse.json({ destinations: [] });
+    }
+
     const visaRules = await prisma.visaRule.findMany({
       where: {
+        fromCountryId: pkCountry.id,
         toCountry: { code: { in: popularDestinations } },
         isActive: true,
       },
