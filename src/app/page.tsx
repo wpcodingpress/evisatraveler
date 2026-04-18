@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { EnhancedSearchForm } from '@/components/home/enhanced-search-form';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 interface Country {
   id: string;
   name: string;
