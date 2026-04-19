@@ -389,7 +389,7 @@ const FALLBACK_COUNTRIES: Country[] = [
 
 export default function HomePage() {
   const [countries, setCountries] = useState<Country[]>(FALLBACK_COUNTRIES);
-  const [destinations, setDestinations] = useState<any[]>(FALLBACK_DESTINATIONS);
+  const [destinations, setDestinations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
