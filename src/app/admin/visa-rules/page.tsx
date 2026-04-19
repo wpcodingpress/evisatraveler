@@ -57,7 +57,7 @@ export default function VisaRulesPage() {
     ));
   };
 
-  const handleSave = (rule: typeof mockVisaRules[0]) => {
+  const handleSave = (rule: VisaRule) => {
     if (editingRule) {
       setVisaRules(visaRules.map(r => r.id === rule.id ? rule : r));
     } else {
