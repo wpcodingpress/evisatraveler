@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
-import DestinationGrid from './destinations-grid';
+import DestinationsGrid from './destinations-grid';
 
 interface Destination {
   id: string;
