@@ -160,8 +160,8 @@ export default function VisaRulesPage() {
                       </svg>
                       <span className="text-2xl">{rule.toCountry.code}</span>
                       <div className="hidden sm:block ml-2">
-                        <p className="font-medium text-slate-900">{rule.fromCountry}</p>
-                        <p className="text-sm text-slate-500">to {rule.toCountry}</p>
+                        <p className="font-medium text-slate-900">{rule.fromCountry.name}</p>
+                        <p className="text-sm text-slate-500">to {rule.toCountry.name}</p>
                       </div>
                     </div>
                   </td>
