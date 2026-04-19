@@ -29,7 +29,7 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       include: {
         _count: {
           select: {
-            visaRulesFrom: {
+            visaRules: {
               where: { isActive: true }
             },
             visaRulesTo: {
