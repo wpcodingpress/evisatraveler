@@ -249,21 +249,21 @@ export default function VisaRulesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">From Country</label>
-                  <input name="fromCountry" defaultValue={editingRule?.fromCountry || ''} required className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                  <input name="fromCountry" defaultValue={editingRule?.fromCountry?.name || ''} required className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">From Code</label>
-                  <input name="fromCode" defaultValue={editingRule?.fromCode || ''} maxLength={2} required className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 uppercase" />
+                  <input name="fromCode" defaultValue={editingRule?.fromCountry?.code || ''} maxLength={2} required className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 uppercase" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">To Country</label>
-                  <input name="toCountry" defaultValue={editingRule?.toCountry || ''} required className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                  <input name="toCountry" defaultValue={editingRule?.toCountry?.name || ''} required className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">To Code</label>
-                  <input name="toCode" defaultValue={editingRule?.toCode || ''} maxLength={2} required className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 uppercase" />
+                  <input name="toCode" defaultValue={editingRule?.toCountry?.code || ''} maxLength={2} required className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 uppercase" />
                 </div>
               </div>
               <div>
