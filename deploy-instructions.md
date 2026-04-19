@@ -25,7 +25,7 @@ npm install
 
 ## 5. Create environment file
 ```bash
-echo 'DATABASE_URL="mysql://root:Evisa2024!@194.164.150.248:3306/evisatraveler_db"
+echo 'DATABASE_URL="mysql://root:Evisa2024%21@194.164.150.248:3306/evisatraveler_db"
 NODE_ENV="production"' > .env.local
 ```
 

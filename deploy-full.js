@@ -29,12 +29,13 @@ cd /var/www/html/evisatraveler
 npm install
 
 echo "=== Step 5: Setup environment ==="
-echo 'DATABASE_URL="mysql://root:Evisa2024!@194.164.150.248:3306/evisatraveler_db"
+echo 'DATABASE_URL="mysql://root:Evisa2024%21@194.164.150.248:3306/evisatraveler_db"
 NODE_ENV="production"' > .env.local
 
 echo "=== Step 6: Install PM2 ==="
 npm install -g pm2
-pm2 delete evisa 2>/dev/null || true
+pm2 delete all 2>/dev/null || true
+pm2 kill 2>/dev/null || true
 
 echo "=== Step 7: Build ==="
 npm run build
@@ -87,7 +88,7 @@ rm -rf evisatraveler && \
 git clone https://github.com/wpcodingpress/evisatraveler.git && \
 cd evisatraveler && \
 npm install && \
-echo 'DATABASE_URL="mysql://root:Evisa2024!@194.164.150.248:3306/evisatraveler_db"
+echo 'DATABASE_URL="mysql://root:Evisa2024%21@194.164.150.248:3306/evisatraveler_db"
 NODE_ENV="production"' > .env.local && \
 npm install -g pm2 && \
 npm run build && \
