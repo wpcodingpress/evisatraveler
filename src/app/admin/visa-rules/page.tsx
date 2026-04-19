@@ -154,11 +154,11 @@ export default function VisaRulesPage() {
                 <tr key={rule.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{rule.fromCode}</span>
+                      <span className="text-2xl">{rule.fromCountry.code}</span>
                       <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
-                      <span className="text-2xl">{rule.toCode}</span>
+                      <span className="text-2xl">{rule.toCountry.code}</span>
                       <div className="hidden sm:block ml-2">
                         <p className="font-medium text-slate-900">{rule.fromCountry}</p>
                         <p className="text-sm text-slate-500">to {rule.toCountry}</p>
@@ -229,10 +229,16 @@ export default function VisaRulesPage() {
               const form = e.target as HTMLFormElement;
               handleSave({
                 id: editingRule?.id || String(Date.now()),
-                fromCountry: (form.elements.namedItem('fromCountry') as HTMLInputElement).value,
-                fromCode: (form.elements.namedItem('fromCode') as HTMLInputElement).value.toUpperCase(),
-                toCountry: (form.elements.namedItem('toCountry') as HTMLInputElement).value,
-                toCode: (form.elements.namedItem('toCode') as HTMLInputElement).value.toUpperCase(),
+                fromCountry: {
+                  name: (form.elements.namedItem('fromCountry') as HTMLInputElement).value,
+                  code: (form.elements.namedItem('fromCode') as HTMLInputElement).value.toUpperCase(),
+                  flag: '🌍'
+                },
+                toCountry: {
+                  name: (form.elements.namedItem('toCountry') as HTMLInputElement).value,
+                  code: (form.elements.namedItem('toCode') as HTMLInputElement).value.toUpperCase(),
+                  flag: '🌍'
+                },
                 visaType: (form.elements.namedItem('visaType') as HTMLInputElement).value,
                 price: parseInt((form.elements.namedItem('price') as HTMLInputElement).value),
                 processingDays: parseInt((form.elements.namedItem('processingDays') as HTMLInputElement).value),
