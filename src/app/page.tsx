@@ -395,48 +395,52 @@ function CTASection() {
   );
 }
 
+// Static fallback data
+const FALLBACK_COUNTRIES: Country[] = [
+  { id: '1', name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
+  { id: '2', name: 'United States', code: 'US', flag: '🇺🇸' },
+  { id: '3', name: 'United Kingdom', code: 'GB', flag: '🇬🇧' },
+  { id: '4', name: 'Canada', code: 'CA', flag: '🇨🇦' },
+  { id: '5', name: 'Australia', code: 'AU', flag: '🇦🇺' },
+  { id: '6', name: 'Germany', code: 'DE', flag: '🇩🇪' },
+  { id: '7', name: 'France', code: 'FR', flag: '🇫🇷' },
+  { id: '8', name: 'Japan', code: 'JP', flag: '🇯🇵' },
+  { id: '9', name: 'China', code: 'CN', flag: '🇨🇳' },
+  { id: '10', name: 'India', code: 'IN', flag: '🇮🇳' },
+];
+
+const FALLBACK_DESTINATIONS = [
+  { id: '1', toCountry: { code: 'TH', name: 'Thailand', flag: '🇹🇭' }, price: 49, processingTime: '24-72 hours', maxStayDays: 30 },
+  { id: '2', toCountry: { code: 'VN', name: 'Vietnam', flag: '🇻🇳' }, price: 59, processingTime: '3-5 days', maxStayDays: 30 },
+  { id: '3', toCountry: { code: 'MY', name: 'Malaysia', flag: '🇲🇾' }, price: 39, processingTime: '24-48 hours', maxStayDays: 30 },
+  { id: '4', toCountry: { code: 'AE', name: 'UAE', flag: '🇦🇪' }, price: 115, processingTime: '3-5 days', maxStayDays: 30 },
+  { id: '5', toCountry: { code: 'TR', name: 'Turkey', flag: '🇹🇷' }, price: 60, processingTime: '24-48 hours', maxStayDays: 30 },
+];
+
 export default function HomePage() {
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [destinations, setDestinations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [countries, setCountries] = useState<Country[]>(FALLBACK_COUNTRIES);
+  const [destinations, setDestinations] = useState<any[]>(FALLBACK_DESTINATIONS);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Try to load dynamic data, but fall back to static data if it fails
+    setLoading(true);
     Promise.all([
-      fetch('/api/countries').then(r => r.json()),
-      fetch('/api/popular-destinations').then(r => r.json())
+      fetch('/api/countries').then(r => r.json()).catch(() => ({ countries: FALLBACK_COUNTRIES })),
+      fetch('/api/popular-destinations').then(r => r.json()).catch(() => ({ destinations: FALLBACK_DESTINATIONS }))
     ]).then(([countriesData, destinationsData]) => {
       if (countriesData.countries && countriesData.countries.length > 0) {
         setCountries(countriesData.countries);
       }
-      if (destinationsData.destinations) {
+      if (destinationsData.destinations && destinationsData.destinations.length > 0) {
         setDestinations(destinationsData.destinations);
       }
       setLoading(false);
-    }).catch((err) => {
-      console.error('Failed to fetch data:', err);
-      setCountries([
-        { id: '1', name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
-        { id: '2', name: 'United States', code: 'US', flag: '🇺🇸' },
-        { id: '3', name: 'United Kingdom', code: 'GB', flag: '🇬🇧' },
-        { id: '4', name: 'Canada', code: 'CA', flag: '🇨🇦' },
-        { id: '5', name: 'Australia', code: 'AU', flag: '🇦🇺' },
-        { id: '6', name: 'Germany', code: 'DE', flag: '🇩🇪' },
-        { id: '7', name: 'France', code: 'FR', flag: '🇫🇷' },
-        { id: '8', name: 'Japan', code: 'JP', flag: '🇯🇵' },
-        { id: '9', name: 'China', code: 'CN', flag: '🇨🇳' },
-        { id: '10', name: 'India', code: 'IN', flag: '🇮🇳' },
-      ]);
+    }).catch(() => {
+      // Already have fallback data, just set loading to false
       setLoading(false);
     });
   }, []);
-
-  if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-violet-600 text-lg">Loading...</div>
-      </main>
-    );
-  }
 
   return (
     <main>
