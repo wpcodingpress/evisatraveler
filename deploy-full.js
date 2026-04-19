@@ -34,13 +34,15 @@ NODE_ENV="production"' > .env.local
 
 echo "=== Step 6: Install PM2 ==="
 npm install -g pm2
-pm2 delete all 2>/dev/null || true
-pm2 kill 2>/dev/null || true
 
 echo "=== Step 7: Build ==="
 npm run build
 
 echo "=== Step 8: Start with PM2 ==="
+pm2 delete all || true
+pm2 kill || true
+pkill -9 -f "next" 2>/dev/null || true
+sleep 1
 pm2 start npm --name "evisa" -- start
 pm2 save
 
