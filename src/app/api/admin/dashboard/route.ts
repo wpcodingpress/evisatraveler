@@ -33,12 +33,11 @@ export async function GET() {
         totalCountries,
         visaRulesCount,
         totalRevenue,
-        approvalRate: totalApplications > 0 
-          ? Math.round((approvedApplications / totalApplications) * 10000) / 100 
+        approvalRate: totalApplications > 0
+          ? Math.round((approvedApplications / totalApplications) * 10000) / 100
           : 0,
       },
       recentApplications: recentApps,
-      monthlyStats,
     });
   } catch (error) {
     console.error('Dashboard stats error:', error);
