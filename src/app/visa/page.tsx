@@ -32,7 +32,7 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
         },
         ...(search && {
           OR: [
-            { name: { contains: search, mode: 'insensitive' } },
+            { name: { contains: search } },
             { code: { contains: search.toUpperCase() } }
           ]
         })
