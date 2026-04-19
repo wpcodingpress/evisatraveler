@@ -24,7 +24,7 @@ interface Country {
   id: string;
   name: string;
   code: string;
-  flag: string;
+  flag: string | null;
 }
 
 interface VisaPageProps {
