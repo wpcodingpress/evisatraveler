@@ -1,8 +1,9 @@
+export const dynamic = 'force-dynamic';
+
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
-import { formatCurrency } from '@/lib/utils';
-
-export const dynamic = 'force-dynamic';
+import VisaFilterForm from './visa-filter-form';
+import DestinationsGrid from './destinations-grid';
 
 interface Destination {
   id: string;
@@ -17,6 +18,13 @@ interface Destination {
   processingDays: number;
   processingTime: string;
   hasActiveVisas: boolean;
+}
+
+interface Country {
+  id: string;
+  name: string;
+  code: string;
+  flag: string;
 }
 
 interface VisaPageProps {
@@ -57,16 +65,14 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
   const itemsPerPage = 24;
 
   try {
-    // Get all countries for origin dropdown
-    const allCountries = await prisma.country.findMany({
-      orderBy: { name: 'asc' }
+    const allCountries: Country[] = await prisma.country.findMany({
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, code: true, flag: true }
     });
 
-    // Get visa rules based on selected origin - simplified query
     let destinationQuery;
     
     if (from) {
-      // Get destinations FROM selected origin country - simpler approach
       const originCode = from.toUpperCase();
       const visaRulesWithDestinations = await prisma.visaRule.findMany({
         where: {
@@ -80,7 +86,6 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
         take: 1000
       });
       
-      // Get unique destination countries
       const toCountryIds = [...new Set(visaRulesWithDestinations.map(v => v.toCountryId))];
       const destinationCountries = await prisma.country.findMany({
         where: { id: { in: toCountryIds } },
@@ -94,7 +99,6 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       });
       destinationQuery = destinationCountries;
     } else {
-      // Get all countries with visa rules (original behavior)
       destinationQuery = await prisma.country.findMany({
         include: {
           visaRulesTo: {
@@ -106,7 +110,6 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       });
     }
 
-    // Process all destinations
     let processedDestinations: Destination[] = destinationQuery.map(country => {
       const activeVisas = country.visaRulesTo.filter(v => v.isActive);
       const prices = activeVisas.map(v => Number(v.price)).filter(p => p > 0);
@@ -128,7 +131,6 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       };
     });
 
-    // Apply filters
     if (search) {
       processedDestinations = processedDestinations.filter(d =>
         d.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -157,7 +159,6 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       );
     }
 
-    // Sort: countries with active visas first, then by name
     processedDestinations.sort((a, b) => {
       if (a.hasActiveVisas !== b.hasActiveVisas) {
         return a.hasActiveVisas ? -1 : 1;
@@ -165,14 +166,12 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       return a.name.localeCompare(b.name);
     });
 
-    // Pagination
     const totalItems = processedDestinations.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginatedDestinations = processedDestinations.slice(startIndex, endIndex);
 
-    // Build query string for pagination
     const buildQuery = (pageNum: number) => {
       const params = new URLSearchParams();
       params.set('page', String(pageNum));
@@ -226,114 +225,15 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
             </p>
           </div>
 
-          {/* Origin Selector & Filters */}
-          <form className="bg-white rounded-2xl p-5 shadow-md border border-slate-200 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-              {/* Traveling From */}
-              <div className="lg:col-span-2">
-                <label className="block text-xs font-medium text-slate-500 mb-1">Traveling From (Select your country)</label>
-                <select 
-                  id="originSelect"
-                  name="from" 
-                  defaultValue={from}
-                  onChange={(e) => {
-                    const form = e.target.closest('form');
-                    if (form) {
-                      form.submit();
-                    }
-                  }}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
-                >
-                  <option value="">Select your country...</option>
-                  {allCountries.map(c => (
-                    <option key={c.id} value={c.code}>{c.flag} {c.name}</option>
-                  ))}
-                </select>
-              </div>
+          <VisaFilterForm 
+            allCountries={allCountries}
+            from={from}
+            search={search}
+            region={region}
+            processing={processing}
+            price={price}
+          />
 
-              {/* Search */}
-              <div className="lg:col-span-2">
-                <label className="block text-xs font-medium text-slate-500 mb-1">Search Destination</label>
-                <div className="relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <input
-                    type="text"
-                    name="search"
-                    placeholder="Search country..."
-                    defaultValue={search}
-                    className="w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
-                  />
-                </div>
-              </div>
-
-              {/* Region Filter */}
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Region</label>
-                <select 
-                  name="region" 
-                  defaultValue={region}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
-                >
-                  <option value="">All Regions</option>
-                  {REGIONS.map(r => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              {/* Processing Time */}
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Processing Time</label>
-                <select 
-                  name="processing" 
-                  defaultValue={processing}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
-                >
-                  <option value="">Any Time</option>
-                  {PROCESSING_OPTIONS.map(p => (
-                    <option key={p.value} value={p.value}>{p.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Price Range */}
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Max Price</label>
-                <select 
-                  name="price" 
-                  defaultValue={price}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
-                >
-                  <option value="">Any Price</option>
-                  {PRICE_RANGES.map(p => (
-                    <option key={p.value} value={p.value}>{p.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Submit & Clear */}
-              <div className="flex items-end gap-2">
-                <button 
-                  type="submit"
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium rounded-lg hover:from-violet-500 hover:to-purple-500 transition-all text-sm"
-                >
-                  Apply Filters
-                </button>
-                <Link 
-                  href="/visa"
-                  className="px-4 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors text-sm"
-                >
-                  Clear
-                </Link>
-              </div>
-            </div>
-          </form>
-
-          {/* Results Info */}
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <p className="text-slate-600">
               Showing <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, totalItems)}</span> of <span className="font-semibold">{totalItems}</span> destinations
@@ -346,75 +246,11 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
             )}
           </div>
 
-          {/* Destinations Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-12">
-            {paginatedDestinations.map((destination) => (
-              <Link
-                key={destination.id}
-                href={destination.hasActiveVisas && from ? `/visa/${from.toUpperCase()}-to-${destination.code}` : destination.hasActiveVisas ? `#` : '#'}
-                className={`group bg-white rounded-2xl p-5 shadow-md hover:shadow-xl transition-all duration-300 border ${
-                  destination.hasActiveVisas 
-                    ? 'border-slate-200 hover:border-violet-300 hover:-translate-y-1' 
-                    : 'border-slate-100 opacity-75 cursor-not-allowed'
-                }`}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-3xl">{destination.flag}</span>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-base font-bold text-slate-900 truncate group-hover:text-violet-700">
-                      {destination.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 truncate">
-                      {destination.region}, {destination.continent}
-                    </p>
-                  </div>
-                </div>
+          <DestinationsGrid 
+            destinations={paginatedDestinations}
+            from={from}
+          />
 
-                {destination.hasActiveVisas ? (
-                  <>
-                    <div className="space-y-2 text-sm mb-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Processing:</span>
-                        <span className="font-medium text-slate-700">{destination.processingTime}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Visa types:</span>
-                        <span className="font-medium text-violet-600">{destination.visaCount}</span>
-                      </div>
-                      <div className="flex justify-between items-center pt-2 border-t border-slate-100">
-                        <span className="text-slate-500">From:</span>
-                        <span className="text-xl font-bold text-emerald-600">
-                          {formatCurrency(destination.minPrice)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="pt-3 border-t border-slate-100">
-                      <span className="block w-full py-2 bg-violet-600 text-white rounded-lg font-medium text-sm text-center group-hover:bg-violet-700 transition-colors">
-                        View Visa
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="mt-2 pt-4 border-t border-slate-100">
-                    <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>Coming Soon</span>
-                    </div>
-                    <Link 
-                      href="/contact"
-                      className="mt-3 block w-full py-2 border border-violet-200 text-violet-600 rounded-lg font-medium text-sm text-center hover:bg-violet-50 transition-colors"
-                    >
-                      Request Info
-                    </Link>
-                  </div>
-                )}
-              </Link>
-            ))}
-          </div>
-
-          {/* Empty State */}
           {paginatedDestinations.length === 0 && (
             <div className="text-center py-12 bg-white rounded-2xl">
               <svg className="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -428,7 +264,6 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
             </div>
           )}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2">
               {currentPage > 1 && (
