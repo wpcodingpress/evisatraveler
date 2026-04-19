@@ -3,35 +3,47 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const popularDestinations = ['TH', 'VN', 'MY', 'SG', 'AE', 'TR', 'IN', 'LK', 'KH', 'ID'];
-    
-    const pkCountry = await prisma.country.findUnique({
-      where: { code: 'PK' }
-    });
-
-    if (!pkCountry) {
-      return NextResponse.json({ destinations: [] });
-    }
-
-    const visaRules = await prisma.visaRule.findMany({
+    // Get the top 10 most popular destinations based on visa rules count
+    const popularDestinations = await prisma.country.findMany({
       where: {
-        fromCountryId: pkCountry.id,
-        toCountry: { code: { in: popularDestinations } },
-        isActive: true,
+        visaRulesTo: {
+          some: { isActive: true }
+        }
       },
       include: {
-        fromCountry: true,
-        toCountry: true,
+        visaRulesTo: {
+          where: { isActive: true },
+          include: {
+            fromCountry: true
+          },
+          orderBy: { price: 'asc' },
+          take: 1 // Just get one sample visa rule per destination
+        },
+        _count: {
+          select: {
+            visaRulesTo: {
+              where: { isActive: true }
+            }
+          }
+        }
       },
-      orderBy: { price: 'asc' },
+      orderBy: {
+        visaRulesTo: {
+          _count: 'desc'
+        }
+      },
+      take: 10
     });
 
-    const grouped = popularDestinations.map(code => {
-      const rule = visaRules.find(r => r.toCountry?.code === code);
-      return rule || null;
+    const formattedDestinations = popularDestinations.map(country => {
+      const sampleVisa = country.visaRulesTo[0];
+      return sampleVisa ? {
+        ...sampleVisa,
+        visaCount: country._count.visaRulesTo
+      } : null;
     }).filter(Boolean);
 
-    return NextResponse.json({ destinations: grouped.slice(0, 10) });
+    return NextResponse.json({ destinations: formattedDestinations });
   } catch (error) {
     console.error('Popular destinations fetch error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -24,31 +24,15 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
   const itemsPerPage = 24;
 
   try {
-    // Get all countries with visa counts and pricing
-    const countries = await prisma.country.findMany({
-      include: {
-        _count: {
-          select: {
-            visaRules: {
-              where: { isActive: true }
-            },
-            visaRulesTo: {
-              where: { isActive: true }
-            }
-          }
-        }
-      }
-    });
-
-    // Get destinations with visa information
-    const destinations = await prisma.country.findMany({
+    // Get all destination countries that have visa rules from ANY origin
+    const destinationsQuery = await prisma.country.findMany({
       where: {
         visaRulesTo: {
           some: { isActive: true }
         },
         ...(search && {
           OR: [
-            { name: { contains: search } },
+            { name: { contains: search, mode: 'insensitive' } },
             { code: { contains: search.toUpperCase() } }
           ]
         })
@@ -60,13 +44,13 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
             fromCountry: true
           },
           orderBy: { price: 'asc' },
-          take: 5
+          take: 10 // Get more visa rules for better pricing info
         }
       }
     });
 
     // Process destinations data
-    const processedDestinations: Destination[] = destinations.map(country => {
+    const processedDestinations: Destination[] = destinationsQuery.map(country => {
       const visas = country.visaRulesTo;
       const prices = visas.map(v => Number(v.price)).filter(p => p > 0);
       const minPrice = prices.length > 0 ? Math.min(...prices) : 0;

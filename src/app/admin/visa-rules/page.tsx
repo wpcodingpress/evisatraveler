@@ -2,28 +2,42 @@
 
 import { useState, useEffect } from 'react';
 
-const mockVisaRules = [
-  { id: '1', fromCountry: 'United States', fromCode: 'US', toCountry: 'Thailand', toCode: 'TH', visaType: 'Tourist Visa', price: 49, processingDays: 3, maxStayDays: 30, isActive: true },
-  { id: '2', fromCountry: 'United States', fromCode: 'US', toCountry: 'Japan', toCode: 'JP', visaType: 'Tourist Visa', price: 89, processingDays: 7, maxStayDays: 90, isActive: true },
-  { id: '3', fromCountry: 'United Kingdom', fromCode: 'GB', toCountry: 'Turkey', toCode: 'TR', visaType: 'Tourist Visa', price: 60, processingDays: 2, maxStayDays: 90, isActive: true },
-  { id: '4', fromCountry: 'Canada', fromCode: 'CA', toCountry: 'UAE', toCode: 'AE', visaType: 'Tourist Visa', price: 110, processingDays: 5, maxStayDays: 30, isActive: true },
-  { id: '5', fromCountry: 'United States', fromCode: 'US', toCountry: 'Vietnam', toCode: 'VN', visaType: 'Tourist Visa', price: 59, processingDays: 5, maxStayDays: 30, isActive: true },
-  { id: '6', fromCountry: 'Australia', fromCode: 'AU', toCountry: 'Thailand', toCode: 'TH', visaType: 'Tourist Visa', price: 45, processingDays: 3, maxStayDays: 30, isActive: true },
-  { id: '7', fromCountry: 'United States', fromCode: 'US', toCountry: 'India', toCode: 'IN', visaType: 'Tourist Visa', price: 80, processingDays: 5, maxStayDays: 60, isActive: false },
-  { id: '8', fromCountry: 'Germany', fromCode: 'DE', toCountry: 'UAE', toCode: 'AE', visaType: 'Business Visa', price: 150, processingDays: 7, maxStayDays: 90, isActive: true },
-];
+interface VisaRule {
+  id: string;
+  fromCountry: { name: string; code: string; flag: string };
+  toCountry: { name: string; code: string; flag: string };
+  visaType: string;
+  price: number;
+  processingDays: number;
+  maxStayDays: number;
+  isActive: boolean;
+}
 
 export default function VisaRulesPage() {
-  const [visaRules, setVisaRules] = useState(mockVisaRules);
+  const [visaRules, setVisaRules] = useState<VisaRule[]>([]);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [editingRule, setEditingRule] = useState<typeof mockVisaRules[0] | null>(null);
+  const [editingRule, setEditingRule] = useState<VisaRule | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
+    fetchVisaRules();
   }, []);
+
+  const fetchVisaRules = async () => {
+    try {
+      const response = await fetch('/api/admin/visa-rules');
+      if (!response.ok) throw new Error('Failed to fetch');
+      const data = await response.json();
+      setVisaRules(data.visaRules || []);
+    } catch (err) {
+      setError('Failed to load visa rules');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredRules = visaRules.filter(r =>
     r.fromCountry.toLowerCase().includes(search.toLowerCase()) ||

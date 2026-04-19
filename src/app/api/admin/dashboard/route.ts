@@ -3,52 +3,25 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
+    // Since applications table doesn't exist yet, return mock data for now
+    const totalApplications = 0;
+    const pendingApplications = 0;
+    const approvedApplications = 0;
+    const rejectedApplications = 0;
+    const totalRevenue = 0;
+
     const [
-      totalApplications,
-      pendingApplications,
-      approvedApplications,
-      rejectedApplications,
       totalUsers,
       totalCountries,
       visaRulesCount,
     ] = await Promise.all([
-      prisma.application.count(),
-      prisma.application.count({ where: { status: 'pending' } }),
-      prisma.application.count({ where: { status: 'approved' } }),
-      prisma.application.count({ where: { status: 'rejected' } }),
-      prisma.user.count({ where: { role: 'user' } }),
+      prisma.user.count(),
       prisma.country.count(),
-      prisma.visaRule.count(),
+      prisma.visaRule.count({ where: { isActive: true } }),
     ]);
 
-    const applicationsWithRevenue = await prisma.application.findMany({
-      where: { paymentStatus: 'paid' },
-      select: { totalAmount: true },
-    });
-    const totalRevenue = applicationsWithRevenue.reduce((sum, app) => sum + Number(app.totalAmount), 0);
-
-    const recentApps = await prisma.application.findMany({
-      take: 10,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        user: { select: { firstName: true, lastName: true, email: true } },
-        visaRule: {
-          include: {
-            toCountry: { select: { name: true, code: true } },
-          },
-        },
-      },
-    });
-
-    const monthlyStats = await prisma.application.groupBy({
-      by: ['status'],
-      _count: true,
-      where: {
-        createdAt: {
-          gte: new Date(new Date().getFullYear(), 0, 1),
-        },
-      },
-    });
+    // Mock recent applications since table doesn't exist
+    const recentApps = [];
 
     return NextResponse.json({
       stats: {
