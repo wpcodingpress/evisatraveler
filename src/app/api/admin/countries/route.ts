@@ -1,48 +1,60 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
-
-const countrySchema = z.object({
-  code: z.string().length(2, 'Country code must be 2 characters'),
-  name: z.string().min(2, 'Country name is required'),
-  flag: z.string().url().optional().or(z.literal('')),
-  region: z.string().optional(),
-  continent: z.string().optional(),
-});
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
+    const region = searchParams.get('region');
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const limit = parseInt(searchParams.get('limit') || '300');
 
-    const where = search
-      ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' as const } },
-            { code: { contains: search, mode: 'insensitive' as const } },
-          ],
-        }
-      : {};
+    const where: any = {};
+    
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { code: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    
+    if (region) {
+      where.region = region;
+    }
 
-    const [countries, total] = await Promise.all([
-      prisma.country.findMany({
-        where,
-        orderBy: { name: 'asc' },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      prisma.country.count({ where }),
-    ]);
+    const countries = await prisma.country.findMany({
+      where,
+      orderBy: { name: 'asc' },
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        _count: {
+          select: {
+            visaRules: true,
+            visaRulesTo: true,
+          },
+        },
+      },
+    });
+
+    // Format response with visa counts
+    const formattedCountries = countries.map(c => ({
+      id: c.id,
+      name: c.name,
+      code: c.code,
+      flag: c.flag,
+      region: c.region,
+      continent: c.continent,
+      visaRulesTo: c._count.visaRulesTo,
+      visaRulesFrom: c._count.visaRules,
+    }));
 
     return NextResponse.json({
-      countries,
+      countries: formattedCountries,
       pagination: {
         page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        total: formattedCountries.length,
       },
     });
   } catch (error) {
@@ -54,23 +66,18 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const validation = countrySchema.safeParse(body);
+    const { name, code, flag, region, continent } = body;
 
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.errors },
-        { status: 400 }
-      );
+    if (!name || !code) {
+      return NextResponse.json({ error: 'Name and code are required' }, { status: 400 });
     }
 
-    const { code, name, flag, region, continent } = validation.data;
-
     const existing = await prisma.country.findUnique({
-      where: { code: code.toUpperCase() as any },
+      where: { code: code.toUpperCase() },
     });
 
     if (existing) {
-      return NextResponse.json({ error: 'Country already exists' }, { status: 400 });
+      return NextResponse.json({ error: 'Country code already exists' }, { status: 400 });
     }
 
     const country = await prisma.country.create({
@@ -87,5 +94,31 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Country create error:', error);
     return NextResponse.json({ error: 'Failed to create country' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, name, flag, region, continent } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Country ID is required' }, { status: 400 });
+    }
+
+    const country = await prisma.country.update({
+      where: { id },
+      data: {
+        ...(name && { name }),
+        ...(flag !== undefined && { flag }),
+        ...(region !== undefined && { region }),
+        ...(continent !== undefined && { continent }),
+      },
+    });
+
+    return NextResponse.json(country);
+  } catch (error) {
+    console.error('Country update error:', error);
+    return NextResponse.json({ error: 'Failed to update country' }, { status: 500 });
   }
 }

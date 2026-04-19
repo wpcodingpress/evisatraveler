@@ -24,17 +24,10 @@ conn.on('ready', () => {
     console.log('Running:', cmd);
     
     conn.exec(cmd, (err, stream) => {
-      if (err) {
-        console.error('Error:', err);
-        conn.end();
-        return;
-      }
+      if (err) { console.error('Error:', err); conn.end(); return; }
       let output = '';
       stream.on('data', (data) => { output += data.toString(); });
-      stream.on('close', () => {
-        console.log('Output:', output);
-        runNext();
-      });
+      stream.on('close', () => { console.log('Output:', output); runNext(); });
     });
   };
   
@@ -46,4 +39,4 @@ conn.on('ready', () => {
   password: 'Mahnoor@1234?'
 });
 
-console.log('Rebuilding on server...');
+console.log('Deploying to server...');
