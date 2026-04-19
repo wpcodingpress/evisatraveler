@@ -1,17 +1,6 @@
-import { Metadata } from 'next';
-import VisaSearchContent from './visa-search-content';
-
-export const metadata: Metadata = {
-  title: 'Search Visa | Find Your Perfect Travel Visa - eVisaTraveler',
-  description: 'Search and compare visa options from 200+ countries. Fast processing, 99.9% approval rate, and competitive prices. Find your perfect visa today.',
-  keywords: ['visa search', 'find visa', 'travel visa', 'e-visa', 'tourist visa', 'business visa', 'visa comparison'],
-  openGraph: {
-    title: 'Search Visa | Find Your Perfect Travel Visa',
-    description: 'Search and compare visa options from 200+ countries. Fast processing, 99.9% approval rate.',
-  },
-};
-
 export const dynamic = 'force-dynamic';
+
+'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -54,7 +43,7 @@ interface Destination {
   hasActiveVisas: boolean;
 }
 
-function VisaSearchContent() {
+export default function VisaSearchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -135,7 +124,6 @@ function VisaSearchContent() {
         {/* Search Panel */}
         <div className="bg-white rounded-2xl p-5 shadow-lg border border-slate-200 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Origin Country */}
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Traveling From</label>
               <select 
@@ -150,7 +138,6 @@ function VisaSearchContent() {
               </select>
             </div>
 
-            {/* Destination Country */}
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Traveling To</label>
               <select 
@@ -165,7 +152,6 @@ function VisaSearchContent() {
               </select>
             </div>
 
-            {/* Region Filter */}
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Region</label>
               <select 
@@ -180,7 +166,6 @@ function VisaSearchContent() {
               </select>
             </div>
 
-            {/* Processing Time */}
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Processing Time</label>
               <select 
@@ -197,7 +182,6 @@ function VisaSearchContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            {/* Price Range */}
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Max Price</label>
               <select 
@@ -212,7 +196,6 @@ function VisaSearchContent() {
               </select>
             </div>
 
-            {/* Search */}
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Search</label>
               <input
@@ -224,7 +207,6 @@ function VisaSearchContent() {
               />
             </div>
 
-            {/* Buttons */}
             <div className="flex items-end gap-2">
               <button 
                 onClick={handleApply}
@@ -242,7 +224,7 @@ function VisaSearchContent() {
           </div>
         </div>
 
-        {/* Results or Empty State */}
+        {/* Results */}
         {showResults && (
           <>
             {loading ? (
@@ -325,10 +307,9 @@ function VisaSearchContent() {
           </>
         )}
 
-        {/* SEO Content Section - Only show when no results */}
+        {/* SEO Content */}
         {!showResults && (
           <div className="mt-16">
-            {/* Why Choose Us */}
             <div className="grid md:grid-cols-3 gap-6 mb-12">
               <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-200 text-center">
                 <div className="w-14 h-14 mx-auto mb-4 bg-violet-100 rounded-xl flex items-center justify-center">
@@ -337,7 +318,7 @@ function VisaSearchContent() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 mb-2">Fast Processing</h3>
-                <p className="text-slate-600 text-sm">Get your visa approved in 24-72 hours with our expedited service.</p>
+                <p className="text-slate-600 text-sm">Get your visa approved in 24-72 hours.</p>
               </div>
               <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-200 text-center">
                 <div className="w-14 h-14 mx-auto mb-4 bg-emerald-100 rounded-xl flex items-center justify-center">
@@ -346,7 +327,7 @@ function VisaSearchContent() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 mb-2">99.9% Approval Rate</h3>
-                <p className="text-slate-600 text-sm">Our expert team ensures your application is approved.</p>
+                <p className="text-slate-600 text-sm">Expert team ensures your approval.</p>
               </div>
               <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-200 text-center">
                 <div className="w-14 h-14 mx-auto mb-4 bg-amber-100 rounded-xl flex items-center justify-center">
@@ -355,11 +336,10 @@ function VisaSearchContent() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 mb-2">Best Prices</h3>
-                <p className="text-slate-600 text-sm">Competitive pricing with no hidden fees.</p>
+                <p className="text-slate-600 text-sm">Competitive pricing, no hidden fees.</p>
               </div>
             </div>
 
-            {/* Popular Destinations */}
             <div className="mb-12">
               <h2 className="text-2xl font-bold text-slate-900 mb-6 text-center">Popular Visa Destinations</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -382,15 +362,14 @@ function VisaSearchContent() {
               </div>
             </div>
 
-            {/* FAQ Section */}
             <div className="bg-white rounded-2xl p-8 shadow-md border border-slate-200">
               <h2 className="text-2xl font-bold text-slate-900 mb-6 text-center">Frequently Asked Questions</h2>
               <div className="space-y-4">
                 {[
-                  { q: 'How long does visa processing take?', a: 'Most visas are processed within 24-72 hours. Processing time may vary based on the destination country and type of visa.' },
-                  { q: 'What documents do I need?', a: 'Typically, you need a valid passport (6+ months validity), recent passport-size photos, and supporting documents based on the visa type.' },
-                  { q: 'Is my information secure?', a: 'Yes! We use bank-level encryption to protect your personal information and never share your data with third parties.' },
-                  { q: 'Can I track my application?', a: 'Yes, you can track your visa application status using our tracking tool on the website.' },
+                  { q: 'How long does visa processing take?', a: 'Most visas are processed within 24-72 hours.' },
+                  { q: 'What documents do I need?', a: 'Valid passport (6+ months), photos, and supporting documents.' },
+                  { q: 'Is my information secure?', a: 'Yes! Bank-level encryption protects your data.' },
+                  { q: 'Can I track my application?', a: 'Yes, use our tracking tool on the website.' },
                 ].map((faq, i) => (
                   <div key={i} className="border-b border-slate-100 pb-4 last:border-0">
                     <h3 className="font-semibold text-slate-900 mb-2">{faq.q}</h3>
@@ -403,20 +382,5 @@ function VisaSearchContent() {
         )}
       </div>
     </main>
-  );
-}
-
-export default function VisaSearchPage() {
-  return (
-    <Suspense fallback={
-      <main className="flex-1 py-12 bg-gradient-to-b from-violet-50/30 to-white">
-        <div className="container-custom text-center">
-          <div className="inline-block w-12 h-12 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin"></div>
-          <p className="mt-4 text-slate-600">Loading...</p>
-        </div>
-      </main>
-    }>
-      <VisaSearchContent />
-    </Suspense>
   );
 }
