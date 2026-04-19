@@ -21,7 +21,7 @@ export async function GET() {
     ]);
 
     // Mock recent applications since table doesn't exist
-    const recentApps = [];
+    const recentApps: any[] = [];
 
     return NextResponse.json({
       stats: {
