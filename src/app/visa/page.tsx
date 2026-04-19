@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 interface Destination {
   id: string;
   name: string;
@@ -60,34 +62,37 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       orderBy: { name: 'asc' }
     });
 
-    // Get visa rules based on selected origin
+    // Get visa rules based on selected origin - simplified query
     let destinationQuery;
     
     if (from) {
-      // Get destinations FROM selected origin country
-      const originCountry = allCountries.find(c => c.code === from.toUpperCase());
-      
-      destinationQuery = await prisma.country.findMany({
+      // Get destinations FROM selected origin country - simpler approach
+      const originCode = from.toUpperCase();
+      const visaRulesWithDestinations = await prisma.visaRule.findMany({
         where: {
-          visaRulesTo: {
-            some: { 
-              isActive: true,
-              fromCountry: { code: from.toUpperCase() }
-            }
-          }
+          isActive: true,
+          fromCountry: { code: originCode }
         },
         include: {
+          toCountry: true,
+          fromCountry: true
+        },
+        take: 1000
+      });
+      
+      // Get unique destination countries
+      const toCountryIds = [...new Set(visaRulesWithDestinations.map(v => v.toCountryId))];
+      const destinationCountries = await prisma.country.findMany({
+        where: { id: { in: toCountryIds } },
+        include: {
           visaRulesTo: {
-            where: { 
-              isActive: true,
-              fromCountry: { code: from.toUpperCase() }
-            },
-            include: { fromCountry: true },
+            where: { isActive: true, fromCountry: { code: originCode } },
             orderBy: { price: 'asc' },
             take: 5
           }
         }
       });
+      destinationQuery = destinationCountries;
     } else {
       // Get all countries with visa rules (original behavior)
       destinationQuery = await prisma.country.findMany({

@@ -1,16 +1,36 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const visaRules = await prisma.visaRule.findMany({
-      include: {
-        fromCountry: true,
-        toCountry: true,
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 10000,
-    });
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const search = searchParams.get('search') || '';
+    
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { fromCountry: { name: { contains: search, mode: 'insensitive' } } },
+        { toCountry: { name: { contains: search, mode: 'insensitive' } } },
+        { visaType: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    
+    const [visaRules, total, activeCount] = await Promise.all([
+      prisma.visaRule.findMany({
+        where,
+        include: {
+          fromCountry: true,
+          toCountry: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.visaRule.count({ where }),
+      prisma.visaRule.count({ where: { isActive: true } }),
+    ]);
 
     return NextResponse.json({
       visaRules: visaRules.map(rule => ({
@@ -43,7 +63,14 @@ export async function GET() {
         additionalInfo: rule.additionalInfo,
         isActive: rule.isActive,
         createdAt: rule.createdAt?.toISOString(),
-      }))
+      })),
+      stats: {
+        total,
+        active: activeCount,
+        inactive: total - activeCount,
+        avgPrice: total > 0 ? Math.round(visaRules.reduce((sum: number, r: any) => sum + Number(r.price), 0) / total) : 0
+      },
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
     });
   } catch (error) {
     console.error('Visa rules fetch error:', error);
