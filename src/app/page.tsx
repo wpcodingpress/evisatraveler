@@ -125,49 +125,10 @@ const POPULAR_DESTINATIONS = [
 ];
 
 function PopularDestinations({ destinations }: { destinations: any[] }) {
-  const [loading, setLoading] = useState(false);
-
   const formatPrice = (price: number) => {
     if (price === 0) return 'Free';
     return `From $${price}`;
   };
-
-  const formatTime = (time: string) => {
-    if (!time) return '3-5 Days';
-    return time;
-  };
-
-  if (loading) {
-    return (
-      <section className="py-16 lg:py-20 bg-slate-50">
-        <div className="container-custom">
-          <div className="text-center mb-10 lg:mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-violet-100 text-violet-700 rounded-full text-sm font-medium mb-4">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.802 2.035c-.734.56-1.658.568-2.402 0l-1.89-1.878a1 1 0 00-1.618 1.523L8.82 12.94c.277.714.102 1.564-.392 1.899L5.86 16.22c-.494.334-.73.942-.528 1.36a1 1 0 001.196 1.196c.418-.202 1.026-.034 1.36.528l2.035 2.802c.57.783 1.165 1.06 1.899.392l2.777-2.432a1 1 0 011.523-1.618l1.89 1.89c.56.734.568 1.658 0 2.401l-2.802 2.036c-.734.559-.95.69-1.618.098.277-.714.102-1.564-.392-1.899l-2.035-2.802c-.494-.559-.392-1.026.098-1.36" />
-              </svg>
-              Most Popular
-            </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
-              Popular{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">
-                Destinations
-              </span>
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
-            {[1,2,3,4,5].map((i) => (
-              <div key={i} className="bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 animate-pulse">
-                <div className="h-10 w-10 bg-slate-200 rounded-lg mb-3"></div>
-                <div className="h-6 bg-slate-200 rounded w-20 mb-2"></div>
-                <div className="h-4 bg-slate-200 rounded w-32"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section className="py-16 lg:py-20 bg-slate-50">
@@ -190,67 +151,84 @@ function PopularDestinations({ destinations }: { destinations: any[] }) {
           </p>
         </div>
 
-        {destinations.length > 0 ? (
-          <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
-              {destinations.map((dest: any) => (
-                <Link
-                  key={dest.id}
-                  href={`/visa/PK-to-${dest.toCountry?.code}`}
-                  className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-3xl lg:text-4xl">{dest.toCountry?.flag}</span>
-                    <span className="text-emerald-600 font-bold text-sm">
-                      {formatPrice(Number(dest.price))}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">
-                    {dest.toCountry?.name}
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    {dest.visaType || 'Tourist Visa'} • {dest.maxStayDays || 30} Days • {formatTime(dest.processingTime)}
-                  </p>
-                </Link>
-              ))}
-            </div>
-
-            <div className="text-center mt-8 lg:mt-10">
-              <Link
-                href="/visa"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg"
-              >
-                View All Destinations
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
-            </div>
-          </>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
-            {POPULAR_DESTINATIONS.map((dest) => (
-              <Link
-                key={dest.code}
-                href={`/visa/PK-to-${dest.code}`}
-                className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 transition-all duration-300"
-              >
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
+          {destinations.length > 0 ? destinations.slice(0, 10).map((dest: any) => (
+            <Link
+              key={dest.id}
+              href={`/visa/PK-to-${dest.toCountry?.code}`}
+              className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-3xl lg:text-4xl">{dest.toCountry?.flag}</span>
+                <span className="text-emerald-600 font-bold text-sm">
+                  {formatPrice(Number(dest.price))}
+                </span>
+              </div>
+              <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">
+                {dest.toCountry?.name}
+              </h3>
+              <p className="text-xs text-slate-500">
+                {dest.visaType || 'Tourist Visa'} • {dest.maxStayDays || 30} Days
+              </p>
+            </Link>
+          )) : (
+            // Fallback destinations
+            <>
+              <Link href="/visa/PK-to-TH" className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-3xl lg:text-4xl">{dest.flag}</span>
-                  <span className="text-emerald-600 font-bold text-sm">
-                    {dest.price === 0 ? 'Free' : `From $${dest.price}`}
-                  </span>
+                  <span className="text-3xl lg:text-4xl">🇹🇭</span>
+                  <span className="text-emerald-600 font-bold text-sm">From $49</span>
                 </div>
-                <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">
-                  {dest.name}
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Tourist Visa • {dest.days} Days • {dest.time}
-                </p>
+                <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">Thailand</h3>
+                <p className="text-xs text-slate-500">Tourist Visa • 30 Days</p>
               </Link>
-            ))}
-          </div>
-        )}
+              <Link href="/visa/PK-to-VN" className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-3xl lg:text-4xl">🇻🇳</span>
+                  <span className="text-emerald-600 font-bold text-sm">From $59</span>
+                </div>
+                <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">Vietnam</h3>
+                <p className="text-xs text-slate-500">Tourist Visa • 30 Days</p>
+              </Link>
+              <Link href="/visa/PK-to-MY" className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-3xl lg:text-4xl">🇲🇾</span>
+                  <span className="text-emerald-600 font-bold text-sm">From $39</span>
+                </div>
+                <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">Malaysia</h3>
+                <p className="text-xs text-slate-500">Tourist Visa • 30 Days</p>
+              </Link>
+              <Link href="/visa/PK-to-AE" className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-3xl lg:text-4xl">🇦🇪</span>
+                  <span className="text-emerald-600 font-bold text-sm">From $115</span>
+                </div>
+                <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">UAE</h3>
+                <p className="text-xs text-slate-500">Tourist Visa • 30 Days</p>
+              </Link>
+              <Link href="/visa/PK-to-TR" className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-3xl lg:text-4xl">🇹🇷</span>
+                  <span className="text-emerald-600 font-bold text-sm">From $60</span>
+                </div>
+                <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">Turkey</h3>
+                <p className="text-xs text-slate-500">Tourist Visa • 30 Days</p>
+              </Link>
+            </>
+          )}
+        </div>
+
+        <div className="text-center mt-8 lg:mt-10">
+          <Link
+            href="/visa"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg"
+          >
+            View All Destinations
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
+        </div>
       </div>
     </section>
   );
@@ -395,7 +373,7 @@ function CTASection() {
   );
 }
 
-// Static fallback data
+// Fallback data for when API fails
 const FALLBACK_COUNTRIES: Country[] = [
   { id: '1', name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
   { id: '2', name: 'United States', code: 'US', flag: '🇺🇸' },
@@ -407,14 +385,6 @@ const FALLBACK_COUNTRIES: Country[] = [
   { id: '8', name: 'Japan', code: 'JP', flag: '🇯🇵' },
   { id: '9', name: 'China', code: 'CN', flag: '🇨🇳' },
   { id: '10', name: 'India', code: 'IN', flag: '🇮🇳' },
-];
-
-const FALLBACK_DESTINATIONS = [
-  { id: '1', toCountry: { code: 'TH', name: 'Thailand', flag: '🇹🇭' }, price: 49, processingTime: '24-72 hours', maxStayDays: 30 },
-  { id: '2', toCountry: { code: 'VN', name: 'Vietnam', flag: '🇻🇳' }, price: 59, processingTime: '3-5 days', maxStayDays: 30 },
-  { id: '3', toCountry: { code: 'MY', name: 'Malaysia', flag: '🇲🇾' }, price: 39, processingTime: '24-48 hours', maxStayDays: 30 },
-  { id: '4', toCountry: { code: 'AE', name: 'UAE', flag: '🇦🇪' }, price: 115, processingTime: '3-5 days', maxStayDays: 30 },
-  { id: '5', toCountry: { code: 'TR', name: 'Turkey', flag: '🇹🇷' }, price: 60, processingTime: '24-48 hours', maxStayDays: 30 },
 ];
 
 export default function HomePage() {
