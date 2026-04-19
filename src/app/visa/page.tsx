@@ -123,7 +123,7 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
             {paginatedDestinations.map((destination) => (
               <Link
                 key={destination.id}
-                href={`/visa?from=any&to=${destination.code}`}
+                href={`/visa/PK-to-${destination.code}`}
                 className="group bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-slate-200 hover:border-violet-300 hover:-translate-y-1"
               >
                 <div className="flex items-center gap-4 mb-4">

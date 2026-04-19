@@ -303,9 +303,9 @@ function VisaDetailsClient({ visaData }: { visaData: VisaRule }) {
                     </div>
                   </div>
 
-                  <button className="w-full py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold text-lg rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-xl">
+                  <Link href={`/apply/${visaData.id}`} className="block w-full py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold text-lg rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-xl text-center">
                     Apply Now
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

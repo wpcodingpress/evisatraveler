@@ -1,12 +1,13 @@
 const { Client } = require('ssh2');
 
 const conn = new Client();
-const password = 'Mahnoor@1234?';
 
 const commands = [
-  'cd /var/www/html',
-  'ls -la',
-  'pwd'
+  'cd /var/www/html/evisatraveler && git pull origin main',
+  'cd /var/www/html/evisatraveler && npm run build',
+  'pm2 restart evisa',
+  'sleep 3',
+  'pm2 status'
 ];
 
 conn.on('ready', () => {
@@ -20,7 +21,7 @@ conn.on('ready', () => {
       return;
     }
     const cmd = commands[i++];
-    console.log(`Running: ${cmd}`);
+    console.log('Running:', cmd);
     
     conn.exec(cmd, (err, stream) => {
       if (err) {
@@ -42,5 +43,7 @@ conn.on('ready', () => {
   host: '194.164.150.248',
   port: 22,
   username: 'root',
-  password: password
+  password: 'Mahnoor@1234?'
 });
+
+console.log('Rebuilding on server...');
