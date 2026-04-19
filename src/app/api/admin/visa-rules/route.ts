@@ -9,7 +9,7 @@ export async function GET() {
         toCountry: true,
       },
       orderBy: { createdAt: 'desc' },
-      take: 500,
+      take: 10000,
     });
 
     return NextResponse.json({
@@ -72,7 +72,6 @@ export async function POST(request: Request) {
       isActive,
     } = body;
 
-    // Check if route already exists
     const existing = await prisma.visaRule.findFirst({
       where: {
         fromCountryId,
@@ -138,7 +137,7 @@ export async function POST(request: Request) {
       allowedActivities: visaRule.allowedActivities || [],
       additionalInfo: visaRule.additionalInfo,
       isActive: visaRule.isActive,
-    });
+    }, { status: 201 });
   } catch (error) {
     console.error('Visa rule creation error:', error);
     return NextResponse.json({ error: 'Failed to create visa rule' }, { status: 500 });

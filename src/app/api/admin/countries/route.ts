@@ -37,7 +37,6 @@ export async function GET(request: Request) {
       },
     });
 
-    // Format response with visa counts
     const formattedCountries = countries.map(c => ({
       id: c.id,
       name: c.name,
