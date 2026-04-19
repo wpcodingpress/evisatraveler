@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { EnhancedSearchForm } from '@/components/home/enhanced-search-form';
 import Link from 'next/link';
+import { getCountryFlagEmoji } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -111,18 +112,6 @@ function StatsBar() {
   );
 }
 
-const POPULAR_DESTINATIONS = [
-  { code: 'TH', name: 'Thailand', flag: '🇹🇭', price: 49, time: '24-72 hours', days: '30' },
-  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', price: 59, time: '3-5 days', days: '30' },
-  { code: 'MY', name: 'Malaysia', flag: '🇲🇲', price: 39, time: '24-48 hours', days: '30' },
-  { code: 'SG', name: 'Singapore', flag: '🇸🇬', price: 0, time: 'Visa Free', days: '30' },
-  { code: 'AE', name: 'UAE', flag: '🇦🇪', price: 115, time: '3-5 days', days: '30' },
-  { code: 'TR', name: 'Turkey', flag: '🇹🇷', price: 60, time: '24-48 hours', days: '30' },
-  { code: 'IN', name: 'India', flag: '🇮🇳', price: 50, time: '2-4 days', days: '30' },
-  { code: 'LK', name: 'Sri Lanka', flag: '🇱🇰', price: 35, time: '24 hours', days: '30' },
-  { code: 'KH', name: 'Cambodia', flag: '🇰🇭', price: 30, time: '24 hours', days: '30' },
-  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', price: 50, time: '2-3 days', days: '30' },
-];
 
 function PopularDestinations({ destinations }: { destinations: any[] }) {
   const formatPrice = (price: number) => {
@@ -155,11 +144,11 @@ function PopularDestinations({ destinations }: { destinations: any[] }) {
           {destinations.length > 0 ? destinations.slice(0, 10).map((dest: any) => (
             <Link
               key={dest.id}
-              href={`/visa/PK-to-${dest.toCountry?.code}`}
+              href={`/visa-search?to=${dest.toCountry?.code}`}
               className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-3xl lg:text-4xl">{dest.toCountry?.flag}</span>
+                <span className="text-3xl lg:text-4xl">{dest.toCountry?.flag || getCountryFlagEmoji(dest.toCountry?.code)}</span>
                 <span className="text-emerald-600 font-bold text-sm">
                   {formatPrice(Number(dest.price))}
                 </span>
@@ -172,49 +161,7 @@ function PopularDestinations({ destinations }: { destinations: any[] }) {
               </p>
             </Link>
           )) : (
-            // Fallback destinations
-            <>
-              <Link href="/visa/PK-to-TH" className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-3xl lg:text-4xl">🇹🇭</span>
-                  <span className="text-emerald-600 font-bold text-sm">From $49</span>
-                </div>
-                <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">Thailand</h3>
-                <p className="text-xs text-slate-500">Tourist Visa • 30 Days</p>
-              </Link>
-              <Link href="/visa/PK-to-VN" className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-3xl lg:text-4xl">🇻🇳</span>
-                  <span className="text-emerald-600 font-bold text-sm">From $59</span>
-                </div>
-                <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">Vietnam</h3>
-                <p className="text-xs text-slate-500">Tourist Visa • 30 Days</p>
-              </Link>
-              <Link href="/visa/PK-to-MY" className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-3xl lg:text-4xl">🇲🇾</span>
-                  <span className="text-emerald-600 font-bold text-sm">From $39</span>
-                </div>
-                <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">Malaysia</h3>
-                <p className="text-xs text-slate-500">Tourist Visa • 30 Days</p>
-              </Link>
-              <Link href="/visa/PK-to-AE" className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-3xl lg:text-4xl">🇦🇪</span>
-                  <span className="text-emerald-600 font-bold text-sm">From $115</span>
-                </div>
-                <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">UAE</h3>
-                <p className="text-xs text-slate-500">Tourist Visa • 30 Days</p>
-              </Link>
-              <Link href="/visa/PK-to-TR" className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-3xl lg:text-4xl">🇹🇷</span>
-                  <span className="text-emerald-600 font-bold text-sm">From $60</span>
-                </div>
-                <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">Turkey</h3>
-                <p className="text-xs text-slate-500">Tourist Visa • 30 Days</p>
-              </Link>
-            </>
+            <p className="text-center text-slate-500 col-span-full py-8">No popular destinations available at the moment.</p>
           )}
         </div>
 
@@ -373,41 +320,26 @@ function CTASection() {
   );
 }
 
-// Fallback data for when API fails
-const FALLBACK_COUNTRIES: Country[] = [
-  { id: '1', name: 'Pakistan', code: 'PK', flag: '🇵🇰' },
-  { id: '2', name: 'United States', code: 'US', flag: '🇺🇸' },
-  { id: '3', name: 'United Kingdom', code: 'GB', flag: '🇬🇧' },
-  { id: '4', name: 'Canada', code: 'CA', flag: '🇨🇦' },
-  { id: '5', name: 'Australia', code: 'AU', flag: '🇦🇺' },
-  { id: '6', name: 'Germany', code: 'DE', flag: '🇩🇪' },
-  { id: '7', name: 'France', code: 'FR', flag: '🇫🇷' },
-  { id: '8', name: 'Japan', code: 'JP', flag: '🇯🇵' },
-  { id: '9', name: 'China', code: 'CN', flag: '🇨🇳' },
-  { id: '10', name: 'India', code: 'IN', flag: '🇮🇳' },
-];
 
 export default function HomePage() {
-  const [countries, setCountries] = useState<Country[]>(FALLBACK_COUNTRIES);
+  const [countries, setCountries] = useState<Country[]>([]);
   const [destinations, setDestinations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Try to load dynamic data, but fall back to static data if it fails
     setLoading(true);
     Promise.all([
-      fetch('/api/countries').then(r => r.json()).catch(() => ({ countries: FALLBACK_COUNTRIES })),
-      fetch('/api/popular-destinations').then(r => r.json()).catch(() => ({ destinations: [] }))
+      fetch('/api/countries')
+        .then(r => r.json())
+        .then(data => data.countries || [])
+        .catch(() => []),
+      fetch('/api/popular-destinations')
+        .then(r => r.json())
+        .then(data => data.destinations || [])
+        .catch(() => [])
     ]).then(([countriesData, destinationsData]) => {
-      if (countriesData.countries && countriesData.countries.length > 0) {
-        setCountries(countriesData.countries);
-      }
-      if (destinationsData.destinations && destinationsData.destinations.length > 0) {
-        setDestinations(destinationsData.destinations);
-      }
-      setLoading(false);
-    }).catch(() => {
-      // Already have fallback data, just set loading to false
+      setCountries(countriesData);
+      setDestinations(destinationsData);
       setLoading(false);
     });
   }, []);

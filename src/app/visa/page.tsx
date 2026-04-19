@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import DestinationsGrid from './destinations-grid';
+import { getCountryFlagEmoji } from '@/lib/utils';
 
 interface Destination {
   id: string;
@@ -69,13 +70,13 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       const prices = activeVisas.map(v => Number(v.price)).filter(p => p > 0);
       const processingDays = activeVisas.map(v => v.processingDays);
       
-      return {
-        id: country.id,
-        name: country.name,
-        code: country.code,
-        flag: country.flag || '🌍',
-        region: country.region || 'Unknown',
-        continent: country.continent || 'Unknown',
+        return {
+          id: country.id,
+          name: country.name,
+          code: country.code,
+          flag: country.flag || getCountryFlagEmoji(country.code),
+          region: country.region || 'Unknown',
+          continent: country.continent || 'Unknown',
         visaCount: activeVisas.length,
         minPrice: prices.length > 0 ? Math.min(...prices) : 0,
         maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
@@ -138,33 +139,7 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
 
     return (
       <main className="flex-1 py-12 md:py-20 bg-gradient-to-b from-violet-50/30 to-white">
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              async function detectCountry() {
-                try {
-                  const res = await fetch('https://ipapi.co/json/');
-                  const data = await res.json();
-                  if (data && data.country_code) {
-                    const select = document.getElementById('originSelect');
-                    if (select) {
-                      const option = select.querySelector('option[value="' + data.country_code + '"]');
-                      if (option) {
-                        select.value = data.country_code;
-                        select.dispatchEvent(new Event('change'));
-                      }
-                    }
-                  }
-                } catch (e) { console.log('IP detection failed'); }
-              }
-              if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', detectCountry);
-              } else {
-                detectCountry();
-              }
-            `
-          }}
-        />
+
 
         <div className="container-custom">
           <div className="text-center mb-10">

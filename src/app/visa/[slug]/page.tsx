@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { getCountryFlagEmoji } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -137,16 +138,16 @@ export default async function VisaPage({ params }: Props) {
       documents: ['Passport copy', 'Recent photo'],
       allowedActivities: ['Tourism', 'Business meetings', 'Visiting friends/family'],
       additionalInfo: `${visaRule.toCountry.name} ${visaRule.visaType.toLowerCase()} for ${visaRule.fromCountry.name} citizens.`,
-      fromCountry: {
-        name: visaRule.fromCountry.name,
-        code: visaRule.fromCountry.code,
-        flag: visaRule.fromCountry.flag || '🌍'
-      },
-      toCountry: {
-        name: visaRule.toCountry.name,
-        code: visaRule.toCountry.code,
-        flag: visaRule.toCountry.flag || '🌍'
-      }
+       fromCountry: {
+         name: visaRule.fromCountry.name,
+         code: visaRule.fromCountry.code,
+         flag: visaRule.fromCountry.flag || getCountryFlagEmoji(visaRule.fromCountry.code)
+       },
+       toCountry: {
+         name: visaRule.toCountry.name,
+         code: visaRule.toCountry.code,
+         flag: visaRule.toCountry.flag || getCountryFlagEmoji(visaRule.toCountry.code)
+       }
     };
 
     // Render the visa page

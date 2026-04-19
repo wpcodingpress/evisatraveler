@@ -58,3 +58,15 @@ export function formatDateTime(date: Date | string): string {
     minute: '2-digit',
   }).format(d);
 }
+
+export function getCountryFlagEmoji(countryCode?: string | null): string {
+  if (!countryCode) return '🌍';
+  const code = countryCode.toUpperCase();
+  if (code.length !== 2) return '🌍';
+  const codePoints = [...code].map(c => 127397 + c.charCodeAt(0));
+  try {
+    return String.fromCodePoint(...codePoints);
+  } catch {
+    return '🌍';
+  }
+}

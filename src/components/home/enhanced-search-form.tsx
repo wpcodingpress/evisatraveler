@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import { getCountryFlagEmoji } from '@/lib/utils';
 
 interface Country {
   id: string;
@@ -89,6 +90,7 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
   const handleCountrySelect = (code: string, type: 'from' | 'to') => {
     if (type === 'from') {
       setFromCountry(code);
+      localStorage.setItem('selected_origin', code);
       setToCountry(''); // Reset destination when origin changes
       setErrors(prev => ({ ...prev, from: undefined, to: undefined }));
     } else {
@@ -177,7 +179,7 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
                   onClick={() => handleCountrySelect(item.code, type)}
                   className={`w-full flex items-center gap-4 px-5 py-4 ${isFrom ? 'hover:bg-violet-50' : 'hover:bg-emerald-50'} transition-colors text-left border-b border-slate-50`}
                 >
-                  <span className="text-2xl">{item.flag}</span>
+                  <span className="text-2xl">{item.flag || getCountryFlagEmoji(item.code)}</span>
                   <div className="flex-1 min-w-0">
                     <span className="text-slate-900 font-medium flex-1 block truncate">{item.name}</span>
                     {!isFrom && 'minPrice' in item && (
@@ -269,7 +271,7 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
                 >
                   {selectedFrom ? (
                     <>
-                      <span className="text-2xl">{selectedFrom.flag}</span>
+                      <span className="text-2xl">{selectedFrom.flag || getCountryFlagEmoji(selectedFrom.code)}</span>
                       <div className="flex flex-col min-w-0 flex-1">
                         <span className="text-slate-900 font-semibold text-sm truncate">{selectedFrom.name}</span>
                       </div>
@@ -304,7 +306,7 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
                 >
                   {selectedTo ? (
                     <>
-                      <span className="text-2xl">{selectedTo.flag}</span>
+                      <span className="text-2xl">{selectedTo.flag || getCountryFlagEmoji(selectedTo.code)}</span>
                       <div className="flex flex-col min-w-0 flex-1">
                         <span className="text-slate-900 font-semibold text-sm truncate">{selectedTo.name}</span>
                         <span className="text-xs text-slate-500">From ${selectedTo.minPrice}</span>

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getCountryFlagEmoji } from '@/lib/utils';
 
 interface Destination {
   id: string;
@@ -42,7 +42,7 @@ export default function DestinationsGrid({ destinations, from }: DestinationsGri
             }`}
           >
             <div className="flex items-center gap-3 mb-3">
-              <span className="text-3xl leading-none">{destination.flag}</span>
+              <span className="text-3xl leading-none">{destination.flag || getCountryFlagEmoji(destination.code)}</span>
               <div className="min-w-0 flex-1">
                 <h3 className="text-base font-bold text-slate-900 truncate group-hover:text-violet-700">
                   {destination.name}

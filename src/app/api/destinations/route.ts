@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCountryFlagEmoji } from '@/lib/utils';
 
 export async function GET(request: Request) {
   try {
@@ -36,18 +37,19 @@ export async function GET(request: Request) {
     visaRules.forEach(rule => {
       const destCode = rule.toCountry?.code;
       if (destCode && rule.toCountry) {
-        if (!destinationMap.has(destCode)) {
-          destinationMap.set(destCode, {
+        let dest = destinationMap.get(destCode);
+        if (!dest) {
+          dest = {
             id: rule.toCountry.id,
             name: rule.toCountry.name,
             code: destCode,
-            flag: rule.toCountry.flag || '🌍',
+            flag: rule.toCountry.flag || getCountryFlagEmoji(rule.toCountry.code),
             minPrice: Number(rule.price),
             visaTypes: [rule.visaType],
             visaCount: 1
-          });
+          };
+          destinationMap.set(destCode, dest);
         } else {
-          const dest = destinationMap.get(destCode);
           if (Number(rule.price) < dest.minPrice) {
             dest.minPrice = Number(rule.price);
           }
