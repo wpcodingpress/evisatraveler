@@ -397,7 +397,7 @@ export default function HomePage() {
     setLoading(true);
     Promise.all([
       fetch('/api/countries').then(r => r.json()).catch(() => ({ countries: FALLBACK_COUNTRIES })),
-      fetch('/api/popular-destinations').then(r => r.json()).catch(() => ({ destinations: FALLBACK_DESTINATIONS }))
+      fetch('/api/popular-destinations').then(r => r.json()).catch(() => ({ destinations: [] }))
     ]).then(([countriesData, destinationsData]) => {
       if (countriesData.countries && countriesData.countries.length > 0) {
         setCountries(countriesData.countries);
