@@ -40,8 +40,8 @@ export default function VisaRulesPage() {
   };
 
   const filteredRules = visaRules.filter(r =>
-    r.fromCountry.toLowerCase().includes(search.toLowerCase()) ||
-    r.toCountry.toLowerCase().includes(search.toLowerCase()) ||
+    r.fromCountry.name.toLowerCase().includes(search.toLowerCase()) ||
+    r.toCountry.name.toLowerCase().includes(search.toLowerCase()) ||
     r.visaType.toLowerCase().includes(search.toLowerCase())
   );
 
