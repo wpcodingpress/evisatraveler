@@ -181,7 +181,7 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
                   <div className="flex-1 min-w-0">
                     <span className="text-slate-900 font-medium flex-1 block truncate">{item.name}</span>
                     {!isFrom && 'minPrice' in item && (
-                      <span className="text-sm text-slate-500">From ${item.minPrice}</span>
+                      <span className="text-sm text-slate-500">From ${(item as any).minPrice}</span>
                     )}
                   </div>
                   <span className="text-slate-500 text-sm font-bold bg-slate-100 px-2 py-1 rounded">{item.code}</span>
