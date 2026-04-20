@@ -17,6 +17,7 @@ model User {
   role       String       @default("user")
   isActive    Boolean      @default(true)
   applications Application[]
+  notifications Notification[]  // Add this line
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 }
@@ -100,5 +101,7 @@ model Notification {
   message     String
   data        Json?
   isRead      Boolean  @default(false)
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
 }

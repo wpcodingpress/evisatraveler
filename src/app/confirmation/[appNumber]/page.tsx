@@ -106,14 +106,33 @@ export default async function ConfirmationPage({ params }: Props) {
                 </ul>
               </div>
 
-              <div className="p-8 border-t border-purple-100 flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/" className="px-8 py-3 bg-gradient-to-r from-purple-600 to-green-500 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity text-center">
-                  Back to Home
-                </Link>
-                <Link href="/track" className="px-8 py-3 border border-purple-200 text-slate-700 font-semibold rounded-xl hover:bg-purple-50 transition-colors text-center">
-                  Track Application
-                </Link>
-              </div>
+               <div className="p-8 border-t border-purple-100 flex flex-col sm:flex-row gap-4 justify-center">
+                 <button
+                   onClick={async () => {
+                     const res = await fetch(`/api/applications/${app.applicationNumber}/invoice?applicationNumber=${app.applicationNumber}`);
+                     if (res.ok) {
+                       const blob = await res.blob();
+                       const url = window.URL.createObjectURL(blob);
+                       const a = document.createElement('a');
+                       a.href = url;
+                       a.download = `invoice-${app.applicationNumber}.pdf`;
+                       a.click();
+                       window.URL.revokeObjectURL(url);
+                     } else {
+                       alert('Failed to download invoice');
+                     }
+                   }}
+                   className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg flex items-center justify-center gap-2"
+                 >
+                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                   </svg>
+                   Download Invoice (PDF)
+                 </button>
+                 <Link href="/track" className="px-8 py-3 border border-purple-200 text-slate-700 font-semibold rounded-xl hover:bg-purple-50 transition-colors text-center">
+                   Track Application
+                 </Link>
+               </div>
             </div>
           </div>
         </div>

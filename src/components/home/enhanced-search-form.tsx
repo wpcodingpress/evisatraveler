@@ -114,13 +114,13 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
 
     return createPortal(
       <div
-        className="fixed inset-0 flex items-center justify-center p-4"
+        className="fixed inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4"
         style={{ zIndex: 2147483647 }}
         onClick={() => { setActiveDropdown(null); setSearchQuery(''); }}
       >
         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
         <div
-          className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
+          className="relative w-full sm:w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] sm:max-h-[80vh] flex flex-col animate-slide-up"
           style={{ zIndex: 2147483647 }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -157,7 +157,7 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto max-h-[50vh] sm:max-h-[60vh]">
             {isLoading ? (
               <div className="p-8 text-center">
                 <div className="animate-spin w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-3"></div>
@@ -179,7 +179,7 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
                   onClick={() => handleCountrySelect(item.code, type)}
                   className={`w-full flex items-center gap-4 px-5 py-4 ${isFrom ? 'hover:bg-violet-50' : 'hover:bg-emerald-50'} transition-colors text-left border-b border-slate-50`}
                 >
-                  <img src={`https://flagcdn.com/w32/${item.code.toLowerCase()}.png`} alt={item.name} className="w-8 h-5 object-contain" />
+                  <img src={`https://flagcdn.com/w80/${item.code.toLowerCase()}.png`} alt={item.name} className="w-10 h-7 object-cover rounded shadow-sm" />
                   <div className="flex-1 min-w-0">
                     <span className="text-slate-900 font-medium flex-1 block truncate">{item.name}</span>
                     {!isFrom && 'minPrice' in item && (

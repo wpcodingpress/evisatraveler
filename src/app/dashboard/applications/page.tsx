@@ -88,6 +88,23 @@ export default function ApplicationsPage() {
     }
   };
 
+  const deleteApplication = async (appId: string) => {
+    if (!confirm('Are you sure you want to delete this application? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      await fetch('/api/applications', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId: appId }),
+      });
+      setApplications(prev => prev.filter(app => app.id !== appId));
+    } catch (error) {
+      console.error('Delete failed:', error);
+      alert('Failed to delete application');
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved': return 'bg-green-50 text-green-700 border-green-200';
@@ -237,9 +254,19 @@ export default function ApplicationsPage() {
                       {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '-'}
                     </td>
                     <td className="py-4 px-6">
-                      <Link href={`/confirmation/${app.applicationNumber}`} className="text-violet-600 font-medium hover:text-violet-700">
-                        View →
-                      </Link>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Link href={`/confirmation/${app.applicationNumber}`} className="text-violet-600 font-medium hover:text-violet-700 text-sm whitespace-nowrap">
+                          View Details →
+                        </Link>
+                        {app.status === 'pending' && (
+                          <button 
+                            onClick={() => deleteApplication(app.id)}
+                            className="text-red-600 font-medium hover:text-red-700 text-sm whitespace-nowrap"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

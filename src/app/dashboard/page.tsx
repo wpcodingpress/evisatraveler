@@ -104,6 +104,23 @@ export default function DashboardPage() {
     }
   };
 
+  const deleteApplication = async (appId: string) => {
+    if (!confirm('Are you sure you want to delete this application? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      await fetch('/api/applications', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId: appId }),
+      });
+      setApplications(prev => prev.filter(app => app.id !== appId));
+    } catch (error) {
+      console.error('Delete failed:', error);
+      alert('Failed to delete application');
+    }
+  };
+
   const totalIncomplete = incompleteApps.length;
   const pendingApps = applications.filter(a => a.status === 'pending').length;
   const processingApps = applications.filter(a => a.status === 'processing').length;
@@ -365,28 +382,39 @@ export default function DashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {applications.slice(0, 5).map(app => (
-                    <tr key={app.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-4 px-6">
-                        <p className="font-semibold text-slate-900">{app.applicationNumber}</p>
-                        <p className="text-sm text-slate-500">{app.visaRule?.visaType}</p>
-                      </td>
-                      <td className="py-4 px-6 hidden md:table-cell">
-                        <span className="text-slate-600">{app.visaRule?.toCountry?.flag} {app.visaRule?.toCountry?.name}</span>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold capitalize border ${getStatusColor(app.status)}`}>
-                          {app.status}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-slate-600">
-                        {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '-'}
-                      </td>
-                      <td className="py-4 px-6 text-right">
-                        <Link href={`/confirmation/${app.applicationNumber}`} className="text-violet-600 font-medium hover:text-violet-700">
-                          View
-                        </Link>
-                      </td>
-                    </tr>
+                     <tr key={app.id} className="hover:bg-slate-50 transition-colors">
+                       <td className="py-4 px-6">
+                         <p className="font-semibold text-slate-900">{app.applicationNumber}</p>
+                         <p className="text-sm text-slate-500">{app.visaRule?.visaType}</p>
+                       </td>
+                       <td className="py-4 px-6 hidden md:table-cell">
+                         <span className="text-slate-600">{app.visaRule?.toCountry?.flag} {app.visaRule?.toCountry?.name}</span>
+                       </td>
+                       <td className="py-4 px-6">
+                         <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold capitalize border ${getStatusColor(app.status)}`}>
+                           {app.status}
+                         </span>
+                       </td>
+                       <td className="py-4 px-6 text-slate-600">
+                         {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '-'}
+                       </td>
+                       <td className="py-4 px-6 text-right">
+                         <div className="flex items-center justify-end gap-3">
+                           <Link href={`/confirmation/${app.applicationNumber}`} className="text-violet-600 font-medium hover:text-violet-700">
+                             View
+                           </Link>
+                           {app.status === 'pending' && (
+                             <button
+                               onClick={() => deleteApplication(app.id)}
+                               className="text-red-600 font-medium hover:text-red-700 text-sm"
+                               title="Delete application"
+                             >
+                               Delete
+                             </button>
+                           )}
+                         </div>
+                       </td>
+                     </tr>
                   ))}
                 </tbody>
               </table>

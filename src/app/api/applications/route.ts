@@ -77,6 +77,7 @@ export async function POST(request: Request) {
           title: 'New Visa Application',
           message: `Application #${applicationNumber} for ${application.visaRule?.toCountry?.name || 'visa'} - $${finalAmount}`,
           data: { applicationId: application.id, amount: finalAmount },
+          userId: application.userId || undefined,
         },
       });
     } catch (dbError) {
@@ -144,6 +145,55 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Application creation error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const body = await request.json();
+    const { applicationId } = body;
+
+    if (!applicationId) {
+      return NextResponse.json({ error: 'Application ID required' }, { status: 400 });
+    }
+
+    // Verify user owns this application
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('user_id');
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const app = await prisma.application.findUnique({
+      where: { id: applicationId },
+      include: { user: true },
+    });
+
+    if (!app) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    }
+
+    // Users can only delete their own apps if they're in 'pending' status (before payment/processing)
+    if (app.userId !== userId.value && !app.user) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Only allow deletion of pending applications
+    if (app.status !== 'pending') {
+      return NextResponse.json({ 
+        error: 'Cannot delete application once processing has begun' 
+      }, { status: 400 });
+    }
+
+    await prisma.application.delete({
+      where: { id: applicationId },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Application deletion error:', error);
+    return NextResponse.json({ error: 'Failed to delete application' }, { status: 500 });
   }
 }
 

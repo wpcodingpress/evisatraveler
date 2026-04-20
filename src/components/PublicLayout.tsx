@@ -13,12 +13,13 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   }, []);
 
   const isAdmin = pathname?.startsWith('/admin');
+  const isDashboard = pathname?.startsWith('/dashboard') && !pathname?.startsWith('/dashboard/admin'); // Exclude nested admin paths if any
 
   if (!mounted) {
     return <>{children}</>;
   }
 
-  if (isAdmin) {
+  if (isAdmin || isDashboard) {
     return <>{children}</>;
   }
 
