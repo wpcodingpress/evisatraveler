@@ -179,7 +179,7 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
                   onClick={() => handleCountrySelect(item.code, type)}
                   className={`w-full flex items-center gap-4 px-5 py-4 ${isFrom ? 'hover:bg-violet-50' : 'hover:bg-emerald-50'} transition-colors text-left border-b border-slate-50`}
                 >
-                  <span className="text-2xl">{item.flag || getCountryFlagEmoji(item.code)}</span>
+                  <img src={`https://flagcdn.com/w32/${item.code.toLowerCase()}.png`} alt={item.name} className="w-8 h-5 object-contain" />
                   <div className="flex-1 min-w-0">
                     <span className="text-slate-900 font-medium flex-1 block truncate">{item.name}</span>
                     {!isFrom && 'minPrice' in item && (

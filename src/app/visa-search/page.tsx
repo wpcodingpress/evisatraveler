@@ -186,7 +186,10 @@ export default function VisaSearchPage() {
               >
                 <option value="">Select origin...</option>
                 {countries.map(c => (
-                  <option key={c.id} value={c.code}>{c.flag || getCountryFlagEmoji(c.code)} {c.name}</option>
+                  <option key={c.id} value={c.code}>
+                    <img src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} className="inline w-4 h-3 mr-1" alt="" />
+                    {c.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -200,7 +203,10 @@ export default function VisaSearchPage() {
               >
                 <option value="">Select destination...</option>
                 {countries.filter(c => c.code !== from).map(c => (
-                  <option key={c.id} value={c.code}>{c.flag || getCountryFlagEmoji(c.code)} {c.name}</option>
+                  <option key={c.id} value={c.code}>
+                    <img src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} className="inline w-4 h-3 mr-1" alt="" />
+                    {c.name}
+                  </option>
                 ))}
               </select>
             </div>

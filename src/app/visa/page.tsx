@@ -22,12 +22,20 @@ interface Destination {
 
 function shimmerCards() {
   return [...Array(8)].map((_, i) => (
-    <div key={i} className="relative overflow-hidden rounded-2xl h-72 animate-pulse">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-700"></div>
-      <div className="absolute bottom-0 left-0 right-0 p-6">
-        <div className="h-8 w-32 bg-slate-600 rounded mb-3"></div>
-        <div className="h-4 w-24 bg-slate-600 rounded mb-4"></div>
-        <div className="h-10 w-full bg-slate-600 rounded-xl"></div>
+    <div key={i} className="relative overflow-hidden rounded-2xl h-72 bg-white border border-slate-200 shadow-md animate-pulse">
+      <div className="h-full p-6 flex flex-col">
+        <div className="flex items-start justify-between mb-4">
+          <div className="w-12 h-8 bg-slate-200 rounded"></div>
+          <div className="w-16 h-6 bg-slate-200 rounded-full"></div>
+        </div>
+        <div className="flex-1">
+          <div className="h-6 w-24 bg-slate-200 rounded mb-2"></div>
+          <div className="h-4 w-16 bg-slate-200 rounded"></div>
+        </div>
+        <div className="mt-auto">
+          <div className="h-4 w-32 bg-slate-200 rounded mb-4"></div>
+          <div className="h-10 w-full bg-slate-200 rounded-lg"></div>
+        </div>
       </div>
     </div>
   ));
@@ -106,13 +114,13 @@ export default function VisaPage() {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   return (
-    <main className="flex-1 py-12 md:py-16 bg-slate-900">
+    <main className="flex-1 py-12 md:py-16 bg-gradient-to-b from-violet-50/30 via-white to-purple-50/30">
       <div className="container-custom">
         <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3">
-            All <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400">Destinations</span>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3">
+            All <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600">Destinations</span>
           </h1>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Choose your next travel destination. Fast, reliable visa applications.
           </p>
           <div className="mt-6 flex justify-center gap-4 flex-wrap">
@@ -127,15 +135,15 @@ export default function VisaPage() {
 
         <form onSubmit={handleSearch} className="relative max-w-xl mx-auto mb-10">
           <div className="relative">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
               type="text"
-              placeholder="Search destinations..."
+              placeholder="Search destinations by name..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-700 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent backdrop-blur-sm"
+              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent shadow-md"
             />
           </div>
         </form>
@@ -151,35 +159,35 @@ export default function VisaPage() {
                 <Link
                   key={destination.id}
                   href={`/visa-search?to=${destination.code}`}
-                  className="group relative overflow-hidden rounded-2xl h-72 bg-slate-800 border border-slate-700 hover:border-violet-500 hover:shadow-2xl hover:shadow-violet-500/20 transition-all duration-300 hover:scale-[1.02]"
+                  className="group relative overflow-hidden rounded-2xl h-72 bg-white border border-slate-200 hover:border-violet-300 hover:shadow-xl hover:shadow-violet-500/20 transition-all duration-300 hover:scale-[1.02]"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-violet-900/40 via-slate-800/80 to-slate-800"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 via-white to-purple-50/30"></div>
                   
                   <div className="relative h-full p-6 flex flex-col">
                     <div className="flex items-start justify-between mb-4">
                       <img 
                         src={`https://flagcdn.com/w80/${destination.code.toLowerCase()}.png`}
                         alt={destination.name}
-                        className="w-12 h-8 object-cover rounded shadow-lg"
+                        className="w-12 h-8 object-cover rounded shadow-md"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}
                       />
-                      <span className="px-3 py-1.5 bg-violet-600/20 text-violet-300 text-xs font-semibold rounded-full">
+                      <span className="px-3 py-1.5 bg-violet-100 text-violet-700 text-xs font-semibold rounded-full">
                         {destination.visaType}
                       </span>
                     </div>
 
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-white truncate group-hover:text-violet-300 transition-colors">
+                      <h3 className="text-xl font-bold text-slate-900 truncate group-hover:text-violet-700 transition-colors">
                         {destination.name}
                       </h3>
                       <p className="text-slate-500 text-sm mt-1">Visa Required</p>
                     </div>
 
                     <div className="mt-auto">
-                      <div className="flex items-center gap-4 text-slate-400 text-sm mb-4">
+                      <div className="flex items-center gap-4 text-slate-500 text-sm mb-4">
                         <span className="flex items-center gap-1.5">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -197,9 +205,9 @@ export default function VisaPage() {
                       <div className="flex items-end justify-between">
                         <div>
                           <p className="text-slate-500 text-xs">Starting from</p>
-                          <p className="text-2xl font-bold text-white">{formatCurrency(destination.price)}</p>
+                          <p className="text-2xl font-bold text-slate-900">{formatCurrency(destination.price)}</p>
                         </div>
-                        <span className="px-4 py-2.5 bg-white text-slate-900 font-semibold rounded-lg flex items-center gap-2 group-hover:bg-violet-500 group-hover:text-white transition-all duration-300">
+                        <span className="px-4 py-2.5 bg-violet-600 text-white font-semibold rounded-lg flex items-center gap-2 group-hover:bg-violet-700 transition-all duration-300">
                           Apply
                           <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -215,7 +223,7 @@ export default function VisaPage() {
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2">
                 {currentPage > 1 && (
-                  <Link href={buildQuery(currentPage - 1)} className="px-5 py-2.5 border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-800 hover:border-violet-500 hover:text-violet-400 text-sm font-medium transition-all">
+                  <Link href={buildQuery(currentPage - 1)} className="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700 text-sm font-medium transition-all">
                     ← Previous
                   </Link>
                 )}
@@ -228,7 +236,7 @@ export default function VisaPage() {
                         className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-medium transition-all ${
                           pageNum === currentPage 
                             ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/30' 
-                            : 'border border-slate-700 text-slate-400 hover:bg-slate-800 hover:border-violet-500 hover:text-violet-400'
+                            : 'border border-slate-200 text-slate-600 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700'
                         }`}
                       >
                         {pageNum}
@@ -237,7 +245,7 @@ export default function VisaPage() {
                   })}
                 </div>
                 {currentPage < totalPages && (
-                  <Link href={buildQuery(currentPage + 1)} className="px-5 py-2.5 border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-800 hover:border-violet-500 hover:text-violet-400 text-sm font-medium transition-all">
+                  <Link href={buildQuery(currentPage + 1)} className="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700 text-sm font-medium transition-all">
                     Next →
                   </Link>
                 )}
@@ -245,14 +253,14 @@ export default function VisaPage() {
             )}
           </>
         ) : (
-          <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700 backdrop-blur-sm">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center">
-              <svg className="w-10 h-10 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-md">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center">
+              <svg className="w-10 h-10 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">No destinations found</h3>
-            <p className="text-slate-400 mb-4">Try adjusting your search criteria</p>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">No destinations found</h3>
+            <p className="text-slate-500 mb-4">Try adjusting your search criteria</p>
             <Link href="/visa" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all">
               Clear search
             </Link>
