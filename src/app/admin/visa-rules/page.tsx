@@ -42,51 +42,38 @@ export default function VisaRulesPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, avgPrice: 0 });
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 50;
 
   useEffect(() => {
     fetchData();
-  }, [search]);
+  }, [search, currentPage]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
+      setError('');
       
-      // Fetch visa rules
       const [rulesRes, countriesRes] = await Promise.all([
-        fetch('/api/admin/visa-rules'),
+        fetch(`/api/admin/visa-rules?page=${currentPage}&limit=${itemsPerPage}${search ? '&search=' + encodeURIComponent(search) : ''}`),
         fetch('/api/countries')
       ]);
       
       const rulesData = await rulesRes.json();
       const countriesData = await countriesRes.json();
       
-      let rules = rulesData.visaRules || [];
-      
-      // Filter by search
-      if (search) {
-        const searchLower = search.toLowerCase();
-        rules = rules.filter((r: VisaRule) => 
-          r.fromCountry.name.toLowerCase().includes(searchLower) ||
-          r.toCountry.name.toLowerCase().includes(searchLower) ||
-          r.visaType.toLowerCase().includes(searchLower)
-        );
+      if (rulesData.error) {
+        throw new Error(rulesData.error);
       }
       
-      // Calculate stats
-      const active = rules.filter((r: VisaRule) => r.isActive).length;
-      const totalPrice = rules.reduce((sum: number, r: VisaRule) => sum + r.price, 0);
-      
-      setStats({
-        total: rules.length,
-        active,
-        inactive: rules.length - active,
-        avgPrice: rules.length > 0 ? Math.round(totalPrice / rules.length) : 0
-      });
-      
-      setVisaRules(rules);
+      setVisaRules(rulesData.visaRules || []);
+      setStats(rulesData.stats || { total: 0, active: 0, inactive: 0, avgPrice: 0 });
+      setTotalPages(rulesData.pagination?.totalPages || 1);
       setCountries(countriesData.countries || []);
-    } catch (err) {
-      setError('Failed to load data');
+    } catch (err: any) {
+      setError(err.message || 'Failed to load data');
       console.error(err);
     } finally {
       setLoading(false);
@@ -180,13 +167,7 @@ export default function VisaRulesPage() {
     }
   };
 
-  // Pagination
-  const itemsPerPage = 100;
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(visaRules.length / itemsPerPage);
-  const paginatedRules = visaRules.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  if (loading) {
+  if (loading && visaRules.length === 0) {
     return (
       <div className="animate-pulse space-y-6">
         <div className="h-8 bg-slate-200 rounded w-48" />
@@ -262,14 +243,14 @@ export default function VisaRulesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {paginatedRules.map((rule) => (
+              {visaRules.map((rule) => (
                 <tr key={rule.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <span>{rule.fromCountry.flag}</span>
+                      <span>{rule.fromCountry?.flag || '🏳️'}</span>
                       <span>→</span>
-                      <span>{rule.toCountry.flag}</span>
-                      <span className="text-sm text-slate-600 hidden lg:inline">({rule.fromCountry.code} → {rule.toCountry.code})</span>
+                      <span>{rule.toCountry?.flag || '🏳️'}</span>
+                      <span className="text-sm text-slate-600 hidden lg:inline">({rule.fromCountry?.code || '?'} → {rule.toCountry?.code || '?'})</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm">{rule.visaType}</td>
@@ -294,10 +275,10 @@ export default function VisaRulesPage() {
         
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200">
-            <p className="text-sm text-slate-500">Showing {((currentPage-1)*itemsPerPage)+1}-{Math.min(currentPage*itemsPerPage, stats.total)} of {stats.total}</p>
+            <p className="text-sm text-slate-500">Page {currentPage} of {totalPages}</p>
             <div className="flex gap-2">
-              <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage===1} className="px-3 py-1 border rounded text-sm disabled:opacity-50">Previous</button>
-              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage===totalPages} className="px-3 py-1 border rounded text-sm disabled:opacity-50">Next</button>
+              <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1} className="px-3 py-1 border rounded text-sm disabled:opacity-50">Previous</button>
+              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage === totalPages} className="px-3 py-1 border rounded text-sm disabled:opacity-50">Next</button>
             </div>
           </div>
         )}

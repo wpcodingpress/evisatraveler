@@ -8,8 +8,6 @@ interface Destination {
   name: string;
   code: string;
   flag: string;
-  region: string;
-  continent: string;
   visaCount: number;
   minPrice: number;
   maxPrice: number;
@@ -47,9 +45,6 @@ export default function DestinationsGrid({ destinations, from }: DestinationsGri
                 <h3 className="text-base font-bold text-slate-900 truncate group-hover:text-violet-700">
                   {destination.name}
                 </h3>
-                <p className="text-xs text-slate-500 truncate">
-                  {destination.region}, {destination.continent}
-                </p>
               </div>
             </div>
 

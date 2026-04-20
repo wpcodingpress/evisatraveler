@@ -10,8 +10,6 @@ interface Destination {
   name: string;
   code: string;
   flag: string;
-  region: string;
-  continent: string;
   visaCount: number;
   minPrice: number;
   maxPrice: number;
@@ -20,20 +18,10 @@ interface Destination {
   hasActiveVisas: boolean;
 }
 
-interface Country {
-  id: string;
-  name: string;
-  code: string;
-  flag: string | null;
-}
-
 interface VisaPageProps {
   searchParams: Promise<{ 
     page?: string; 
     search?: string;
-    region?: string;
-    processing?: string;
-    price?: string;
   }>;
 }
 
@@ -45,16 +33,11 @@ function getProcessingTimeLabel(days: number): string {
 }
 
 export default async function VisaPage({ searchParams }: VisaPageProps) {
-  const { page = '1', search = '', region = '', processing = '', price = '' } = await searchParams;
+  const { page = '1', search = '' } = await searchParams;
   const currentPage = parseInt(page);
   const itemsPerPage = 24;
 
   try {
-    const allCountries: Country[] = await prisma.country.findMany({
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true, code: true, flag: true }
-    });
-
     const destinationQuery = await prisma.country.findMany({
       include: {
         visaRulesTo: {
@@ -65,79 +48,26 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       }
     });
 
-    const regionContinentMap: Record<string, { region: string; continent: string }> = {
-      US: { region: 'North America', continent: 'Americas' },
-      GB: { region: 'Europe', continent: 'Europe' },
-      FR: { region: 'Europe', continent: 'Europe' },
-      DE: { region: 'Europe', continent: 'Europe' },
-      IT: { region: 'Europe', continent: 'Europe' },
-      ES: { region: 'Europe', continent: 'Europe' },
-      TH: { region: 'Asia', continent: 'Asia' },
-      VN: { region: 'Asia', continent: 'Asia' },
-      AE: { region: 'Middle East', continent: 'Asia' },
-      SA: { region: 'Middle East', continent: 'Asia' },
-      TR: { region: 'Middle East', continent: 'Europe' },
-      CN: { region: 'Asia', continent: 'Asia' },
-      IN: { region: 'Asia', continent: 'Asia' },
-      JP: { region: 'Asia', continent: 'Asia' },
-      KR: { region: 'Asia', continent: 'Asia' },
-      SG: { region: 'Asia', continent: 'Asia' },
-      MY: { region: 'Asia', continent: 'Asia' },
-      ID: { region: 'Asia', continent: 'Asia' },
-      PH: { region: 'Asia', continent: 'Asia' },
-      AU: { region: 'Oceania', continent: 'Oceania' },
-      NZ: { region: 'Oceania', continent: 'Oceania' },
-      EG: { region: 'Africa', continent: 'Africa' },
-      ZA: { region: 'Africa', continent: 'Africa' },
-      MA: { region: 'Africa', continent: 'Africa' },
-      KE: { region: 'Africa', continent: 'Africa' },
-      RU: { region: 'Europe', continent: 'Europe' },
-      UA: { region: 'Europe', continent: 'Europe' },
-      PL: { region: 'Europe', continent: 'Europe' },
-      NL: { region: 'Europe', continent: 'Europe' },
-      BE: { region: 'Europe', continent: 'Europe' },
-      CH: { region: 'Europe', continent: 'Europe' },
-      AT: { region: 'Europe', continent: 'Europe' },
-      PT: { region: 'Europe', continent: 'Europe' },
-      GR: { region: 'Europe', continent: 'Europe' },
-      SE: { region: 'Europe', continent: 'Europe' },
-      NO: { region: 'Europe', continent: 'Europe' },
-      DK: { region: 'Europe', continent: 'Europe' },
-      FI: { region: 'Europe', continent: 'Europe' },
-      IE: { region: 'Europe', continent: 'Europe' },
-      CA: { region: 'North America', continent: 'Americas' },
-      MX: { region: 'North America', continent: 'Americas' },
-      BR: { region: 'South America', continent: 'Americas' },
-      AR: { region: 'South America', continent: 'Americas' },
-      CL: { region: 'South America', continent: 'Americas' },
-      CO: { region: 'South America', continent: 'Americas' },
-      PE: { region: 'South America', continent: 'Americas' },
-    };
-
-    let processedDestinations: Destination[] = destinationQuery.map(country => {
-      const activeVisas = country.visaRulesTo.filter(v => v.isActive);
-      const prices = activeVisas.map(v => Number(v.price)).filter(p => p > 0);
-      const processingDays = activeVisas.map(v => v.processingDays);
-      
-      const mappedData = regionContinentMap[country.code.toUpperCase()] || {};
-      const region = country.region || mappedData.region || 'Other';
-      const continent = country.continent || mappedData.continent || 'Other';
-      
-      return {
-        id: country.id,
-        name: country.name,
-        code: country.code,
-        flag: country.flag || getCountryFlagEmoji(country.code),
-        region,
-        continent,
-        visaCount: activeVisas.length,
-        minPrice: prices.length > 0 ? Math.min(...prices) : 0,
-        maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
-        processingDays: processingDays.length > 0 ? Math.min(...processingDays) : 0,
-        processingTime: processingDays.length > 0 ? getProcessingTimeLabel(Math.min(...processingDays)) : 'N/A',
-        hasActiveVisas: activeVisas.length > 0
-      };
-    });
+    let processedDestinations: Destination[] = destinationQuery
+      .map(country => {
+        const activeVisas = country.visaRulesTo.filter(v => v.isActive);
+        const prices = activeVisas.map(v => Number(v.price)).filter(p => p > 0);
+        const processingDays = activeVisas.map(v => v.processingDays);
+        
+        return {
+          id: country.id,
+          name: country.name,
+          code: country.code,
+          flag: country.flag || getCountryFlagEmoji(country.code),
+          visaCount: activeVisas.length,
+          minPrice: prices.length > 0 ? Math.min(...prices) : 0,
+          maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
+          processingDays: processingDays.length > 0 ? Math.min(...processingDays) : 0,
+          processingTime: processingDays.length > 0 ? getProcessingTimeLabel(Math.min(...processingDays)) : 'N/A',
+          hasActiveVisas: activeVisas.length > 0
+        };
+      })
+      .filter(d => d.hasActiveVisas);
 
     if (search) {
       processedDestinations = processedDestinations.filter(d =>
@@ -146,29 +76,6 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       );
     }
 
-    if (region) {
-      processedDestinations = processedDestinations.filter(d => 
-        d.region.toLowerCase() === region.toLowerCase() ||
-        d.continent.toLowerCase() === region.toLowerCase()
-      );
-    }
-
-    if (processing) {
-      const maxDays = parseInt(processing);
-      processedDestinations = processedDestinations.filter(d => 
-        d.hasActiveVisas && d.processingDays <= maxDays
-      );
-    }
-
-    if (price) {
-      const maxPrice = parseInt(price);
-      processedDestinations = processedDestinations.filter(d => 
-        d.hasActiveVisas && d.minPrice <= maxPrice
-      );
-    }
-
-    processedDestinations = processedDestinations.filter(d => d.hasActiveVisas);
-    
     processedDestinations.sort((a, b) => {
       if (a.minPrice !== b.minPrice) {
         return a.minPrice - b.minPrice;
@@ -186,16 +93,11 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       const params = new URLSearchParams();
       params.set('page', String(pageNum));
       if (search) params.set('search', search);
-      if (region) params.set('region', region);
-      if (processing) params.set('processing', processing);
-      if (price) params.set('price', price);
       return `?${params.toString()}`;
     };
 
     return (
       <main className="flex-1 py-12 md:py-20 bg-gradient-to-b from-violet-50/30 to-white">
-
-
         <div className="container-custom">
           <div className="text-center mb-10">
             <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
@@ -211,6 +113,20 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
             </div>
           </div>
 
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 mb-8">
+            <input
+              type="text"
+              placeholder="Search destinations..."
+              defaultValue={search}
+              onChange={(e) => {
+                const params = new URLSearchParams();
+                if (e.target.value) params.set('search', e.target.value);
+                window.location.href = `/visa${params.toString() ? '?' + params.toString() : ''}`;
+              }}
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+            />
+          </div>
+
           <DestinationsGrid 
             destinations={paginatedDestinations}
             from=""
@@ -222,9 +138,8 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <h3 className="text-lg font-medium text-slate-900 mb-2">No destinations found</h3>
-              <p className="text-slate-600 mb-4">Try selecting a different filter.</p>
               <Link href="/visa" className="text-violet-600 hover:text-violet-700 font-medium">
-                Clear filters →
+                Clear search →
               </Link>
             </div>
           )}

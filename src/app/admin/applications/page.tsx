@@ -9,12 +9,12 @@ interface Application {
   paymentStatus: string;
   totalAmount: number;
   createdAt: string;
-  user: { firstName: string; lastName: string; email: string };
+  user: { firstName: string; lastName: string; email: string } | null;
   visaRule: { 
     visaType: string;
     toCountry: { name: string; code: string; flag: string };
     fromCountry: { name: string; code: string };
-  };
+  } | null;
 }
 
 const statusColors: Record<string, string> = {
@@ -32,19 +32,23 @@ export default function ApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [stats, setStats] = useState<Record<string, number>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 50;
 
   useEffect(() => {
     fetchApplications();
-  }, [search, statusFilter]);
+  }, [search, statusFilter, currentPage]);
 
   const fetchApplications = async () => {
     try {
       setLoading(true);
       setError('');
       const params = new URLSearchParams();
+      params.set('page', String(currentPage));
+      params.set('limit', String(itemsPerPage));
       if (search) params.set('search', search);
       if (statusFilter !== 'all') params.set('status', statusFilter);
-      params.set('limit', '50');
       
       const res = await fetch(`/api/admin/applications?${params}`);
       if (!res.ok) {
@@ -54,6 +58,7 @@ export default function ApplicationsPage() {
       const data = await res.json();
       setApplications(data.applications || []);
       setStats(data.stats || {});
+      setTotalPages(data.pagination?.totalPages || 1);
     } catch (err: any) {
       setError(err.message || 'Failed to load applications');
       console.error('Fetch error:', err);
@@ -81,11 +86,12 @@ export default function ApplicationsPage() {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  if (loading) {
+  if (loading && applications.length === 0) {
     return (
       <div className="animate-pulse space-y-6">
         <div className="h-8 bg-slate-200 rounded w-48" />
@@ -167,7 +173,7 @@ export default function ApplicationsPage() {
             type="text"
             placeholder="Search by name, email, or application number..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
             className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
           />
         </div>
@@ -179,16 +185,18 @@ export default function ApplicationsPage() {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                  {app.user.firstName[0]}{app.user.lastName[0]}
+                  {(app.user?.firstName?.[0] || '?')}{(app.user?.lastName?.[0] || '')}
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-slate-900">{app.user.firstName} {app.user.lastName}</h3>
+                    <h3 className="font-bold text-slate-900">
+                      {app.user?.firstName || 'Unknown'} {app.user?.lastName || 'User'}
+                    </h3>
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${statusColors[app.status] || 'bg-slate-100 text-slate-700'}`}>
                       {app.status}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-500">{app.applicationNumber} • {app.user.email}</p>
+                  <p className="text-sm text-slate-500">{app.applicationNumber || 'N/A'} • {app.user?.email || 'No email'}</p>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-4 lg:gap-6">
@@ -198,7 +206,7 @@ export default function ApplicationsPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-slate-500">Amount</p>
-                  <p className="font-bold text-lg text-slate-900">${Number(app.totalAmount)}</p>
+                  <p className="font-bold text-lg text-slate-900">${Number(app.totalAmount || 0)}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-slate-500">Date</p>
@@ -228,12 +236,22 @@ export default function ApplicationsPage() {
         ))}
       </div>
 
-      {applications.length === 0 && (
+      {applications.length === 0 && !error && (
         <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-slate-200">
           <svg className="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           <p className="text-slate-500 text-lg">No applications found</p>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200">
+          <p className="text-sm text-slate-500">Page {currentPage} of {totalPages}</p>
+          <div className="flex gap-2">
+            <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1} className="px-3 py-1 border rounded text-sm disabled:opacity-50">Previous</button>
+            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage === totalPages} className="px-3 py-1 border rounded text-sm disabled:opacity-50">Next</button>
+          </div>
         </div>
       )}
 
@@ -249,17 +267,19 @@ export default function ApplicationsPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                  {selectedApp.user.firstName[0]}{selectedApp.user.lastName[0]}
+                  {(selectedApp.user?.firstName?.[0] || '?')}{(selectedApp.user?.lastName?.[0] || '')}
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg">{selectedApp.user.firstName} {selectedApp.user.lastName}</h3>
-                  <p className="text-slate-500">{selectedApp.user.email}</p>
+                  <h3 className="font-bold text-slate-900 text-lg">
+                    {selectedApp.user?.firstName || 'Unknown'} {selectedApp.user?.lastName || 'User'}
+                  </h3>
+                  <p className="text-slate-500">{selectedApp.user?.email || 'No email'}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-sm text-slate-500">Application No.</p>
-                  <p className="font-semibold text-slate-900">{selectedApp.applicationNumber}</p>
+                  <p className="font-semibold text-slate-900">{selectedApp.applicationNumber || 'N/A'}</p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-sm text-slate-500">Date</p>
@@ -278,7 +298,7 @@ export default function ApplicationsPage() {
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-sm text-slate-500">Amount Paid</p>
-                    <p className="text-2xl font-bold text-slate-900">${Number(selectedApp.totalAmount)}</p>
+                    <p className="text-2xl font-bold text-slate-900">${Number(selectedApp.totalAmount || 0)}</p>
                   </div>
                   <span className={`px-4 py-2 rounded-full text-sm font-semibold capitalize ${statusColors[selectedApp.status] || 'bg-slate-100 text-slate-700'}`}>
                     {selectedApp.status}
