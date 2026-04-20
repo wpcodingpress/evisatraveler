@@ -172,7 +172,11 @@ function VisaDetailsClient({ visaData }: { visaData: VisaRule }) {
             <span className="text-white">{visaData.toCountry.name}</span>
           </div>
           <div className="flex items-center gap-6">
-            <span className="text-7xl md:text-8xl">{visaData.toCountry.flag}</span>
+            <img 
+              src={`https://flagcdn.com/w160/${visaData.toCountry.code.toLowerCase()}.png`}
+              alt={visaData.toCountry.name}
+              className="w-32 h-24 object-cover rounded-lg shadow-lg"
+            />
             <div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">{visaData.visaType}</h1>
               <p className="text-xl md:text-2xl text-white/80">{visaData.fromCountry.name} → {visaData.toCountry.name}</p>

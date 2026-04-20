@@ -179,36 +179,48 @@ export default function VisaSearchPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Traveling From</label>
-              <select 
-                value={from}
-                onChange={(e) => handleOriginSelect(e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
-              >
-                <option value="">Select origin...</option>
-                {countries.map(c => (
-                  <option key={c.id} value={c.code}>
-                    <img src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} className="inline w-4 h-3 mr-1" alt="" />
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                {from && (
+                  <img 
+                    src={`https://flagcdn.com/w24/${from.toLowerCase()}.png`}
+                    alt=""
+                    className="w-6 h-4 object-cover rounded"
+                  />
+                )}
+                <select 
+                  value={from}
+                  onChange={(e) => handleOriginSelect(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
+                >
+                  <option value="">Select origin...</option>
+                  {countries.map(c => (
+                    <option key={c.id} value={c.code}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Traveling To</label>
-              <select 
-                value={to}
-                onChange={(e) => handleDestinationSelect(e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
-              >
-                <option value="">Select destination...</option>
-                {countries.filter(c => c.code !== from).map(c => (
-                  <option key={c.id} value={c.code}>
-                    <img src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} className="inline w-4 h-3 mr-1" alt="" />
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                {to && (
+                  <img 
+                    src={`https://flagcdn.com/w24/${to.toLowerCase()}.png`}
+                    alt=""
+                    className="w-6 h-4 object-cover rounded"
+                  />
+                )}
+                <select 
+                  value={to}
+                  onChange={(e) => handleDestinationSelect(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
+                >
+                  <option value="">Select destination...</option>
+                  {countries.filter(c => c.code !== from).map(c => (
+                    <option key={c.id} value={c.code}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="flex items-end">
@@ -279,41 +291,49 @@ export default function VisaSearchPage() {
               Showing <span className="font-semibold">{destinations.length}</span> visa options from {selectedOrig?.name}
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
               {destinations.map((destination) => (
                 <Link
                   key={destination.id}
                   href={`/visa/${from.toUpperCase()}-to-${destination.code}`}
-                  className="group bg-white rounded-2xl p-5 shadow-md hover:shadow-xl transition-all duration-300 border border-slate-200 hover:border-violet-300 hover:-translate-y-1"
+                  className="group relative overflow-hidden rounded-2xl h-72 bg-white border border-slate-200 hover:border-violet-300 hover:shadow-xl hover:shadow-violet-500/20 transition-all duration-300 hover:scale-[1.02]"
                 >
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-3xl leading-none">{destination.flag || getCountryFlagEmoji(destination.code)}</span>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-base font-bold text-slate-900 truncate group-hover:text-violet-700">
-                        {destination.name}
-                      </h3>
-                      <p className="text-xs text-slate-500 truncate">
-                        {destination.region || ''} {destination.continent || ''}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-sm mb-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Visa types:</span>
-                      <span className="font-medium text-violet-600">{destination.visaCount || 1}</span>
-                    </div>
-                    <div className="flex justify-between items-center pt-2 border-t border-slate-100">
-                      <span className="text-slate-500">From:</span>
-                      <span className="text-xl font-bold text-emerald-600">
-                        {formatCurrency(destination.minPrice)}
+                  <div className="relative h-full p-6 flex flex-col">
+                    <div className="flex items-start justify-between mb-4">
+                      <img 
+                        src={`https://flagcdn.com/w80/${destination.code.toLowerCase()}.png`}
+                        alt={destination.name}
+                        className="w-12 h-8 object-cover rounded shadow-md"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                      <span className="px-3 py-1.5 bg-violet-100 text-violet-700 text-xs font-semibold rounded-full">
+                        Tourist
                       </span>
                     </div>
-                  </div>
-                  <div className="pt-3 border-t border-slate-100">
-                    <span className="block w-full py-2 bg-violet-600 text-white rounded-lg font-medium text-sm text-center group-hover:bg-violet-700 transition-colors">
-                      View Visa
-                    </span>
+
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-slate-900 truncate group-hover:text-violet-700">
+                        {destination.name}
+                      </h3>
+                      <p className="text-slate-500 text-sm mt-1">Visa Required</p>
+                    </div>
+
+                    <div className="mt-auto">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-slate-500 text-xs">From</p>
+                          <p className="text-2xl font-bold text-slate-900">{formatCurrency(destination.minPrice)}</p>
+                        </div>
+                        <span className="px-4 py-2.5 bg-violet-600 text-white font-semibold rounded-lg flex items-center gap-2 group-hover:bg-violet-700 transition-all">
+                          View
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </Link>
               ))}

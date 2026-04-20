@@ -97,8 +97,8 @@ export default function VisaPage() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const params = new URLSearchParams();
     if (searchInput) params.set('search', searchInput);
     window.location.href = `/visa${params.toString() ? '?' + params.toString() : ''}`;
@@ -142,7 +142,19 @@ export default function VisaPage() {
               type="text"
               placeholder="Search destinations by name..."
               value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
+              onChange={(e) => {
+                setSearchInput(e.target.value);
+                if (e.target.value.length >= 2) {
+                  handleSearch();
+                } else if (e.target.value.length === 0) {
+                  handleSearch();
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch();
+                }
+              }}
               className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent shadow-md"
             />
           </div>

@@ -30,13 +30,17 @@ export function VisaDetailsClient({ visaRules, slug }: VisaDetailsClientProps) {
               <div className="relative">
                 <div className="p-6 border-b border-purple-100 bg-gradient-to-r from-purple-50/50 to-green-50/50">
                   <div className="flex items-center gap-4">
-                    <span className="text-6xl">{selectedVisa.toCountry.flag}</span>
+                    <img 
+                      src={`https://flagcdn.com/w80/${selectedVisa.toCountry.code.toLowerCase()}.png`}
+                      alt={selectedVisa.toCountry.name}
+                      className="w-16 h-12 object-cover rounded-lg shadow"
+                    />
                     <div>
                       <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
                         {selectedVisa.visaType} Visa - {selectedVisa.toCountry.name}
                       </h1>
                       <p className="text-slate-600">
-                        Traveling from {selectedVisa.fromCountry.flag} {selectedVisa.fromCountry.name}
+                        Traveling from <img src={`https://flagcdn.com/w20/${selectedVisa.fromCountry.code.toLowerCase()}.png`} alt="" className="inline w-4 h-3" /> {selectedVisa.fromCountry.name}
                       </p>
                     </div>
                   </div>
