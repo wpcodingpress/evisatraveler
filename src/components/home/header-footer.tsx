@@ -136,9 +136,11 @@ function NavLinks() {
   );
 }
 
-function MobileMenuButton() {
+function MobileMenuButton({ user, onLogout }: { user: { firstName: string; email: string } | null; onLogout?: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     if (isOpen) {
@@ -155,11 +157,29 @@ function MobileMenuButton() {
     setIsOpen(false);
   }, [pathname]);
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      if (onLogout) onLogout();
+      router.push('/');
+      router.refresh();
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
+  };
+
   const navItems = [
     { href: '/', label: 'Home', icon: '🏠' },
     { href: '/visa', label: 'All Destinations', icon: '🌍' },
     { href: '/track', label: 'Track Visa', icon: '📋' },
     { href: '/support', label: 'Help Center', icon: '💬' },
+  ];
+
+  const userMenuItems = [
+    { href: '/dashboard', label: 'My Dashboard', icon: '📊' },
+    { href: '/dashboard/applications', label: 'My Applications', icon: '📄' },
+    { href: '/support', label: 'Get Support', icon: '💬' },
+    { href: '/dashboard/profile', label: 'Profile Settings', icon: '⚙️' },
   ];
 
   return (
@@ -188,11 +208,29 @@ function MobileMenuButton() {
       />
 
       <div
-        className={`fixed top-0 right-0 h-full w-[280px] bg-white shadow-2xl z-60 transform transition-transform duration-500 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-full w-full max-w-[320px] bg-white shadow-2xl z-60 transform transition-transform duration-500 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-8">
-            <span className="font-bold text-slate-900">Menu</span>
+        <div className="p-5 h-full flex flex-col overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            {user ? (
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-3 flex-1"
+              >
+                <div className="w-10 h-10 bg-gradient-to-r from-violet-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                  {user.firstName.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-slate-900 text-sm">{user.firstName}</p>
+                  <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                </div>
+                <svg className={`w-4 h-4 text-slate-500 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            ) : (
+              <span className="font-bold text-slate-900">Menu</span>
+            )}
             <button
               onClick={() => setIsOpen(false)}
               className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
@@ -203,39 +241,93 @@ function MobileMenuButton() {
             </button>
           </div>
 
-          <nav className="space-y-2">
+          {user && showUserMenu && (
+            <div className="mb-6 p-4 bg-violet-50 rounded-xl border border-violet-100">
+              <nav className="space-y-1">
+                {userMenuItems.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`block px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center gap-3 ${
+                        isActive
+                          ? 'text-white bg-gradient-to-r from-violet-600 to-purple-600 shadow-lg shadow-violet-500/25'
+                          : 'text-slate-700 hover:text-violet-600 hover:bg-violet-100'
+                      }`}
+                    >
+                      <span className="text-base">{item.icon}</span>
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+              <button
+                onClick={() => { handleLogout(); setIsOpen(false); }}
+                className="flex items-center gap-3 w-full px-4 py-3 mt-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-all"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+                Sign Out
+              </button>
+            </div>
+          )}
+
+          <nav className="space-y-2 flex-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setIsOpen(false)}
                   className={`block px-4 py-3.5 text-base font-semibold rounded-xl transition-all duration-300 flex items-center gap-3 ${
                     isActive
                       ? 'text-white bg-gradient-to-r from-violet-600 to-purple-600 shadow-lg shadow-violet-500/25'
                       : 'text-slate-700 hover:text-violet-600 hover:bg-violet-50'
                   }`}
                 >
-                  {item.icon && <span className="text-lg">{item.icon}</span>}
+                  <span className="text-lg">{item.icon}</span>
                   {item.label}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="mt-8 pt-8 border-t border-slate-100 space-y-3">
-            <Link
-              href="/login"
-              className="block w-full px-5 py-3.5 text-center text-sm font-semibold text-slate-700 hover:text-violet-600 border border-slate-200 rounded-xl hover:border-violet-300 hover:bg-violet-50 transition-all"
-            >
-              Log In
-            </Link>
-            <Link
-              href="/register"
-              className="block w-full px-5 py-3.5 text-center text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-xl"
-            >
-              Sign Up Free
-            </Link>
+          <div className="mt-6 pt-6 border-t border-slate-100 space-y-3">
+            {user ? (
+              <button
+                onClick={() => { setShowUserMenu(!showUserMenu); }}
+                className="block w-full px-5 py-3.5 text-center text-sm font-semibold text-slate-700 hover:text-violet-600 border border-slate-200 rounded-xl hover:border-violet-300 hover:bg-violet-50 transition-all flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                My Account
+                <svg className={`w-4 h-4 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full px-5 py-3.5 text-center text-sm font-semibold text-slate-700 hover:text-violet-600 border border-slate-200 rounded-xl hover:border-violet-300 hover:bg-violet-50 transition-all"
+                >
+                  Log In
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full px-5 py-3.5 text-center text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-xl"
+                >
+                  Sign Up Free
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -521,7 +613,7 @@ export function Header() {
           </div>
 
           {/* Mobile Menu Button */}
-          <MobileMenuButton />
+          <MobileMenuButton user={user} onLogout={handleLogout} />
         </div>
       </div>
     </header>
