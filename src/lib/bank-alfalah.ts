@@ -86,12 +86,12 @@ async function handshake(): Promise<string | null> {
 async function initiateTransaction(
   authToken: string,
   payment: PaymentRequest
-): Promise<{ success: boolean; paymentUrl?: string; transactionId?: string; error?: string }> {
+): Promise<PaymentResponse> {
   const returnUrl = payment.callbackUrl;
   const hashData = `${BANK_ALFALAH_CHANNEL_ID}${BANK_ALFALAH_MERCHANT_ID}${BANK_ALFALAH_STORE_ID}${returnUrl}${payment.orderId}${payment.amount}${payment.currency || 'PKR'}${BANK_ALFALAH_MERCHANT_HASH}${authToken}`;
   const requestHash = generateHash(hashData);
 
-  const payload = {
+  const payload: any = {
     ChannelId: BANK_ALFALAH_CHANNEL_ID,
     MerchantId: BANK_ALFALAH_MERCHANT_ID,
     StoreId: BANK_ALFALAH_STORE_ID,
@@ -110,20 +110,9 @@ async function initiateTransaction(
     CustomerPhone: payment.customerPhone || '',
   };
 
-  try {
-    const response = await fetch(`${BANK_ALFALAH_BASE_URL}/Tran/DoTran`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    const text = await response.text();
-    console.log('Transaction response:', response.status, text);
-
-    if (!response.ok) {
-      console.error('Transaction failed:', text);
-      return { success: false, error: 'Transaction initiation failed' };
-    }
+  if (otp) {
+    payload.SMSOTP = otp;
+  }
 
     const data = JSON.parse(text);
     
@@ -159,20 +148,27 @@ async function processTransaction(
   authToken: string,
   transactionId: string,
   otp?: string
-): Promise<{ success: boolean; paymentUrl?: string; error?: string }> {
+): Promise<PaymentResponse> {
   const hashData = `${BANK_ALFALAH_CHANNEL_ID}${BANK_ALFALAH_MERCHANT_ID}${BANK_ALFALAH_STORE_ID}${authToken}${transactionId}${otp || ''}${BANK_ALFALAH_MERCHANT_HASH}`;
   const requestHash = generateHash(hashData);
 
-  const payload = {
+  const payload: any = {
     ChannelId: BANK_ALFALAH_CHANNEL_ID,
     MerchantId: BANK_ALFALAH_MERCHANT_ID,
     StoreId: BANK_ALFALAH_STORE_ID,
+    ReturnURL: returnUrl,
     MerchantHash: BANK_ALFALAH_MERCHANT_HASH,
     MerchantUsername: BANK_ALFALAH_USERNAME,
     MerchantPassword: BANK_ALFALAH_PASSWORD,
-    AuthToken: authToken,
-    TransactionReferenceNumber: transactionId,
+    TransactionReferenceNumber: payment.orderId,
+    TransactionAmount: payment.amount.toString(),
+    Currency: payment.currency || 'PKR',
     RequestHash: requestHash,
+    AuthToken: authToken,
+    TransactionTypeId: '1', // Sale transaction
+    CustomerName: payment.customerName,
+    CustomerEmail: payment.customerEmail,
+    CustomerPhone: payment.customerPhone || '',
   };
 
   if (otp) {
