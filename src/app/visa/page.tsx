@@ -65,18 +65,71 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       }
     });
 
+    const regionContinentMap: Record<string, { region: string; continent: string }> = {
+      US: { region: 'North America', continent: 'Americas' },
+      GB: { region: 'Europe', continent: 'Europe' },
+      FR: { region: 'Europe', continent: 'Europe' },
+      DE: { region: 'Europe', continent: 'Europe' },
+      IT: { region: 'Europe', continent: 'Europe' },
+      ES: { region: 'Europe', continent: 'Europe' },
+      TH: { region: 'Asia', continent: 'Asia' },
+      VN: { region: 'Asia', continent: 'Asia' },
+      AE: { region: 'Middle East', continent: 'Asia' },
+      SA: { region: 'Middle East', continent: 'Asia' },
+      TR: { region: 'Middle East', continent: 'Europe' },
+      CN: { region: 'Asia', continent: 'Asia' },
+      IN: { region: 'Asia', continent: 'Asia' },
+      JP: { region: 'Asia', continent: 'Asia' },
+      KR: { region: 'Asia', continent: 'Asia' },
+      SG: { region: 'Asia', continent: 'Asia' },
+      MY: { region: 'Asia', continent: 'Asia' },
+      ID: { region: 'Asia', continent: 'Asia' },
+      PH: { region: 'Asia', continent: 'Asia' },
+      AU: { region: 'Oceania', continent: 'Oceania' },
+      NZ: { region: 'Oceania', continent: 'Oceania' },
+      EG: { region: 'Africa', continent: 'Africa' },
+      ZA: { region: 'Africa', continent: 'Africa' },
+      MA: { region: 'Africa', continent: 'Africa' },
+      KE: { region: 'Africa', continent: 'Africa' },
+      RU: { region: 'Europe', continent: 'Europe' },
+      UA: { region: 'Europe', continent: 'Europe' },
+      PL: { region: 'Europe', continent: 'Europe' },
+      NL: { region: 'Europe', continent: 'Europe' },
+      BE: { region: 'Europe', continent: 'Europe' },
+      CH: { region: 'Europe', continent: 'Europe' },
+      AT: { region: 'Europe', continent: 'Europe' },
+      PT: { region: 'Europe', continent: 'Europe' },
+      GR: { region: 'Europe', continent: 'Europe' },
+      SE: { region: 'Europe', continent: 'Europe' },
+      NO: { region: 'Europe', continent: 'Europe' },
+      DK: { region: 'Europe', continent: 'Europe' },
+      FI: { region: 'Europe', continent: 'Europe' },
+      IE: { region: 'Europe', continent: 'Europe' },
+      CA: { region: 'North America', continent: 'Americas' },
+      MX: { region: 'North America', continent: 'Americas' },
+      BR: { region: 'South America', continent: 'Americas' },
+      AR: { region: 'South America', continent: 'Americas' },
+      CL: { region: 'South America', continent: 'Americas' },
+      CO: { region: 'South America', continent: 'Americas' },
+      PE: { region: 'South America', continent: 'Americas' },
+    };
+
     let processedDestinations: Destination[] = destinationQuery.map(country => {
       const activeVisas = country.visaRulesTo.filter(v => v.isActive);
       const prices = activeVisas.map(v => Number(v.price)).filter(p => p > 0);
       const processingDays = activeVisas.map(v => v.processingDays);
       
-        return {
-          id: country.id,
-          name: country.name,
-          code: country.code,
-          flag: country.flag || getCountryFlagEmoji(country.code),
-          region: country.region || 'Unknown',
-          continent: country.continent || 'Unknown',
+      const mappedData = regionContinentMap[country.code.toUpperCase()] || {};
+      const region = country.region || mappedData.region || 'Other';
+      const continent = country.continent || mappedData.continent || 'Other';
+      
+      return {
+        id: country.id,
+        name: country.name,
+        code: country.code,
+        flag: country.flag || getCountryFlagEmoji(country.code),
+        region,
+        continent,
         visaCount: activeVisas.length,
         minPrice: prices.length > 0 ? Math.min(...prices) : 0,
         maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
@@ -114,9 +167,11 @@ export default async function VisaPage({ searchParams }: VisaPageProps) {
       );
     }
 
+    processedDestinations = processedDestinations.filter(d => d.hasActiveVisas);
+    
     processedDestinations.sort((a, b) => {
-      if (a.hasActiveVisas !== b.hasActiveVisas) {
-        return a.hasActiveVisas ? -1 : 1;
+      if (a.minPrice !== b.minPrice) {
+        return a.minPrice - b.minPrice;
       }
       return a.name.localeCompare(b.name);
     });

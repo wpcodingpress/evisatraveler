@@ -181,7 +181,7 @@ export default function VisaRulesPage() {
   };
 
   // Pagination
-  const itemsPerPage = 50;
+  const itemsPerPage = 100;
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(visaRules.length / itemsPerPage);
   const paginatedRules = visaRules.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);

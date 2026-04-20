@@ -39,19 +39,24 @@ export default function ApplicationsPage() {
 
   const fetchApplications = async () => {
     try {
+      setLoading(true);
+      setError('');
       const params = new URLSearchParams();
       if (search) params.set('search', search);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       params.set('limit', '50');
       
       const res = await fetch(`/api/admin/applications?${params}`);
-      if (!res.ok) throw new Error('Failed to fetch');
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to fetch');
+      }
       const data = await res.json();
       setApplications(data.applications || []);
       setStats(data.stats || {});
-    } catch (err) {
-      setError('Failed to load applications');
-      console.error(err);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load applications');
+      console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -99,6 +104,12 @@ export default function ApplicationsPage() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={fetchApplications} className="text-sm font-medium underline">Try again</button>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-slate-900">Applications</h1>
