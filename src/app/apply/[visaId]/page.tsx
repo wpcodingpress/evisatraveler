@@ -25,7 +25,7 @@ async function getVisaRule(visaId: string) {
     console.log('Database not available, using mock data for apply page');
   }
   
-  return MOCK_VISA_RULES[visaId] || null;
+  return null;
 }
 
 function checkAuth() {
