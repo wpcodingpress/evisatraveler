@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className="min-h-screen flex flex-col bg-white font-sans antialiased">
+      <body className="min-h-screen flex flex-col bg-white font-sans antialiased isolate">
         <PublicLayout>
           {children}
         </PublicLayout>

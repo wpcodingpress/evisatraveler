@@ -183,10 +183,11 @@ function MobileMenuButton({ user, onLogout }: { user: { firstName: string; email
   ];
 
   return (
-    <div className="lg:hidden">
+    <div className="lg:hidden isolate">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed top-4 right-4 z-[99999] p-3 bg-white rounded-xl shadow-lg text-slate-700 hover:text-violet-600 hover:shadow-xl transition-all"
+        style={{ willChange: 'transform' }}
         aria-label="Toggle menu"
       >
         <div className="w-6 h-6 relative">
@@ -206,9 +207,10 @@ function MobileMenuButton({ user, onLogout }: { user: { firstName: string; email
         <>
           <div
             className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[99998]"
+            style={{ willChange: 'opacity' }}
             onClick={() => setIsOpen(false)}
           />
-          <div className="fixed top-0 right-0 h-full w-[300px] max-w-[85vw] bg-white z-[99999] shadow-2xl overflow-y-auto">
+          <div className="fixed top-0 right-0 h-full w-[300px] max-w-[85vw] bg-white z-[99999] shadow-2xl overflow-y-auto" style={{ willChange: 'transform' }}>
             <div className="p-5">
               <div className="flex items-center justify-between mb-6">
                 {user ? (
@@ -440,7 +442,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-[30] backdrop-blur-xl bg-white/95 border-b border-slate-200/80 shadow-sm">
+    <header className="sticky top-0 z-[30] backdrop-blur-xl bg-white/95 border-b border-slate-200/80 shadow-sm isolate">
       <div className="container-custom">
         <div className="flex items-center justify-between h-16 lg:h-20">
           
