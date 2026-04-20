@@ -614,9 +614,6 @@ export function Header() {
               </>
             )}
           </div>
-
-          {/* Mobile Menu Button */}
-          <MobileMenuButton user={user} onLogout={handleLogout} />
         </div>
       </div>
     </header>
