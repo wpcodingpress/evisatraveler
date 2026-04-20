@@ -29,8 +29,26 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
   const router = useRouter();
 
   useEffect(() => {
+    // Load saved form data from localStorage
+    const savedKey = `evisa_form_${visaRule.id}`;
+    const saved = localStorage.getItem(savedKey);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setFormData(parsed.formData || {});
+        if (parsed.uploadedFiles) {
+          setUploadedFiles(parsed.uploadedFiles);
+        }
+        if (parsed.currentStep) {
+          setCurrentStep(parsed.currentStep);
+        }
+        console.log('Restored saved form data');
+      } catch (e) {
+        console.error('Failed to parse saved form data', e);
+      }
+    }
     trackIncomplete(1);
-  }, []);
+  }, [visaRule.id]);
 
   const trackIncomplete = async (step: number) => {
     try {
@@ -45,6 +63,16 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
           processing,
         }),
       });
+      
+      // Save form data to localStorage for persistence
+      localStorage.setItem(`evisa_form_${visaRule.id}`, JSON.stringify({
+        formData,
+        uploadedFiles,
+        currentStep: step,
+        travelers,
+        processing,
+        savedAt: new Date().toISOString()
+      }));
     } catch { /* Silent fail */ }
   };
   
@@ -131,6 +159,9 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
       if (!res.ok) {
         throw new Error(result.error || 'Failed to create application');
       }
+      
+      // Clear saved form data on successful submission
+      localStorage.removeItem(`evisa_form_${visaRule.id}`);
       
       if (result.paymentUrl) {
         window.location.href = result.paymentUrl;
