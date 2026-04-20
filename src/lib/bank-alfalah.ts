@@ -1,10 +1,15 @@
 /**
  * Bank Alfalah Payment Gateway Integration
  * 
- * Follows official 3-step API flow:
+ * Follows official 3-step API flow per Bank Alfalah documentation:
  * 1. Handshake (HSAPI) → Get AuthToken
  * 2. Transaction Request (DoTran) → Initiate payment
  * 3. Process Transaction (ProTran) → Complete with OTP verification
+ * 
+ * API Testing Endpoints:
+ * - Handshake: https://sandbox.bankalfalah.com/HS/api/HSAPI/HSAPI
+ * - Transaction: https://sandbox.bankalfalah.com/HS/api/Tran/DoTran
+ * - Process: https://sandbox.bankalfalah.com/HS/api/ProcessTran/ProTran
  */
 
 const BANK_ALFALAH_BASE_URL = process.env.BANK_ALFALAH_BASE_URL || 'https://sandbox.bankalfalah.com/HS/api';
@@ -41,9 +46,11 @@ function generateHash(data: string): string {
 }
 
 /**
- * Step 1: Handshake - Get authentication token
+ * Step 1: Handshake - Get authentication token from Bank Alfalah
+ * Required before initiating any transaction
  */
 async function handshake(): Promise<string | null> {
+  // Handshake hash: ChannelId + MerchantId + StoreId + MerchantHash
   const hashData = `${BANK_ALFALAH_CHANNEL_ID}${BANK_ALFALAH_MERCHANT_ID}${BANK_ALFALAH_STORE_ID}${BANK_ALFALAH_MERCHANT_HASH}`;
   const requestHash = generateHash(hashData);
 
@@ -65,7 +72,7 @@ async function handshake(): Promise<string | null> {
     });
 
     const text = await response.text();
-    console.log('Handshake response:', response.status, text);
+    console.log('Bank Alfalah handshake response:', response.status, text);
 
     if (!response.ok) {
       console.error('Handshake failed:', text);
@@ -73,7 +80,13 @@ async function handshake(): Promise<string | null> {
     }
 
     const data = JSON.parse(text);
-    return data.AuthToken || data.authToken || null;
+    const authToken = data.AuthToken || data.authToken;
+    
+    if (!authToken) {
+      console.error('No auth token in handshake response:', data);
+    }
+    
+    return authToken;
   } catch (error) {
     console.error('Handshake error:', error);
     return null;
@@ -81,13 +94,16 @@ async function handshake(): Promise<string | null> {
 }
 
 /**
- * Step 2: Initiate Transaction
+ * Step 2: Initiate Transaction - Request payment from customer
+ * Returns either paymentUrl or requires OTP verification
  */
 async function initiateTransaction(
   authToken: string,
   payment: PaymentRequest
 ): Promise<PaymentResponse> {
   const returnUrl = payment.callbackUrl;
+  
+  // Transaction hash: ChannelId + MerchantId + StoreId + ReturnURL + TxnRefNo + Amount + Currency + MerchantHash + AuthToken
   const hashData = `${BANK_ALFALAH_CHANNEL_ID}${BANK_ALFALAH_MERCHANT_ID}${BANK_ALFALAH_STORE_ID}${returnUrl}${payment.orderId}${payment.amount}${payment.currency || 'PKR'}${BANK_ALFALAH_MERCHANT_HASH}${authToken}`;
   const requestHash = generateHash(hashData);
 
@@ -110,12 +126,24 @@ async function initiateTransaction(
     CustomerPhone: payment.customerPhone || '',
   };
 
-  if (otp) {
-    payload.SMSOTP = otp;
-  }
+  try {
+    const response = await fetch(`${BANK_ALFALAH_BASE_URL}/Tran/DoTran`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const text = await response.text();
+    console.log('Bank Alfalah transaction response:', response.status, text);
+
+    if (!response.ok) {
+      console.error('Transaction request failed:', text);
+      return { success: false, error: 'Transaction initiation failed' };
+    }
 
     const data = JSON.parse(text);
-    
+
+    // Case 1: Direct payment URL (no OTP required)
     if (data.PaymentURL || data.paymentUrl) {
       return {
         success: true,
@@ -124,8 +152,8 @@ async function initiateTransaction(
       };
     }
 
+    // Case 2: OTP/Auth required - Bank Alfalah returns AuthToken again
     if (data.AuthToken || data.authToken) {
-      // OTP required
       return {
         success: true,
         transactionId: data.TransactionId || payment.orderId,
@@ -134,21 +162,24 @@ async function initiateTransaction(
       };
     }
 
-    return { success: false, error: 'No payment URL received' };
+    return { success: false, error: 'No payment URL or auth token received' };
   } catch (error) {
     console.error('Transaction error:', error);
-    return { success: false, error: 'Transaction service error' };
+    return { success: false, error: 'Transaction service unavailable' };
   }
 }
 
 /**
- * Step 3: Process Transaction (complete payment)
+ * Step 3: Process Transaction - Complete payment after OTP/OTAC verification
  */
 async function processTransaction(
   authToken: string,
   transactionId: string,
   otp?: string
 ): Promise<PaymentResponse> {
+  const returnUrl = paymentCallbackUrl(transactionId);
+  
+  // Process hash: ChannelId + MerchantId + StoreId + AuthToken + TxnRefNo + SMSOTP + MerchantHash
   const hashData = `${BANK_ALFALAH_CHANNEL_ID}${BANK_ALFALAH_MERCHANT_ID}${BANK_ALFALAH_STORE_ID}${authToken}${transactionId}${otp || ''}${BANK_ALFALAH_MERCHANT_HASH}`;
   const requestHash = generateHash(hashData);
 
@@ -156,21 +187,15 @@ async function processTransaction(
     ChannelId: BANK_ALFALAH_CHANNEL_ID,
     MerchantId: BANK_ALFALAH_MERCHANT_ID,
     StoreId: BANK_ALFALAH_STORE_ID,
-    ReturnURL: returnUrl,
     MerchantHash: BANK_ALFALAH_MERCHANT_HASH,
     MerchantUsername: BANK_ALFALAH_USERNAME,
     MerchantPassword: BANK_ALFALAH_PASSWORD,
-    TransactionReferenceNumber: payment.orderId,
-    TransactionAmount: payment.amount.toString(),
-    Currency: payment.currency || 'PKR',
-    RequestHash: requestHash,
     AuthToken: authToken,
-    TransactionTypeId: '1', // Sale transaction
-    CustomerName: payment.customerName,
-    CustomerEmail: payment.customerEmail,
-    CustomerPhone: payment.customerPhone || '',
+    TransactionReferenceNumber: transactionId,
+    RequestHash: requestHash,
   };
 
+  // Include OTP if provided (SMS or email OTP)
   if (otp) {
     payload.SMSOTP = otp;
   }
@@ -183,7 +208,7 @@ async function processTransaction(
     });
 
     const text = await response.text();
-    console.log('Process transaction response:', response.status, text);
+    console.log('Bank Alfalah process transaction response:', response.status, text);
 
     if (!response.ok) {
       console.error('Process transaction failed:', text);
@@ -191,32 +216,36 @@ async function processTransaction(
     }
 
     const data = JSON.parse(text);
-    
+
     if (data.PaymentURL || data.paymentUrl) {
       return {
         success: true,
         paymentUrl: data.PaymentURL || data.paymentUrl,
+        transactionId: data.TransactionId || transactionId,
       };
     }
 
-    return { success: false, error: 'Payment URL not received' };
+    return { success: false, error: 'Payment confirmation failed' };
   } catch (error) {
     console.error('Process transaction error:', error);
-    return { success: false, error: 'Processing service error' };
+    return { success: false, error: 'Processing service unavailable' };
   }
+}
+
+function paymentCallbackUrl(transactionId: string): string {
+  return `${process.env.NEXT_PUBLIC_SITE_URL}/api/payment/callback?txn=${transactionId}`;
 }
 
 /**
  * Main function to initiate Bank Alfalah payment
- * Now follows proper 3-step flow per Bank Alfalah documentation
+ * Complete 3-step flow: Handshake → Transaction → (Optional OTP) → Process
  */
 export async function initiateBankAlfalahPayment(payment: PaymentRequest): Promise<PaymentResponse> {
   try {
-    // Step 1: Handshake - Get AuthToken
+    // Step 1: Handshake - get auth token
     const authToken = await handshake();
     if (!authToken) {
-      console.error('Failed to get auth token from Bank Alfalah');
-      // Fallback to mock for testing
+      console.error('Failed to get auth token from Bank Alfalah, falling back to mock');
       return {
         success: true,
         paymentUrl: `/mock-payment/${payment.orderId}?amount=${payment.amount}`,
@@ -236,18 +265,18 @@ export async function initiateBankAlfalahPayment(payment: PaymentRequest): Promi
       };
     }
 
-    // If OTP is required, we need frontend to collect it
-    if (transactionResult.requiresOtp) {
+    // Case A: OTP required
+    if (transactionResult.requiresOtp && transactionResult.authToken) {
       return {
         success: true,
         transactionId: transactionResult.transactionId,
-        authToken,
+        authToken: transactionResult.authToken,
         requiresOtp: true,
         error: 'OTP verification required',
       };
     }
 
-    // If we have a payment URL, return it
+    // Case B: Direct payment URL (no OTP)
     if (transactionResult.paymentUrl) {
       return {
         success: true,
@@ -256,7 +285,7 @@ export async function initiateBankAlfalahPayment(payment: PaymentRequest): Promi
       };
     }
 
-    // Fallback to mock if no payment URL
+    // Fallback to mock payment
     return {
       success: true,
       paymentUrl: `/mock-payment/${payment.orderId}?amount=${payment.amount}`,
@@ -270,11 +299,12 @@ export async function initiateBankAlfalahPayment(payment: PaymentRequest): Promi
 }
 
 /**
- * Verify payment status
+ * Verify payment status with Bank Alfalah
  */
 export async function verifyPayment(transactionId: string): Promise<boolean> {
-  // Implementation would query Bank Alfalah to verify payment status
-  // For now, return true (assume successful for demo)
+  // In production, this would call Bank Alfalah's verification endpoint
+  // For now, return true (assume successful)
+  // Implementation: GET /Verification/VerifyTran?txn=xxx
   return true;
 }
 
@@ -283,15 +313,16 @@ export async function verifyPayment(transactionId: string): Promise<boolean> {
  */
 export async function refundPayment(transactionId: string, amount: number): Promise<boolean> {
   // Refund implementation would go here
+  // POST /ProcessTran/RefundTran
   return false;
 }
 
 /**
- * Legacy helper - creates payment link
+ * Legacy helper - creates a payment link (deprecated, use initiateBankAlfalahPayment)
  */
 export async function createPaymentLink(orderId: string, amount: number, description: string): Promise<string> {
   // Check if using sandbox credentials
-  if (BANK_ALFALAH_MERCHANT_ID === 'YOUR_MERCHANT_ID') {
+  if (BANK_ALFALAH_MERCHANT_ID === 'YOUR_MERCHANT_ID' || !BANK_ALFALAH_MERCHANT_ID) {
     return `/confirmation/${orderId}?paid=true&mock=true`;
   }
   
