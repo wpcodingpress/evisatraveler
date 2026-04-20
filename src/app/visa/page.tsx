@@ -10,12 +10,15 @@ interface Destination {
   name: string;
   code: string;
   flag: string;
+  visaType: string;
   visaCount: number;
-  minPrice: number;
-  maxPrice: number;
-  processingDays: number;
+  price: number;
+  currency: string;
   processingTime: string;
-  hasActiveVisas: boolean;
+  processingDays: number;
+  maxStayDays: number;
+  validityDays: number;
+  entryType: string;
 }
 
 function getProcessingTimeLabel(days: number): string {
@@ -25,25 +28,60 @@ function getProcessingTimeLabel(days: number): string {
   return `${days}+ Days`;
 }
 
-function getFlagEmoji(code: string, storedFlag?: string | null): string {
-  if (storedFlag && storedFlag.trim()) {
-    return storedFlag;
-  }
-  return getCountryFlagEmoji(code);
+const countryImages: Record<string, string> = {
+  TH: 'from-yellow-400 via-orange-400 to-red-500',
+  JP: 'from-red-400 via-rose-500 to-pink-600',
+  AE: 'from-blue-400 via-cyan-400 to-teal-500',
+  US: 'from-blue-500 via-indigo-500 to-violet-600',
+  GB: 'from-red-500 via-blue-600 to-indigo-700',
+  IN: 'from-orange-400 via-yellow-400 to-amber-500',
+  CN: 'from-red-600 via-yellow-500 to-orange-400',
+  AU: 'from-yellow-500 via-green-400 to-emerald-500',
+  SG: 'from-red-500 via-yellow-400 to-green-500',
+  MY: 'from-blue-500 via-sky-400 to-cyan-400',
+  ID: 'from-red-500 via-orange-400 to-yellow-400',
+  PH: 'from-blue-400 via-sky-300 to-emerald-400',
+  VN: 'from-red-600 via-yellow-500 to-amber-400',
+  KR: 'from-blue-500 via-red-400 to-pink-500',
+  TR: 'from-red-500 via-white to-red-500',
+  EG: 'from-yellow-500 via-amber-400 to-orange-500',
+  ZA: 'from-green-500 via-yellow-500 to-emerald-500',
+  RU: 'from-blue-500 via-red-500 to-pink-500',
+  BR: 'from-green-500 via-yellow-400 to-blue-500',
+  MX: 'from-green-500 via-emerald-400 to-teal-500',
+  CA: 'from-red-500 via-white to-red-500',
+  IT: 'from-green-500 via-emerald-400 to-teal-500',
+  ES: 'from-yellow-500 via-orange-500 to-red-500',
+  FR: 'from-blue-500 via-white to-red-500',
+  DE: 'from-yellow-500 via-black to-yellow-500',
+  NL: 'from-orange-400 via-red-500 to-red-600',
+  SE: 'from-blue-500 via-yellow-400 to-blue-600',
+  NO: 'from-red-500 via-blue-500 to-red-600',
+  DK: 'from-red-500 via-white to-red-500',
+  FI: 'from-blue-400 via-white to-blue-500',
+  CH: 'from-red-600 via-white to-red-600',
+  PT: 'from-green-600 via-red-500 to-green-600',
+  GR: 'from-blue-500 via-white to-blue-500',
+  PL: 'from-white via-red-500 to-red-600',
+  AT: 'from-red-500 via-white to-red-500',
+  IE: 'from-green-600 via-orange-400 to-yellow-500',
+  NZ: 'from-blue-500 via-white to-blue-700',
+  default: 'from-violet-500 via-purple-500 to-fuchsia-500'
+};
+
+function getCountryGradient(code: string): string {
+  return countryImages[code] || countryImages.default;
 }
 
 function shimmerCards() {
   return [...Array(8)].map((_, i) => (
-    <div key={i} className="bg-white rounded-2xl p-5 shadow-md animate-pulse">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 bg-slate-200 rounded-lg"></div>
-        <div className="h-5 w-24 bg-slate-200 rounded"></div>
+    <div key={i} className="relative overflow-hidden rounded-2xl h-80 animate-pulse">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300"></div>
+      <div className="absolute bottom-0 left-0 right-0 p-6">
+        <div className="h-8 w-32 bg-slate-200 rounded mb-3"></div>
+        <div className="h-4 w-24 bg-slate-200 rounded mb-4"></div>
+        <div className="h-10 w-full bg-slate-200 rounded-xl"></div>
       </div>
-      <div className="space-y-2 mb-4">
-        <div className="h-4 w-full bg-slate-200 rounded"></div>
-        <div className="h-4 w-3/4 bg-slate-200 rounded"></div>
-      </div>
-      <div className="h-10 bg-slate-200 rounded-lg"></div>
     </div>
   ));
 }
@@ -76,31 +114,23 @@ export default function VisaPage() {
       let processedDestinations: Destination[] = [];
       
       if (Array.isArray(data)) {
-        processedDestinations = data.map((country: any) => {
-          const activeVisas = (country.visaRulesTo || []).filter((v: any) => v.isActive);
-          const prices = activeVisas.map((v: any) => Number(v.price)).filter((p: number) => p > 0);
-          const processingDays = activeVisas.map((v: any) => v.processingDays);
-          
-          return {
+        processedDestinations = data
+          .map((country: any) => ({
             id: country.id,
             name: country.name,
             code: country.code,
-            flag: getFlagEmoji(country.code, country.flag),
-            visaCount: activeVisas.length,
-            minPrice: prices.length > 0 ? Math.min(...prices) : 0,
-            maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
-            processingDays: processingDays.length > 0 ? Math.min(...processingDays) : 0,
-            processingTime: processingDays.length > 0 ? getProcessingTimeLabel(Math.min(...processingDays)) : 'N/A',
-            hasActiveVisas: activeVisas.length > 0
-          };
-        }).filter((d: Destination) => d.hasActiveVisas);
-        
-        processedDestinations.sort((a: Destination, b: Destination) => {
-          if (a.minPrice !== b.minPrice) {
-            return a.minPrice - b.minPrice;
-          }
-          return a.name.localeCompare(b.name);
-        });
+            flag: country.flag || getCountryFlagEmoji(country.code),
+            visaType: country.visaType || 'Tourist',
+            visaCount: country.visaCount || 1,
+            price: country.price || 49,
+            currency: country.currency || 'USD',
+            processingTime: country.processingTime || '24-72 Hours',
+            processingDays: country.processingDays || 3,
+            maxStayDays: country.maxStayDays || 30,
+            validityDays: country.validityDays || 90,
+            entryType: country.entryType || 'Single Entry'
+          }))
+          .sort((a: Destination, b: Destination) => a.price - b.price);
       }
       
       setTotalItems(processedDestinations.length);
@@ -130,17 +160,17 @@ export default function VisaPage() {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   return (
-    <main className="flex-1 py-12 md:py-20 bg-gradient-to-b from-violet-50/30 via-white to-purple-50/30">
+    <main className="flex-1 py-12 md:py-16 bg-slate-900">
       <div className="container-custom">
         <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3">
-            All <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600">Destinations</span>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3">
+            All <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400">Destinations</span>
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Choose your next travel destination. Quick and easy visa applications.
+          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+            Choose your next travel destination. Fast, reliable visa applications.
           </p>
           <div className="mt-6 flex justify-center gap-4 flex-wrap">
-            <Link href="/visa-search" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/30 transition-all">
+            <Link href="/visa-search" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/40 transition-all">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -151,7 +181,7 @@ export default function VisaPage() {
 
         <form onSubmit={handleSearch} className="relative max-w-xl mx-auto mb-10">
           <div className="relative">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -159,7 +189,7 @@ export default function VisaPage() {
               placeholder="Search destinations..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl shadow-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-base"
+              className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-700 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent backdrop-blur-sm"
             />
           </div>
         </form>
@@ -175,65 +205,59 @@ export default function VisaPage() {
                 <Link
                   key={destination.id}
                   href={`/visa-search?to=${destination.code}`}
-                  className="group relative bg-white rounded-2xl p-5 shadow-md hover:shadow-2xl transition-all duration-500 border border-slate-100 hover:border-violet-300 overflow-hidden"
+                  className="group relative overflow-hidden rounded-2xl h-80 hover:shadow-2xl hover:shadow-violet-500/20 transition-all duration-500 hover:scale-[1.02]"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 via-transparent to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className={`absolute inset-0 bg-gradient-to-br ${getCountryGradient(destination.code)}`}></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
                   
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-violet-500 to-purple-600 rounded-bl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-4 -translate-y-4 group-hover:translate-x-0 group-hover:translate-y-0"></div>
-                  
-                  <div className="relative">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-br from-violet-100 to-purple-100 rounded-xl shadow-inner">
-                        <span className="text-2xl">{destination.flag}</span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-lg font-bold text-slate-900 truncate group-hover:text-violet-700 transition-colors">
+                  <div className="absolute top-3 right-3">
+                    <span className="px-3 py-1.5 bg-white/20 backdrop-blur-md text-white text-xs font-semibold rounded-full flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                      </svg>
+                      {destination.visaType}
+                    </span>
+                  </div>
+
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-4xl">{destination.flag}</span>
+                      <div>
+                        <h3 className="text-xl font-bold text-white truncate group-hover:text-violet-300 transition-colors">
                           {destination.name}
                         </h3>
-                        <p className="text-xs text-slate-500">{destination.code}</p>
+                        <p className="text-slate-400 text-sm">{destination.code}</p>
                       </div>
                     </div>
 
-                    <div className="space-y-3 mb-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-slate-500">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span className="text-sm">Processing</span>
-                        </div>
-                        <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full">
-                          {destination.processingTime}
-                        </span>
+                    <div className="flex items-center gap-4 text-slate-300 text-sm mb-4">
+                      <div className="flex items-center gap-1.5">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {destination.processingTime}
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-slate-500">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <span className="text-sm">Visa types</span>
-                        </div>
-                        <span className="font-semibold text-violet-600">{destination.visaCount}</span>
-                      </div>
-                      <div className="pt-3 border-t border-slate-100">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-slate-500">From</span>
-                          <span className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
-                            {formatCurrency(destination.minPrice)}
-                          </span>
-                        </div>
+                      <span className="text-slate-600">|</span>
+                      <div className="flex items-center gap-1.5">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {destination.maxStayDays}d stay
                       </div>
                     </div>
 
-                    <div className="relative overflow-hidden rounded-xl">
-                      <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-purple-600 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out"></div>
-                      <button className="relative w-full py-3 bg-slate-100 text-slate-700 font-semibold text-sm rounded-xl flex items-center justify-center gap-2 group-hover:text-white transition-all duration-300">
-                        View Visa Details
-                        <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <p className="text-slate-400 text-xs">Starting from</p>
+                        <p className="text-3xl font-bold text-white">{formatCurrency(destination.price)}</p>
+                      </div>
+                      <div className="px-4 py-2.5 bg-white text-slate-900 font-semibold rounded-xl flex items-center gap-2 group-hover:bg-violet-500 group-hover:text-white transition-all duration-300">
+                        Apply Now
+                        <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>
-                      </button>
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -243,7 +267,7 @@ export default function VisaPage() {
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2">
                 {currentPage > 1 && (
-                  <Link href={buildQuery(currentPage - 1)} className="px-5 py-2.5 border border-slate-200 rounded-xl hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700 text-sm font-medium transition-all">
+                  <Link href={buildQuery(currentPage - 1)} className="px-5 py-2.5 border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-800 hover:border-violet-500 hover:text-violet-400 text-sm font-medium transition-all">
                     ← Previous
                   </Link>
                 )}
@@ -255,8 +279,8 @@ export default function VisaPage() {
                       <Link key={pageNum} href={buildQuery(pageNum)}
                         className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-medium transition-all ${
                           pageNum === currentPage 
-                            ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-violet-500/30' 
-                            : 'border border-slate-200 hover:bg-violet-50 hover:border-violet-300'
+                            ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/30' 
+                            : 'border border-slate-700 text-slate-400 hover:bg-slate-800 hover:border-violet-500 hover:text-violet-400'
                         }`}
                       >
                         {pageNum}
@@ -265,7 +289,7 @@ export default function VisaPage() {
                   })}
                 </div>
                 {currentPage < totalPages && (
-                  <Link href={buildQuery(currentPage + 1)} className="px-5 py-2.5 border border-slate-200 rounded-xl hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700 text-sm font-medium transition-all">
+                  <Link href={buildQuery(currentPage + 1)} className="px-5 py-2.5 border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-800 hover:border-violet-500 hover:text-violet-400 text-sm font-medium transition-all">
                     Next →
                   </Link>
                 )}
@@ -273,15 +297,15 @@ export default function VisaPage() {
             )}
           </>
         ) : (
-          <div className="text-center py-16 bg-white rounded-2xl shadow-md">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center">
+          <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700 backdrop-blur-sm">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center">
               <svg className="w-10 h-10 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">No destinations found</h3>
-            <p className="text-slate-500 mb-4">Try adjusting your search criteria</p>
-            <Link href="/visa" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all">
+            <h3 className="text-xl font-bold text-white mb-2">No destinations found</h3>
+            <p className="text-slate-400 mb-4">Try adjusting your search criteria</p>
+            <Link href="/visa" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all">
               Clear search
             </Link>
           </div>
