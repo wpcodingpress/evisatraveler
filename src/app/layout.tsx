@@ -18,14 +18,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isAdmin = typeof window !== 'undefined' && window.location.pathname?.startsWith('/admin');
+  
   return (
     <html lang="en" className="scroll-smooth">
       <body className="min-h-screen flex flex-col bg-white font-sans antialiased">
-        <Header />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        {children}
         <ScrollToTop />
       </body>
     </html>
