@@ -65,8 +65,8 @@ function UserMenu({ user, onLogout, pendingApps = 0, onShowNotifications }: {
       
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-50">
+          <div className="fixed inset-0 z-[35]" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-[40]">
             <div className="px-4 py-2 border-b border-slate-100">
               <p className="font-semibold text-slate-900">{user.firstName}</p>
               <p className="text-xs text-slate-500 truncate">{user.email}</p>
@@ -183,10 +183,10 @@ function MobileMenuButton({ user, onLogout }: { user: { firstName: string; email
   ];
 
   return (
-    <div className="lg:hidden relative">
+    <div className="lg:hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 right-4 z-[9999] p-3 bg-white rounded-xl shadow-lg text-slate-700 hover:text-violet-600 hover:shadow-xl transition-all"
+        className="fixed top-4 right-4 z-[99999] p-3 bg-white rounded-xl shadow-lg text-slate-700 hover:text-violet-600 hover:shadow-xl transition-all"
         aria-label="Toggle menu"
       >
         <div className="w-6 h-6 relative">
@@ -205,10 +205,10 @@ function MobileMenuButton({ user, onLogout }: { user: { firstName: string; email
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[9998]"
+            className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[99998]"
             onClick={() => setIsOpen(false)}
           />
-          <div className="fixed top-0 right-0 h-full w-[300px] max-w-[85vw] bg-white z-[9999] shadow-2xl overflow-y-auto">
+          <div className="fixed top-0 right-0 h-full w-[300px] max-w-[85vw] bg-white z-[99999] shadow-2xl overflow-y-auto">
             <div className="p-5">
               <div className="flex items-center justify-between mb-6">
                 {user ? (
@@ -440,7 +440,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/95 border-b border-slate-200/80 shadow-sm">
+    <header className="sticky top-0 z-[30] backdrop-blur-xl bg-white/95 border-b border-slate-200/80 shadow-sm">
       <div className="container-custom">
         <div className="flex items-center justify-between h-16 lg:h-20">
           
@@ -553,7 +553,7 @@ export function Header() {
                   </button>
                   
                   {showNotifications && (
-                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-50">
+                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-[40]">
                       <div className="p-3 border-b border-slate-100 flex items-center justify-between">
                         <span className="font-semibold text-slate-900">Notifications</span>
                         {unreadCount > 0 && (
