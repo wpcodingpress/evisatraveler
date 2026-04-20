@@ -20,7 +20,7 @@ interface UploadedFile {
 
 const steps = [
   { id: 1, title: 'Personal Info', description: 'Your basic information' },
-  { id: 2, title: 'Trip Details', description: 'When & where' },
+  { id: 2, title: 'Trip Details', description: 'Travel dates' },
   { id: 3, title: 'Documents', description: 'Upload required files' },
   { id: 4, title: 'Review & Pay', description: 'Confirm and pay' },
 ];
@@ -28,7 +28,6 @@ const steps = [
 export function ApplicationForm({ visaRule, travelers = 1, processing = 'standard' }: ApplicationFormProps) {
   const router = useRouter();
 
-  // Track this as incomplete application when form loads
   useEffect(() => {
     trackIncomplete(1);
   }, []);
@@ -46,14 +45,12 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
           processing,
         }),
       });
-    } catch {
-      // Silent fail
-    }
+    } catch { /* Silent fail */ }
   };
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: UploadedFile }>({});
+  const [uploadedFiles, setUploadedFiles] = useState<{[key: string]: UploadedFile}>({});
   const [error, setError] = useState('');
   
   const basePrice = typeof visaRule.price === 'number' ? visaRule.price : Number(visaRule.price);
@@ -64,7 +61,6 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
     firstName: '', lastName: '', email: '', phone: '',
     dateOfBirth: '', gender: '', nationality: '', passportNumber: '',
     passportExpiry: '', arrivalDate: '', departureDate: '',
-    portOfEntry: 'airport', accommodationType: 'hotel', accommodationAddress: '',
   });
 
   const updateField = (field: string, value: string) => {
@@ -89,7 +85,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return formData.firstName && formData.lastName && formData.email && formData.dateOfBirth && formData.passportNumber && formData.passportExpiry;
+      case 1: return formData.firstName && formData.lastName && formData.email && formData.dateOfBirth && formData.passportNumber && formData.passportExpiry && formData.phone;
       case 2: return formData.arrivalDate && formData.departureDate;
       case 3: return true;
       default: return true;
@@ -136,13 +132,11 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
         throw new Error(result.error || 'Failed to create application');
       }
       
-      // If payment URL exists, redirect to Bank Alfalah
       if (result.paymentUrl) {
         window.location.href = result.paymentUrl;
         return;
       }
       
-      // Otherwise redirect to confirmation (demo mode)
       router.push(`/confirmation/${result.applicationNumber}`);
     } catch (err: any) {
       setError(err.message || 'Payment failed. Please try again.');
@@ -174,19 +168,24 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                   placeholder="john@example.com" className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone</label>
-                <input type="tel" value={formData.phone} onChange={e => updateField('phone', e.target.value)} 
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone *</label>
+                <input type="tel" required value={formData.phone} onChange={e => updateField('phone', e.target.value)} 
                   placeholder="+92 300 1234567" className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Date of Birth *</label>
-                <input type="date" required value={formData.dateOfBirth} onChange={e => updateField('dateOfBirth', e.target.value)} 
-                  className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
+                <div className="relative">
+                  <input type="date" required value={formData.dateOfBirth} onChange={e => updateField('dateOfBirth', e.target.value)} 
+                    className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
+                  <svg className="w-5 h-5 text-slate-400 absolute right-3 top-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Gender</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Gender *</label>
                 <select value={formData.gender} onChange={e => updateField('gender', e.target.value)} 
                   className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all">
                   <option value="">Select gender</option>
@@ -203,8 +202,13 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">Passport Expiry Date *</label>
-              <input type="date" required value={formData.passportExpiry} onChange={e => updateField('passportExpiry', e.target.value)} 
-                className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
+              <div className="relative">
+                <input type="date" required value={formData.passportExpiry} onChange={e => updateField('passportExpiry', e.target.value)} 
+                  className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
+                <svg className="w-5 h-5 text-slate-400 absolute right-3 top-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
             </div>
           </div>
         );
@@ -212,57 +216,40 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
         return (
           <div className="space-y-4">
             <div className="bg-violet-50 rounded-xl p-4 border border-violet-100">
-              <p className="text-sm text-violet-700"><span className="font-semibold">Simplified Flow:</span> Enter your travel dates - we'll handle the rest!</p>
+              <p className="text-sm text-violet-700">
+                <span className="font-semibold">Route:</span> {visaRule.fromCountry.flag} {visaRule.fromCountry.name} → {visaRule.toCountry.flag} {visaRule.toCountry.name}
+              </p>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">When will you arrive? *</label>
-                <input type="date" required value={formData.arrivalDate} onChange={e => updateField('arrivalDate', e.target.value)} 
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Arrival Date *</label>
+                <div className="relative">
+                  <input type="date" required value={formData.arrivalDate} onChange={e => updateField('arrivalDate', e.target.value)} 
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
+                  <svg className="w-5 h-5 text-slate-400 absolute right-3 top-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">When will you leave? *</label>
-                <input type="date" required value={formData.departureDate} onChange={e => updateField('departureDate', e.target.value)}
-                  min={formData.arrivalDate || new Date().toISOString().split('T')[0]}
-                  className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Departure Date *</label>
+                <div className="relative">
+                  <input type="date" required value={formData.departureDate} onChange={e => updateField('departureDate', e.target.value)}
+                    min={formData.arrivalDate || new Date().toISOString().split('T')[0]}
+                    className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
+                  <svg className="w-5 h-5 text-slate-400 absolute right-3 top-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">How will you enter?</label>
-              <select value={formData.portOfEntry} onChange={e => updateField('portOfEntry', e.target.value)} 
-                className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all">
-                <option value="airport">✈️ By Air</option>
-                <option value="land">🚗 By Land</option>
-                <option value="sea">🚢 By Sea</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Where will you stay?</label>
-              <select value={formData.accommodationType} onChange={e => updateField('accommodationType', e.target.value)} 
-                className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all">
-                <option value="hotel">🏨 Hotel</option>
-                <option value="hostel">🛏️ Hostel</option>
-                <option value="rental">🏠 Rental/ Airbnb</option>
-                <option value="friend">👨‍👩‍👧 With Friend/Family</option>
-                <option value="other">📍 Other</option>
-              </select>
-            </div>
-            {formData.accommodationType !== 'other' && (
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Accommodation Name/Address</label>
-                <input type="text" value={formData.accommodationAddress} onChange={e => updateField('accommodationAddress', e.target.value)} 
-                  placeholder={formData.accommodationType === 'hotel' ? 'Hotel name or booking reference' : 'Address'}
-                  className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all" />
-              </div>
-            )}
           </div>
         );
       case 3:
         const docs = [
           { id: 'passport', name: 'Passport Bio Page', required: true, desc: 'Clear color copy of your passport information page' },
           { id: 'photo', name: 'Passport Photo', required: true, desc: 'Recent passport-size photo (white background)' },
-          { id: 'hotel', name: 'Hotel Booking', required: false, desc: 'Hotel reservation (if available)' },
         ];
         return (
           <div className="space-y-4">
@@ -276,7 +263,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                   className="hidden"
                   onChange={e => e.target.files?.[0] && handleFileUpload(doc.id, e.target.files[0])}
                 />
-                <label htmlFor={doc.id} className={`block border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+                <label htmlFor={doc.id} className={`block border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${ 
                   uploadedFiles[doc.id] 
                     ? 'border-green-400 bg-green-50' 
                     : 'border-slate-300 hover:border-violet-400 hover:bg-violet-50'
@@ -311,49 +298,98 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
           : 0;
         return (
           <div className="space-y-6">
+            {/* Visa Summary Card */}
             <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200">
-              <h4 className="font-bold text-violet-900 mb-3">📋 Application Summary</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-slate-500">Visa Type</span><span className="font-semibold">{visaRule.visaType}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Destination</span><span className="font-semibold">{visaRule.toCountry.flag} {visaRule.toCountry.name}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Processing</span><span className="font-semibold">{processing === 'urgent' ? 'Express' : 'Standard'}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Travelers</span><span className="font-semibold">{travelers}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Trip Duration</span><span className="font-semibold">{daysDiff} days</span></div>
+              <h4 className="font-bold text-violet-900 mb-3 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Application Summary
+              </h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div><span className="text-slate-500">Visa Type</span><p className="font-semibold">{visaRule.visaType} Visa</p></div>
+                <div><span className="text-slate-500">Destination</span><p className="font-semibold">{visaRule.toCountry.flag} {visaRule.toCountry.name}</p></div>
+                <div><span className="text-slate-500">From</span><p className="font-semibold">{visaRule.fromCountry.flag} {visaRule.fromCountry.name}</p></div>
+                <div><span className="text-slate-500">Processing</span><p className="font-semibold">{processing === 'urgent' ? 'Express' : 'Standard'}</p></div>
+                <div><span className="text-slate-500">Travelers</span><p className="font-semibold">{travelers} Passenger{travelers > 1 ? 's' : ''}</p></div>
+                <div><span className="text-slate-500">Duration</span><p className="font-semibold">{daysDiff} Days</p></div>
               </div>
             </div>
-            <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200">
-              <h4 className="font-bold text-violet-900 mb-3">👤 Traveler Details</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-slate-500">Name</span><span className="font-semibold">{formData.firstName} {formData.lastName}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Email</span><span className="font-semibold">{formData.email}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Passport</span><span className="font-semibold">{formData.passportNumber}</span></div>
-              </div>
-            </div>
-            <div className="border-t-2 border-violet-200 pt-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-slate-600">Visa Fee × {travelers}</span>
-                <span className="font-semibold">${basePrice * travelers}</span>
-              </div>
-              {urgentFee > 0 && (
-                <div className="flex justify-between items-center mb-2 text-amber-600">
-                  <span>Express Processing</span>
-                  <span className="font-semibold">+${urgentFee * travelers}</span>
+
+            {/* Full Traveler Details */}
+            <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-5 border border-slate-200">
+              <h4 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Traveler Information
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="p-3 bg-white rounded-lg border border-slate-100">
+                  <p className="text-slate-500 text-xs uppercase tracking-wide">Full Name</p>
+                  <p className="font-semibold text-slate-900">{formData.firstName} {formData.lastName}</p>
                 </div>
-              )}
-              <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-200">
-                <span className="text-lg font-bold text-slate-900">Total</span>
-                <span className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">${totalPrice}</span>
+                <div className="p-3 bg-white rounded-lg border border-slate-100">
+                  <p className="text-slate-500 text-xs uppercase tracking-wide">Email Address</p>
+                  <p className="font-semibold text-slate-900 break-all">{formData.email}</p>
+                </div>
+                <div className="p-3 bg-white rounded-lg border border-slate-100">
+                  <p className="text-slate-500 text-xs uppercase tracking-wide">Phone Number</p>
+                  <p className="font-semibold text-slate-900">{formData.phone || 'Not provided'}</p>
+                </div>
+                <div className="p-3 bg-white rounded-lg border border-slate-100">
+                  <p className="text-slate-500 text-xs uppercase tracking-wide">Date of Birth</p>
+                  <p className="font-semibold text-slate-900">{formData.dateOfBirth}</p>
+                </div>
+                <div className="p-3 bg-white rounded-lg border border-slate-100">
+                  <p className="text-slate-500 text-xs uppercase tracking-wide">Gender</p>
+                  <p className="font-semibold text-slate-900 capitalize">{formData.gender || 'Not specified'}</p>
+                </div>
+                <div className="p-3 bg-white rounded-lg border border-slate-100">
+                  <p className="text-slate-500 text-xs uppercase tracking-wide">Nationality</p>
+                  <p className="font-semibold text-slate-900">{formData.nationality || 'Not specified'}</p>
+                </div>
+                <div className="p-3 bg-white rounded-lg border border-slate-100">
+                  <p className="text-slate-500 text-xs uppercase tracking-wide">Passport Number</p>
+                  <p className="font-semibold text-slate-900">{formData.passportNumber}</p>
+                </div>
+                <div className="p-3 bg-white rounded-lg border border-slate-100">
+                  <p className="text-slate-500 text-xs uppercase tracking-wide">Passport Expiry</p>
+                  <p className="font-semibold text-slate-900">{formData.passportExpiry}</p>
+                </div>
+                <div className="p-3 bg-white rounded-lg border border-slate-100">
+                  <p className="text-slate-500 text-xs uppercase tracking-wide">Arrival Date</p>
+                  <p className="font-semibold text-slate-900">{formData.arrivalDate}</p>
+                </div>
+                <div className="p-3 bg-white rounded-lg border border-slate-100">
+                  <p className="text-slate-500 text-xs uppercase tracking-wide">Departure Date</p>
+                  <p className="font-semibold text-slate-900">{formData.departureDate}</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              Secure payment via Bank Alfalah
+
+            {/* Pricing */}
+            <div className="border-t-2 border-violet-200 pt-4 bg-white rounded-xl p-4">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600">Visa Fee × {travelers}</span>
+                  <span className="font-semibold">${basePrice * travelers}</span>
+                </div>
+                {urgentFee > 0 && (
+                  <div className="flex justify-between items-center text-amber-600">
+                    <span>Express Processing</span>
+                    <span className="font-semibold">+${urgentFee * travelers}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-200">
+                  <span className="text-lg font-bold text-slate-900">Total Payable</span>
+                  <span className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">${totalPrice}</span>
+                </div>
+              </div>
             </div>
 
             {/* Payment Banner */}
-            <div className="mt-4 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 rounded-xl p-4 text-white">
+            <div className="mt-4 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 rounded-xl p-4 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -362,18 +398,14 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                     </svg>
                   </div>
                   <div>
-                    <p className="font-bold">Bank Alfalah</p>
-                    <p className="text-xs text-white/80">Secure Payment Gateway</p>
+                    <p className="font-bold">Bank Alfalah Payment Gateway</p>
+                    <p className="text-xs text-white/80">Secure & Encrypted Transaction</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
                   <span>Protected</span>
                 </div>
-              </div>
-              <div className="mt-3 flex items-center justify-between text-xs text-white/70">
-                <span>🔒 256-bit SSL Encryption</span>
-                <span>✅ Verified Merchant</span>
               </div>
             </div>
           </div>
@@ -399,19 +431,27 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
             <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-to-br from-purple-500/30 to-fuchsia-500/30 rounded-full blur-xl" />
             
             <div className="relative">
+              {/* Form Header with Flag and Route Info */}
               <div className="p-5 border-b border-violet-100 bg-gradient-to-r from-violet-50 to-purple-50">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-4xl">{visaRule.toCountry.flag}</span>
-                  <div>
-                    <h1 className="text-xl font-bold text-slate-900">{visaRule.visaType}</h1>
-                    <p className="text-slate-600 text-sm">{visaRule.toCountry.name} • {travelers} traveler{travelers > 1 ? 's' : ''}</p>
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="text-5xl" role="img" aria-label="{visaRule.toCountry.name} flag">{visaRule.toCountry.flag}</span>
+                  <div className="flex-1 text-left">
+                    <h1 className="text-xl font-bold text-slate-900">{visaRule.visaType} Visa</h1>
+                    <p className="text-slate-600 text-sm">
+                      {visaRule.fromCountry.flag} {visaRule.fromCountry.name} → {visaRule.toCountry.flag} {visaRule.toCountry.name}
+                    </p>
+                    <p className="text-slate-500 text-xs mt-0.5">{travelers} traveler{travelers > 1 ? 's' : ''} • {processing === 'urgent' ? 'Express Processing' : 'Standard Processing'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">${totalPrice}</p>
+                    <p className="text-xs text-slate-500">total</p>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-1 overflow-x-auto pb-1">
                   {steps.map((step, i) => (
                     <div key={step.id} className="flex items-center flex-shrink-0">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${ 
                         currentStep >= step.id 
                           ? 'bg-gradient-to-br from-violet-600 to-purple-600 text-white shadow-md' 
                           : 'bg-slate-100 text-slate-400'
@@ -453,7 +493,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                   </button>
                 ) : (
                   <button onClick={initiatePayment} disabled={isSubmitting}
-                    className="flex-1 px-6 py-2.5 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 disabled:opacity-60 transition-all shadow-md flex items-center justify-center gap-2">
+                    className="flex-1 px-6 py-2.5 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-600 disabled:opacity-60 transition-all shadow-md flex items-center justify-center gap-2">
                     {isSubmitting ? (
                       <>
                         <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -464,7 +504,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                       </>
                     ) : (
                       <>
-                        Pay ${totalPrice} →
+                        Pay $${totalPrice} Now →
                       </>
                     )}
                   </button>
@@ -476,7 +516,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
           <div className="mt-6 flex items-center justify-center gap-4 text-xs text-slate-400">
             <span className="flex items-center gap-1">🔒 256-bit SSL</span>
             <span>•</span>
-            <span className="flex items-center gap-1">🛡️ Verified</span>
+            <span className="flex items-center gap-1">🛡️ Secure</span>
             <span>•</span>
             <span>Bank Alfalah</span>
           </div>
