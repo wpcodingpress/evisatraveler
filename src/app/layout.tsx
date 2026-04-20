@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Header, Footer } from '@/components/home/header-footer';
+import PublicLayout from '@/components/PublicLayout';
 import { ScrollToTop } from '@/components/home/scroll-to-top';
 
 export const metadata: Metadata = {
@@ -18,12 +18,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const isAdmin = typeof window !== 'undefined' && window.location.pathname?.startsWith('/admin');
-  
   return (
     <html lang="en" className="scroll-smooth">
       <body className="min-h-screen flex flex-col bg-white font-sans antialiased">
-        {children}
+        <PublicLayout>
+          {children}
+        </PublicLayout>
         <ScrollToTop />
       </body>
     </html>
