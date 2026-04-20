@@ -198,7 +198,7 @@ export default function VisaRulesPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
           <p className="text-sm text-slate-500">Total Routes</p>
           <p className="text-2xl font-bold text-slate-900 mt-1">{stats.total.toLocaleString()}</p>
@@ -210,10 +210,6 @@ export default function VisaRulesPage() {
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
           <p className="text-sm text-slate-500">Inactive</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{stats.inactive.toLocaleString()}</p>
-        </div>
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-          <p className="text-sm text-slate-500">Avg Price</p>
-          <p className="text-2xl font-bold text-violet-600 mt-1">${stats.avgPrice}</p>
         </div>
       </div>
 

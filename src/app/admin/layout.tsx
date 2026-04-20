@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -15,7 +15,45 @@ const navigation = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch('/api/notifications?unread=true');
+      const data = await res.json();
+      setNotifications(data.notifications || []);
+      setUnreadCount(data.unreadCount || 0);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
+  };
+
+  const markAsRead = async (id: string) => {
+    await fetch('/api/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, isRead: true }),
+    });
+    fetchNotifications();
+  };
+
+  const markAllAsRead = async () => {
+    await fetch('/api/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ markAllRead: true }),
+    });
+    fetchNotifications();
+  };
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -112,12 +150,56 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
             <div className="flex-1 lg:flex-none" />
             <div className="flex items-center gap-4">
-              <button className="relative text-slate-500 hover:text-slate-700">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
-              </button>
+              <div className="relative">
+                <button 
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative text-slate-500 hover:text-slate-700"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50">
+                    <div className="p-3 border-b border-slate-200 flex items-center justify-between">
+                      <span className="font-semibold text-slate-900">Notifications</span>
+                      {unreadCount > 0 && (
+                        <button onClick={markAllAsRead} className="text-xs text-violet-600 hover:underline">
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {notifications.length > 0 ? (
+                        notifications.map((notif: any) => (
+                          <div 
+                            key={notif.id} 
+                            onClick={() => markAsRead(notif.id)}
+                            className={`p-3 border-b border-slate-100 cursor-pointer hover:bg-slate-50 ${!notif.isRead ? 'bg-violet-50' : ''}`}
+                          >
+                            <p className="font-medium text-sm text-slate-900">{notif.title}</p>
+                            <p className="text-xs text-slate-500">{notif.message}</p>
+                            <p className="text-xs text-slate-400 mt-1">
+                              {new Date(notif.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-4 text-center text-slate-500">No new notifications</div>
+                      )}
+                    </div>
+                    <Link href="/admin/notifications" className="block p-3 text-center text-sm text-violet-600 border-t border-slate-200 hover:bg-slate-50">
+                      View all notifications
+                    </Link>
+                  </div>
+                )}
+              </div>
               <div className="hidden sm:flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
                   A

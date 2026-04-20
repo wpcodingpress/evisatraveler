@@ -7,19 +7,13 @@ interface Country {
   name: string;
   code: string;
   flag: string;
-  region: string;
-  continent: string;
   visaRulesTo: number;
   visaRulesFrom: number;
 }
 
-const REGIONS = ['Asia', 'Europe', 'Americas', 'Africa', 'Oceania', 'Middle East'];
-const CONTINENTS = ['Asia', 'Europe', 'Africa', 'North America', 'South America', 'Oceania', 'Antarctica'];
-
 export default function CountriesPage() {
   const [countries, setCountries] = useState<Country[]>([]);
   const [search, setSearch] = useState('');
-  const [regionFilter, setRegionFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingCountry, setEditingCountry] = useState<Partial<Country> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,13 +22,12 @@ export default function CountriesPage() {
 
   useEffect(() => {
     fetchCountries();
-  }, [search, regionFilter]);
+  }, [search]);
 
   const fetchCountries = async () => {
     try {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
-      if (regionFilter) params.set('region', regionFilter);
       params.set('limit', '300');
       
       const res = await fetch(`/api/admin/countries?${params}`);
@@ -58,13 +51,11 @@ export default function CountriesPage() {
       name: (form.elements.namedItem('name') as HTMLInputElement).value,
       code: (form.elements.namedItem('code') as HTMLInputElement).value.toUpperCase(),
       flag: (form.elements.namedItem('flag') as HTMLInputElement).value,
-      region: (form.elements.namedItem('region') as HTMLSelectElement).value,
-      continent: (form.elements.namedItem('continent') as HTMLSelectElement).value,
     };
 
     try {
       const res = await fetch('/api/admin/countries', {
-        method: editingCountry ? 'PUT' : 'POST',
+        method: editingCountry?.id ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingCountry ? { ...countryData, id: editingCountry.id } : countryData),
       });
@@ -90,8 +81,6 @@ export default function CountriesPage() {
       name: country.name,
       code: country.code,
       flag: country.flag,
-      region: country.region,
-      continent: country.continent,
     });
     setShowModal(true);
   };
@@ -114,7 +103,6 @@ export default function CountriesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-slate-900">Countries</h1>
@@ -131,64 +119,43 @@ export default function CountriesPage() {
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
           <p className="text-sm text-slate-500">Total Countries</p>
           <p className="text-2xl font-bold text-slate-900 mt-1">{countries.length}</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-          <p className="text-sm text-slate-500">Asia</p>
-          <p className="text-2xl font-bold text-violet-600 mt-1">{countries.filter(c => c.region === 'Asia').length}</p>
+          <p className="text-sm text-slate-500">Total Visa Routes</p>
+          <p className="text-2xl font-bold text-violet-600 mt-1">{countries.reduce((sum, c) => sum + (c.visaRulesTo || 0), 0)}</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-          <p className="text-sm text-slate-500">Europe</p>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">{countries.filter(c => c.region === 'Europe').length}</p>
-        </div>
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-          <p className="text-sm text-slate-500">Americas</p>
-          <p className="text-2xl font-bold text-amber-600 mt-1">{countries.filter(c => c.region === 'Americas').length}</p>
+          <p className="text-sm text-slate-500">Active Origins</p>
+          <p className="text-2xl font-bold text-emerald-600 mt-1">{countries.filter(c => (c.visaRulesFrom || 0) > 0).length}</p>
         </div>
       </div>
 
-      {/* Search & Filters */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="relative md:col-span-2">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search countries..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all"
-            />
-          </div>
-          <select
-            value={regionFilter}
-            onChange={(e) => setRegionFilter(e.target.value)}
-            className="px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
-          >
-            <option value="">All Regions</option>
-            {REGIONS.map(r => (
-              <option key={r} value={r}>{r}</option>
-            ))}
-          </select>
+        <div className="relative">
+          <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search countries..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all"
+          />
         </div>
       </div>
 
-      {/* Countries Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px]">
+          <table className="w-full min-w-[700px]">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="px-5 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Country</th>
                 <th className="px-5 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Code</th>
-                <th className="px-5 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Region</th>
-                <th className="px-5 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Continent</th>
                 <th className="px-5 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Visa Routes (To)</th>
                 <th className="px-5 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Visa Routes (From)</th>
                 <th className="px-5 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
@@ -208,20 +175,6 @@ export default function CountriesPage() {
                       {country.code}
                     </span>
                   </td>
-                  <td className="px-5 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                      country.region === 'Asia' ? 'bg-violet-100 text-violet-700' :
-                      country.region === 'Europe' ? 'bg-emerald-100 text-emerald-700' :
-                      country.region === 'Americas' ? 'bg-amber-100 text-amber-700' :
-                      country.region === 'Africa' ? 'bg-orange-100 text-orange-700' :
-                      country.region === 'Oceania' ? 'bg-blue-100 text-blue-700' :
-                      country.region === 'Middle East' ? 'bg-rose-100 text-rose-700' :
-                      'bg-slate-100 text-slate-700'
-                    }`}>
-                      {country.region || 'Unknown'}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-slate-600">{country.continent || 'Unknown'}</td>
                   <td className="px-5 py-4">
                     <span className="font-medium text-violet-600">{country.visaRulesTo || 0}</span>
                   </td>
@@ -250,7 +203,6 @@ export default function CountriesPage() {
         )}
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
@@ -298,35 +250,6 @@ export default function CountriesPage() {
                     placeholder="🇵🇰"
                     className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
                   />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Region</label>
-                  <select 
-                    name="region" 
-                    defaultValue={editingCountry?.region || ''}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
-                  >
-                    <option value="">Select region...</option>
-                    {REGIONS.map(r => (
-                      <option key={r} value={r}>{r}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Continent</label>
-                  <select 
-                    name="continent" 
-                    defaultValue={editingCountry?.continent || ''}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
-                  >
-                    <option value="">Select continent...</option>
-                    {CONTINENTS.map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
                 </div>
               </div>
 

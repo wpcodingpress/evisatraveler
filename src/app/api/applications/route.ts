@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { generateApplicationNumber, generateOrderId } from '@/lib/utils';
 import { initiateBankAlfalahPayment } from '@/lib/bank-alfalah';
@@ -47,15 +48,35 @@ export async function POST(request: Request) {
     // Try to create application in database
     let application;
     try {
+      const userId = (await cookies()).get('user_id')?.value;
       application = await prisma.application.create({
         data: {
           visaRuleId,
           applicationNumber,
+          userId: userId || undefined,
           formData: formData as unknown as object,
           totalAmount: finalAmount,
           currency: currency || 'USD',
           status: 'pending',
           paymentStatus: 'pending',
+        },
+        include: {
+          visaRule: {
+            include: {
+              toCountry: true,
+              fromCountry: true,
+            }
+          },
+          user: true,
+        },
+      });
+
+      await prisma.notification.create({
+        data: {
+          type: 'new_application',
+          title: 'New Visa Application',
+          message: `Application #${applicationNumber} for ${application.visaRule?.toCountry?.name || 'visa'} - $${finalAmount}`,
+          data: { applicationId: application.id, amount: finalAmount },
         },
       });
     } catch (dbError) {

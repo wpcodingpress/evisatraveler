@@ -30,6 +30,15 @@ export async function POST(request: Request) {
       },
     });
 
+    await prisma.notification.create({
+      data: {
+        type: 'new_user',
+        title: 'New User Registration',
+        message: `${firstName} ${lastName} (${email}) has registered`,
+        data: { userId: user.id, email },
+      },
+    });
+
     return NextResponse.json({
       user: {
         id: user.id,
