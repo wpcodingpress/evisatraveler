@@ -1,37 +1,63 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
 
-interface Props {
-  params: Promise<{ appNumber: string }>;
-}
-
-async function getApplication(appNumber: string) {
-  const app = await prisma.application.findUnique({
-    where: { applicationNumber: appNumber },
-    include: {
-      visaRule: {
-        include: { toCountry: true, fromCountry: true },
-      },
-    },
-  });
-  return app;
-}
-
-export async function generateMetadata({ params }: Props) {
-  const { appNumber } = await params;
-  const app = await getApplication(appNumber);
-  if (!app) return { title: 'Application Not Found' };
-  return {
-    title: `Application ${app.applicationNumber} | E-Visa Traveler`,
-    description: `Your visa application status: ${app.status}`,
+interface Application {
+  id: string;
+  applicationNumber: string;
+  status: string;
+  paymentStatus: string;
+  totalAmount: string;
+  currency: string;
+  createdAt: string;
+  visaRule: {
+    visaType: string;
+    processingTime: string;
+    toCountry: {
+      name: string;
+      flag: string;
+    };
   };
 }
 
-export default async function ConfirmationPage({ params }: Props) {
-  const { appNumber } = await params;
-  const app = await getApplication(appNumber);
+export default function ConfirmationPage({ params }: { params: { appNumber: string } }) {
+  const [app, setApp] = useState<Application | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchApp() {
+      try {
+        const res = await fetch(`/api/applications/${params.appNumber}`);
+        if (res.ok) {
+          const data = await res.json();
+          setApp(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch application', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchApp();
+  }, [params.appNumber]);
+
+  if (loading) {
+    return (
+      <main className="flex-1 py-12 md:py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl border border-purple-100 p-12 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+              <p className="text-slate-600">Loading application...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (!app) return notFound();
 

@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 const updateSchema = z.object({
   id: z.string(),
-  status: z.enum(['pending', 'processing', 'approved', 'rejected']).optional(),
+  status: z.enum(['pending', 'processing', 'approved', 'completed', 'rejected']).optional(),
   paymentStatus: z.enum(['pending', 'paid', 'failed', 'refunded']).optional(),
   notes: z.string().optional(),
   processedAt: z.string().optional(),
@@ -101,7 +101,7 @@ export async function PATCH(request: Request) {
 
     if (status) {
       updateData.status = status;
-      if (processedAt || status === 'approved' || status === 'rejected') {
+      if (processedAt || status === 'approved' || status === 'rejected' || status === 'completed') {
         updateData.processedAt = processedAt ? new Date(processedAt) : new Date();
       }
     }
@@ -137,6 +137,10 @@ export async function PATCH(request: Request) {
         approved: { 
           title: 'Application Approved!', 
           message: `Great news! Your application ${application.applicationNumber} has been approved. Your e-visa will be sent to your email.` 
+        },
+        completed: { 
+          title: 'Application Completed', 
+          message: `Your application ${application.applicationNumber} has been completed successfully. Thank you for choosing eVisaTraveler!` 
         },
         rejected: { 
           title: 'Application Rejected', 

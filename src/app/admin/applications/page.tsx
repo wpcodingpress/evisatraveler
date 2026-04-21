@@ -45,11 +45,19 @@ interface Application {
 }
 
 const statusColors: Record<string, string> = {
-  approved: 'bg-emerald-100 text-emerald-700',
-  pending: 'bg-amber-100 text-amber-700',
-  rejected: 'bg-red-100 text-red-700',
-  processing: 'bg-violet-100 text-violet-700',
-  completed: 'bg-blue-100 text-blue-700',
+  approved: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  pending: 'bg-amber-100 text-amber-700 border-amber-200',
+  rejected: 'bg-red-100 text-red-700 border-red-200',
+  processing: 'bg-blue-100 text-blue-700 border-blue-200',
+  completed: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-400',
+};
+
+const statusLabels: Record<string, string> = {
+  pending: 'Pending',
+  processing: 'Processing',
+  approved: 'Approved',
+  completed: 'Completed',
+  rejected: 'Rejected',
 };
 
 export default function ApplicationsPage() {
@@ -280,17 +288,22 @@ export default function ApplicationsPage() {
                   <p className="font-medium text-slate-900">{formatDate(app.createdAt)}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <select
-                    value={app.status}
-                    onChange={(e) => handleStatusChange(app.id, e.target.value)}
-                    className="px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 bg-white"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="approved">Approved</option>
-                    <option value="completed">Completed</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={app.status}
+                      onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                      className={`appearance-none px-4 py-2 pr-8 text-sm font-semibold rounded-xl border-2 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500 ${statusColors[app.status] || 'bg-slate-100 text-slate-700'}`}
+                    >
+                      {Object.entries(statusLabels).map(([value, label]) => (
+                        <option key={value} value={value} className="bg-white text-slate-900">{label}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="w-4 h-4 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                   <button
                     onClick={() => setSelectedApp(app)}
                     className="px-4 py-2 text-sm font-medium text-violet-600 hover:bg-violet-50 rounded-xl transition-colors"
