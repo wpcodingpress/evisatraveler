@@ -338,49 +338,59 @@ export default function ApplicationsPage() {
       )}
 
       {selectedApp && (
-        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-2xl my-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-slate-900">Application Details</h2>
-              <button onClick={() => setSelectedApp(null)} className="text-slate-400 hover:text-slate-600">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        <div 
+          className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
+          onClick={(e) => e.target === e.currentTarget && setSelectedApp(null)}
+        >
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-2xl md:max-w-3xl lg:max-w-4xl my-1 sm:my-4 mx-1 sm:mx-auto overflow-hidden">
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-violet-600 to-purple-600 px-4 sm:px-6 py-4 flex items-center justify-between z-10">
+              <h2 className="text-lg sm:text-xl font-bold text-white">Application Details</h2>
+              <button 
+                onClick={() => setSelectedApp(null)} 
+                className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
             
-            <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+            {/* Content - Scrollable */}
+            <div className="max-h-[75vh] sm:max-h-[80vh] overflow-y-auto p-4 sm:p-6 space-y-6">
               {/* User Info Section */}
-              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+              <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                   {(selectedApp.user?.firstName?.[0] || '?')}{(selectedApp.user?.lastName?.[0] || '')}
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-lg">
+                <div className="min-w-0">
+                  <h3 className="font-bold text-slate-900 text-base sm:text-lg truncate">
                     {selectedApp.user?.firstName || 'Unknown'} {selectedApp.user?.lastName || 'User'}
                   </h3>
-                  <p className="text-slate-500">{selectedApp.user?.email || 'No email'}</p>
-                  {selectedApp.user?.phone && <p className="text-slate-500">{selectedApp.user.phone}</p>}
+                  <p className="text-slate-500 text-sm truncate">{selectedApp.user?.email || 'No email'}</p>
+                  {selectedApp.user?.phone && <p className="text-slate-500 text-sm">{selectedApp.user.phone}</p>}
                 </div>
               </div>
 
               {/* Basic Info Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-slate-50 rounded-xl">
-                  <p className="text-sm text-slate-500">Application No.</p>
-                  <p className="font-semibold text-slate-900">{selectedApp.applicationNumber || 'N/A'}</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="p-3 sm:p-4 bg-slate-50 rounded-xl">
+                  <p className="text-xs sm:text-sm text-slate-500">Application No.</p>
+                  <p className="font-semibold text-slate-900 text-sm sm:text-base">{selectedApp.applicationNumber || 'N/A'}</p>
                 </div>
-                <div className="p-4 bg-slate-50 rounded-xl">
-                  <p className="text-sm text-slate-500">Submitted Date</p>
-                  <p className="font-semibold text-slate-900">{formatDate(selectedApp.createdAt)}</p>
+                <div className="p-3 sm:p-4 bg-slate-50 rounded-xl">
+                  <p className="text-xs sm:text-sm text-slate-500">Submitted Date</p>
+                  <p className="font-semibold text-slate-900 text-sm sm:text-base">{formatDate(selectedApp.createdAt)}</p>
                 </div>
                 {selectedApp.processedAt && (
-                  <div className="p-4 bg-slate-50 rounded-xl">
-                    <p className="text-sm text-slate-500">Processed Date</p>
-                    <p className="font-semibold text-slate-900">{formatDate(selectedApp.processedAt)}</p>
+                  <div className="p-3 sm:p-4 bg-slate-50 rounded-xl">
+                    <p className="text-xs sm:text-sm text-slate-500">Processed Date</p>
+                    <p className="font-semibold text-slate-900 text-sm sm:text-base">{formatDate(selectedApp.processedAt)}</p>
                   </div>
                 )}
-                <div className="p-4 bg-slate-50 rounded-xl">
-                  <p className="text-sm text-slate-500">Visa Type</p>
-                  <p className="font-semibold text-slate-900">{selectedApp.visaRule?.visaType || 'N/A'}</p>
+                <div className="p-3 sm:p-4 bg-slate-50 rounded-xl">
+                  <p className="text-xs sm:text-sm text-slate-500">Visa Type</p>
+                  <p className="font-semibold text-slate-900 text-sm sm:text-base">{selectedApp.visaRule?.visaType || 'N/A'}</p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-sm text-slate-500">Destination</p>
@@ -523,49 +533,64 @@ export default function ApplicationsPage() {
                 </div>
               )}
 
-              {/* Documents - with Image Previews */}
+{/* Documents - with Image Previews - Clickable */}
               {selectedApp.documents && selectedApp.documents.length > 0 && (
                 <div className="border-t pt-6">
-                  <h3 className="font-bold text-slate-900 text-lg mb-4">Uploaded Documents & Photos</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <h3 className="font-bold text-slate-900 text-base sm:text-lg mb-4">Uploaded Documents & Photos</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                     {selectedApp.documents.map((doc) => {
                       const imageUrl = doc.filePath || `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`;
                       return (
-                      <div key={doc.id} className="bg-slate-50 rounded-xl overflow-hidden border border-slate-200">
+                      <div key={doc.id} className="group relative bg-slate-50 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-violet-400 hover:shadow-lg transition-all">
                         {doc.mimeType?.includes('image') ? (
-                          <div className="relative">
+                          <div className="relative aspect-square sm:aspect-[4/3]">
                             <img 
                               src={imageUrl}
                               alt={doc.originalName || doc.type}
-                              className="w-full h-32 object-cover"
+                              className="w-full h-full object-cover cursor-pointer"
+                              onClick={() => window.open(imageUrl, '_blank')}
                               onError={(e) => {
                                 (e.target as HTMLImageElement).style.display = 'none';
                               }}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end">
+                            {/* Hover Overlay with Actions */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 sm:p-3">
+                              <button 
+                                onClick={() => window.open(imageUrl, '_blank')}
+                                className="w-full py-2 px-3 bg-white/90 hover:bg-white text-violet-600 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                View Full
+                              </button>
                               <a 
                                 href={imageUrl}
                                 download={doc.originalName || doc.fileName}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="w-full py-2 bg-black/50 text-white text-xs font-medium text-center hover:bg-black/70"
+                                className="w-full py-2 px-3 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors mt-1"
                               >
-                                View Full
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Download
                               </a>
                             </div>
                           </div>
                         ) : (
-                          <div className="h-24 flex items-center justify-center bg-red-50">
-                            <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <div className="aspect-square sm:aspect-[4/3] flex items-center justify-center bg-red-50">
+                            <svg className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                           </div>
                         )}
-                        <div className="p-2">
-                          <p className="font-semibold text-slate-900 text-sm capitalize">{doc.type || 'Document'}</p>
-                          <p className="text-xs text-slate-500 truncate">{doc.originalName || doc.fileName}</p>
+                        <div className="p-2 sm:p-3 bg-white">
+                          <p className="font-semibold text-slate-900 text-xs sm:text-sm capitalize">{doc.type || 'Document'}</p>
+                          <p className="text-xs text-slate-500 truncate hidden sm:block">{doc.originalName || doc.fileName}</p>
                         </div>
-</div>
+                      </div>
                       );
                     })}
                   </div>
