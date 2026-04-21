@@ -36,7 +36,10 @@ export async function GET(request: Request) {
 
     // Admin sees all notifications, user sees only their own
     if (user.role !== 'admin') {
-      where.userId = userId.value;
+      where.OR = [
+        { userId: userId.value },
+        { userId: null },
+      ];
     }
 
     const notifications = await prisma.notification.findMany({

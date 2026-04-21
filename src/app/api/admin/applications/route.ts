@@ -33,7 +33,17 @@ export async function GET(request: Request) {
       prisma.application.findMany({
         where,
         include: {
-          user: { select: { id: true, firstName: true, lastName: true, email: true } },
+          user: { 
+            select: { 
+              id: true, 
+              firstName: true, 
+              lastName: true, 
+              email: true,
+              phone: true,
+              role: true,
+              createdAt: true,
+            } 
+          },
           visaRule: {
             include: {
               fromCountry: { select: { code: true, name: true, flag: true } },
@@ -84,6 +94,10 @@ export async function PATCH(request: Request) {
 
     const { id, status, paymentStatus, notes, processedAt } = validation.data;
     const updateData: any = {};
+    const previousApp = await prisma.application.findUnique({ 
+      where: { id },
+      include: { user: true }
+    });
 
     if (status) {
       updateData.status = status;
@@ -92,19 +106,94 @@ export async function PATCH(request: Request) {
       }
     }
     if (paymentStatus) updateData.paymentStatus = paymentStatus;
-    if (notes) {
-      const existing = await prisma.application.findUnique({ where: { id } });
+    if (notes !== undefined) {
       updateData.notes = notes;
     }
 
     const application = await prisma.application.update({
       where: { id },
       data: updateData,
+      include: {
+        user: true,
+        visaRule: {
+          include: {
+            toCountry: true,
+            fromCountry: true
+          }
+        }
+      },
     });
+
+    if (status && status !== (previousApp?.status || '')) {
+      const statusMessages: Record<string, { title: string; message: string }> = {
+        pending: { 
+          title: 'Application Pending', 
+          message: `Your application ${application.applicationNumber} is now pending review.` 
+        },
+        processing: { 
+          title: 'Application Under Processing', 
+          message: `Your application ${application.applicationNumber} is now being processed. An invoice has been generated.` 
+        },
+        approved: { 
+          title: 'Application Approved!', 
+          message: `Great news! Your application ${application.applicationNumber} has been approved. Your e-visa will be sent to your email.` 
+        },
+        rejected: { 
+          title: 'Application Rejected', 
+          message: `Your application ${application.applicationNumber} has been rejected. Please contact support for more information.` 
+        },
+      };
+
+      const notifData = statusMessages[status];
+      if (notifData && application.userId) {
+        await prisma.notification.create({
+          data: {
+            type: 'application_status',
+            title: notifData.title,
+            message: notifData.message,
+            data: {
+              applicationId: application.id,
+              applicationNumber: application.applicationNumber,
+              status: status,
+              previousStatus: previousApp?.status,
+            },
+            userId: application.userId,
+          },
+        });
+      }
+    }
 
     return NextResponse.json(application);
   } catch (error) {
     console.error('Application update error:', error);
     return NextResponse.json({ error: 'Failed to update application' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Application ID is required' }, { status: 400 });
+    }
+
+    const application = await prisma.application.findUnique({
+      where: { id },
+    });
+
+    if (!application) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    }
+
+    await prisma.application.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Application deletion error:', error);
+    return NextResponse.json({ error: 'Failed to delete application' }, { status: 500 });
   }
 }

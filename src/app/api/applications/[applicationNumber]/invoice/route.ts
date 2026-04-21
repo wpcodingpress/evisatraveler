@@ -2,22 +2,23 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import jsPDF from 'jspdf';
-import { formatCurrency, formatDateTime } from '@/lib/utils';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const applicationNumber = searchParams.get('applicationNumber');
+    const adminView = searchParams.get('admin') === 'true';
 
     if (!applicationNumber) {
       return NextResponse.json({ error: 'Application number required' }, { status: 400 });
     }
 
-    // Check authentication
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('user_id');
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!adminView) {
+      const cookieStore = await cookies();
+      const userId = cookieStore.get('user_id');
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
 
     let application;
@@ -42,100 +43,279 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
-    // Verify ownership
-    if (application.userId !== userId.value) {
+    if (!adminView && application.userId !== (await cookies()).get('user_id')?.value) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Generate PDF
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let y = 20;
 
-    // Header
-    doc.setFontSize(24);
-    doc.setTextColor(124, 58, 237); // violet-600
-    doc.text('INVOICE', pageWidth / 2, 20, { align: 'center' });
-
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Invoice Date: ${formatDateTime(application.createdAt)}`, pageWidth / 2, 30, { align: 'center' });
-
-    // Company Info
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text('eVisaTraveler', 20, 45);
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text('Global Visa Solutions', 20, 52);
-    doc.text('contact@evisatraveler.com', 20, 59);
-
-    // Bill To
-    doc.setFontSize(11);
-    doc.setTextColor(0);
-    doc.text('Bill To:', 20, 75);
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    const userName = application.user ? `${application.user.firstName} ${application.user.lastName}` : 'Customer';
-    const userEmail = application.user?.email || 'N/A';
-    const userPhone = application.user?.phone || 'N/A';
-    doc.text(userName, 20, 82);
-    doc.text(userEmail, 20, 89);
-    doc.text(userPhone, 20, 96);
-
-    // Invoice Details
-    doc.setFontSize(11);
-    doc.setTextColor(0);
-    doc.text('Invoice #:', pageWidth - 60, 75);
-    doc.text('Application #:', pageWidth - 60, 85);
-    doc.text('Issue Date:', pageWidth - 60, 95);
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(application.applicationNumber, pageWidth - 30, 75, { align: 'right' });
-    doc.text(application.applicationNumber, pageWidth - 30, 85, { align: 'right' });
-    doc.text(formatDateTime(application.createdAt), pageWidth - 30, 95, { align: 'right' });
-
-    // Line Items
-    doc.setDrawColor(200);
-    doc.line(20, 105, pageWidth - 20, 105);
+    doc.setFillColor(124, 58, 237);
+    doc.rect(0, 0, pageWidth, 40, 'F');
     
-    doc.setFontSize(11);
-    doc.setTextColor(0);
-    doc.text('Description', 20, 115);
-    doc.text('Amount', pageWidth - 40, 115);
-    doc.line(20, 118, pageWidth - 20, 118);
-
-    // Visa Details
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    const visaDesc = `${application.visaRule.visaType} Visa to ${application.visaRule.toCountry.name}`;
-    doc.text(visaDesc, 20, 128);
-    const amount = formatCurrency(application.totalAmount);
-    doc.text(amount, pageWidth - 40, 128, { align: 'right' });
-
-    // Total
-    doc.setDrawColor(150);
-    doc.line(20, 138, pageWidth - 20, 138);
-    doc.setFontSize(12);
-    doc.setTextColor(0);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('Total', 20, 148);
-    doc.setTextColor(124, 58, 237);
-    doc.text(amount, pageWidth - 40, 148, { align: 'right' });
-
-    // Payment Status
+    doc.text('INVOICE', pageWidth / 2, 25, { align: 'center' });
+    
     doc.setFontSize(10);
-    doc.setTextColor(100);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Payment Status: ${application.paymentStatus}`, 20, 165);
-    doc.text(`Currency: ${application.currency}`, 20, 173);
+    doc.text('eVisaTraveler - Global Visa Solutions', pageWidth / 2, 33, { align: 'center' });
 
-    // Footer
+    y = 55;
+    doc.setTextColor(0, 0, 0);
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Invoice Details', 20, y);
+    y += 10;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    
+    const invoiceNum = `INV-${application.applicationNumber}`;
+    doc.text(`Invoice Number: ${invoiceNum}`, 20, y);
+    doc.text(`Application Number: ${application.applicationNumber}`, 120, y);
+    y += 7;
+    doc.text(`Invoice Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 20, y);
+    doc.text(`Status: ${application.status.toUpperCase()}`, 120, y);
+    y += 15;
+
+    doc.setDrawColor(200);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 10;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Applicant Information', 20, y);
+    y += 10;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    const formData = application.formData as Record<string, any>;
+    const applicantName = formData?.firstName && formData?.lastName 
+      ? `${formData.firstName} ${formData.lastName}` 
+      : (application.user ? `${application.user.firstName} ${application.user.lastName}` : 'N/A');
+    const applicantEmail = formData?.email || application.user?.email || 'N/A';
+    const applicantPhone = formData?.phone || application.user?.phone || 'N/A';
+    const dob = formData?.dateOfBirth || 'N/A';
+    const gender = formData?.gender || 'N/A';
+    const nationality = formData?.nationality || 'N/A';
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Full Name:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(applicantName, 60, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Email:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(applicantEmail, 60, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Phone:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(applicantPhone, 60, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Date of Birth:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(dob, 60, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Gender:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(gender.charAt(0).toUpperCase() + gender.slice(1), 60, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Nationality:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(nationality, 60, y);
+    y += 15;
+
+    doc.setDrawColor(200);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 10;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Passport Information', 20, y);
+    y += 10;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    const passportNumber = formData?.passportNumber || 'N/A';
+    const passportExpiry = formData?.passportExpiry || 'N/A';
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Passport Number:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(passportNumber, 70, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Passport Expiry:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(passportExpiry, 70, y);
+    y += 15;
+
+    doc.setDrawColor(200);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 10;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Travel Details', 20, y);
+    y += 10;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    const arrivalDate = formData?.arrivalDate || 'N/A';
+    const departureDate = formData?.departureDate || 'N/A';
+    const destination = application.visaRule?.toCountry?.name || 'N/A';
+    const fromCountry = application.visaRule?.fromCountry?.name || 'N/A';
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('From Country:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(fromCountry, 70, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Destination:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(destination, 70, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Arrival Date:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(arrivalDate, 70, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Departure Date:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(departureDate, 70, y);
+    y += 15;
+
+    doc.setDrawColor(200);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 10;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Visa Information', 20, y);
+    y += 10;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    const visaType = application.visaRule?.visaType || 'N/A';
+    const processingTime = application.visaRule?.processingTime || 'N/A';
+    const maxStayDays = application.visaRule?.maxStayDays || 'N/A';
+    const validityDays = application.visaRule?.validityDays || 'N/A';
+    const entryType = application.visaRule?.entryType || 'N/A';
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Visa Type:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`${visaType} Visa`, 70, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Processing Time:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(processingTime, 70, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Maximum Stay:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`${maxStayDays} days`, 70, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Validity:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`${validityDays} days`, 70, y);
+    y += 7;
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text('Entry Type:', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text(entryType, 70, y);
+    y += 15;
+
+    doc.setDrawColor(124, 58, 237);
+    doc.setFillColor(124, 58, 237);
+    doc.rect(20, y, pageWidth - 40, 30, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Total Amount', 30, y + 12);
+    doc.setFontSize(16);
+    doc.text(`$${Number(application.totalAmount).toFixed(2)} ${application.currency || 'USD'}`, pageWidth - 30, y + 20, { align: 'right' });
+    y += 40;
+
+    doc.setDrawColor(200);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 10;
+
+    doc.setTextColor(100, 100, 100);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    doc.text('Payment Status:', 20, y);
+    const paymentStatus = application.paymentStatus?.toUpperCase() || 'PENDING';
+    doc.setTextColor(
+      application.paymentStatus === 'paid' ? 22 : 234, 
+      application.paymentStatus === 'paid' ? 179 : 179, 
+      application.paymentStatus === 'paid' ? 68 : 68
+    );
+    doc.text(paymentStatus, 60, y);
+    y += 15;
+
+    doc.setTextColor(150, 150, 150);
     doc.setFontSize(9);
-    doc.setTextColor(150);
-    doc.text('Thank you for choosing eVisaTraveler!', pageWidth / 2, 270, { align: 'center' });
-    doc.text('For questions, contact: support@evisatraveler.com', pageWidth / 2, 278, { align: 'center' });
+    doc.text('Terms & Conditions:', 20, y);
+    y += 7;
+    doc.setFontSize(8);
+    doc.text('1. This invoice is valid for 30 days from the date of issue.', 20, y);
+    y += 5;
+    doc.text('2. Visa processing time starts from the date of payment confirmation.', 20, y);
+    y += 5;
+    doc.text('3. All documents submitted must be authentic and valid.', 20, y);
+    y += 5;
+    doc.text('4. The visa fee is non-refundable once processing has begun.', 20, y);
+    y += 15;
 
-    // Return PDF
+    doc.setTextColor(124, 58, 237);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Thank you for choosing eVisaTraveler!', pageWidth / 2, y, { align: 'center' });
+    y += 7;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(150, 150, 150);
+    doc.setFontSize(9);
+    doc.text('For questions, contact: support@evisatraveler.com | www.evisatraveler.com', pageWidth / 2, y, { align: 'center' });
+
     const pdfBuffer = doc.output('arraybuffer');
     
     return new NextResponse(pdfBuffer, {

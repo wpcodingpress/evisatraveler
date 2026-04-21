@@ -8,13 +8,40 @@ interface Application {
   status: string;
   paymentStatus: string;
   totalAmount: number;
+  currency: string;
   createdAt: string;
-  user: { firstName: string; lastName: string; email: string } | null;
+  updatedAt: string;
+  processedAt: string | null;
+  notes: string | null;
+  formData: Record<string, any>;
+  user: { 
+    firstName: string; 
+    lastName: string; 
+    email: string;
+    phone?: string;
+    role?: string;
+    createdAt?: string;
+  } | null;
   visaRule: { 
     visaType: string;
+    processingTime: string;
+    processingDays: number;
+    maxStayDays: number;
+    validityDays: number;
+    entryType: string;
+    price: number;
+    currency: string;
     toCountry: { name: string; code: string; flag: string };
-    fromCountry: { name: string; code: string };
+    fromCountry: { name: string; code: string; flag: string };
   } | null;
+  documents: Array<{
+    id: string;
+    type: string;
+    originalName: string;
+    fileName: string;
+    mimeType: string;
+    fileSize: number;
+  }>;
 }
 
 const statusColors: Record<string, string> = {
@@ -76,12 +103,39 @@ export default function ApplicationsPage() {
       });
       
       if (res.ok) {
+        const updated = await res.json();
         setApplications(applications.map(app =>
-          app.id === id ? { ...app, status: newStatus } : app
+          app.id === id ? { ...app, status: newStatus, updatedAt: updated.updatedAt } : app
         ));
+        if (selectedApp?.id === id) {
+          setSelectedApp({ ...selectedApp, status: newStatus, updatedAt: updated.updatedAt });
+        }
       }
     } catch (err) {
       console.error('Failed to update status', err);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this application? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/applications?id=${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setApplications(applications.filter(app => app.id !== id));
+        if (selectedApp?.id === id) {
+          setSelectedApp(null);
+        }
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete application');
+      }
+    } catch (err) {
+      console.error('Failed to delete application', err);
+      alert('Failed to delete application');
     }
   };
 
@@ -256,15 +310,17 @@ export default function ApplicationsPage() {
       )}
 
       {selectedApp && (
-        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-2xl my-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-slate-900">Application Details</h2>
               <button onClick={() => setSelectedApp(null)} className="text-slate-400 hover:text-slate-600">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <div className="space-y-4">
+            
+            <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+              {/* User Info Section */}
               <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
                   {(selectedApp.user?.firstName?.[0] || '?')}{(selectedApp.user?.lastName?.[0] || '')}
@@ -274,44 +330,257 @@ export default function ApplicationsPage() {
                     {selectedApp.user?.firstName || 'Unknown'} {selectedApp.user?.lastName || 'User'}
                   </h3>
                   <p className="text-slate-500">{selectedApp.user?.email || 'No email'}</p>
+                  {selectedApp.user?.phone && <p className="text-slate-500">{selectedApp.user.phone}</p>}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+
+              {/* Basic Info Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-sm text-slate-500">Application No.</p>
                   <p className="font-semibold text-slate-900">{selectedApp.applicationNumber || 'N/A'}</p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
-                  <p className="text-sm text-slate-500">Date</p>
+                  <p className="text-sm text-slate-500">Submitted Date</p>
                   <p className="font-semibold text-slate-900">{formatDate(selectedApp.createdAt)}</p>
                 </div>
+                {selectedApp.processedAt && (
+                  <div className="p-4 bg-slate-50 rounded-xl">
+                    <p className="text-sm text-slate-500">Processed Date</p>
+                    <p className="font-semibold text-slate-900">{formatDate(selectedApp.processedAt)}</p>
+                  </div>
+                )}
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-sm text-slate-500">Visa Type</p>
                   <p className="font-semibold text-slate-900">{selectedApp.visaRule?.visaType || 'N/A'}</p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-sm text-slate-500">Destination</p>
-                  <p className="font-semibold text-slate-900">{selectedApp.visaRule?.toCountry?.name || 'N/A'}</p>
+                  <p className="font-semibold text-slate-900">{selectedApp.visaRule?.toCountry?.flag} {selectedApp.visaRule?.toCountry?.name || 'N/A'}</p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-xl">
+                  <p className="text-sm text-slate-500">From Country</p>
+                  <p className="font-semibold text-slate-900">{selectedApp.visaRule?.fromCountry?.flag} {selectedApp.visaRule?.fromCountry?.name || 'N/A'}</p>
                 </div>
               </div>
-              <div className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm text-slate-500">Amount Paid</p>
-                    <p className="text-2xl font-bold text-slate-900">${Number(selectedApp.totalAmount || 0)}</p>
+
+              {/* Full Form Data Section */}
+              {selectedApp.formData && Object.keys(selectedApp.formData).length > 0 && (
+                <div className="border-t pt-6">
+                  <h3 className="font-bold text-slate-900 text-lg mb-4">Applicant Information</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {selectedApp.formData.firstName && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">First Name</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.formData.firstName}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.lastName && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Last Name</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.formData.lastName}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.email && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Email</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.formData.email}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.phone && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Phone</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.formData.phone}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.dateOfBirth && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Date of Birth</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.formData.dateOfBirth}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.gender && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Gender</p>
+                        <p className="font-semibold text-slate-900 capitalize">{selectedApp.formData.gender}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.nationality && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Nationality</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.formData.nationality}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.passportNumber && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Passport Number</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.formData.passportNumber}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.passportExpiry && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Passport Expiry</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.formData.passportExpiry}</p>
+                      </div>
+                    )}
                   </div>
-                  <span className={`px-4 py-2 rounded-full text-sm font-semibold capitalize ${statusColors[selectedApp.status] || 'bg-slate-100 text-slate-700'}`}>
-                    {selectedApp.status}
-                  </span>
                 </div>
+              )}
+
+              {/* Trip Details */}
+              {(selectedApp.formData.arrivalDate || selectedApp.formData.departureDate) && (
+                <div className="border-t pt-6">
+                  <h3 className="font-bold text-slate-900 text-lg mb-4">Trip Details</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectedApp.formData.arrivalDate && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Arrival Date</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.formData.arrivalDate}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.departureDate && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Departure Date</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.formData.departureDate}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Visa Rule Details */}
+              {selectedApp.visaRule && (
+                <div className="border-t pt-6">
+                  <h3 className="font-bold text-slate-900 text-lg mb-4">Visa Information</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="p-3 bg-slate-50 rounded-lg">
+                      <p className="text-xs text-slate-500 uppercase">Processing Time</p>
+                      <p className="font-semibold text-slate-900">{selectedApp.visaRule.processingTime || 'N/A'}</p>
+                    </div>
+                    <div className="p-3 bg-slate-50 rounded-lg">
+                      <p className="text-xs text-slate-500 uppercase">Max Stay Days</p>
+                      <p className="font-semibold text-slate-900">{selectedApp.visaRule.maxStayDays || 'N/A'}</p>
+                    </div>
+                    <div className="p-3 bg-slate-50 rounded-lg">
+                      <p className="text-xs text-slate-500 uppercase">Validity Days</p>
+                      <p className="font-semibold text-slate-900">{selectedApp.visaRule.validityDays || 'N/A'}</p>
+                    </div>
+                    <div className="p-3 bg-slate-50 rounded-lg">
+                      <p className="text-xs text-slate-500 uppercase">Entry Type</p>
+                      <p className="font-semibold text-slate-900">{selectedApp.visaRule.entryType || 'N/A'}</p>
+                    </div>
+                    <div className="p-3 bg-slate-50 rounded-lg">
+                      <p className="text-xs text-slate-500 uppercase">Base Price</p>
+                      <p className="font-semibold text-slate-900">${selectedApp.visaRule.price || 0}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Documents */}
+              {selectedApp.documents && selectedApp.documents.length > 0 && (
+                <div className="border-t pt-6">
+                  <h3 className="font-bold text-slate-900 text-lg mb-4">Uploaded Documents</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {selectedApp.documents.map((doc) => (
+                      <div key={doc.id} className="p-3 bg-slate-50 rounded-lg flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-slate-900 capitalize">{doc.type || 'Document'}</p>
+                          <p className="text-xs text-slate-500">{doc.originalName || doc.fileName}</p>
+                          <p className="text-xs text-slate-400">{doc.mimeType} • {Math.round(doc.fileSize / 1024)}KB</p>
+                        </div>
+                        <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded">Uploaded</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Payment & Status Section */}
+              <div className="border-t pt-6">
+                <h3 className="font-bold text-slate-900 text-lg mb-4">Payment & Status</h3>
+                <div className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl">
+                  <div className="flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                      <p className="text-sm text-slate-500">Total Amount</p>
+                      <p className="text-2xl font-bold text-slate-900">${Number(selectedApp.totalAmount || 0)} {selectedApp.currency || 'USD'}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className={`px-4 py-2 rounded-full text-sm font-semibold capitalize ${statusColors[selectedApp.status] || 'bg-slate-100 text-slate-700'}`}>
+                        {selectedApp.status}
+                      </span>
+                      <span className={`px-4 py-2 rounded-full text-sm font-semibold capitalize ${
+                        selectedApp.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' :
+                        selectedApp.paymentStatus === 'pending' ? 'bg-amber-100 text-amber-700' :
+                        'bg-slate-100 text-slate-700'
+                      }`}>
+                        {selectedApp.paymentStatus || 'pending'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Admin Notes */}
+              <div className="border-t pt-6">
+                <h3 className="font-bold text-slate-900 text-lg mb-4">Admin Notes</h3>
+                <textarea
+                  id="adminNotes"
+                  defaultValue={selectedApp.notes || ''}
+                  placeholder="Add notes about this application..."
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  rows={3}
+                />
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3 mt-6">
+              <button 
+                onClick={() => handleDelete(selectedApp.id)}
+                className="px-4 py-2.5 border border-red-200 text-red-600 font-medium rounded-xl hover:bg-red-50 transition-colors"
+              >
+                Delete
+              </button>
+              <button 
+                onClick={async () => {
+                  try {
+                    const res = await fetch(`/api/applications/${selectedApp.applicationNumber}/invoice?admin=true`);
+                    if (res.ok) {
+                      const blob = await res.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `invoice-${selectedApp.applicationNumber}.pdf`;
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                    } else {
+                      alert('Failed to generate invoice');
+                    }
+                  } catch (err) {
+                    alert('Failed to generate invoice');
+                  }
+                }}
+                className="px-4 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+              >
+                Download Invoice
+              </button>
               <button onClick={() => setSelectedApp(null)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors">
                 Close
               </button>
-              <button className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all">
-                Process Application
+              <button 
+                onClick={async () => {
+                  const notes = (document.getElementById('adminNotes') as HTMLTextAreaElement)?.value;
+                  await fetch('/api/admin/applications', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: selectedApp.id, notes }),
+                  });
+                  alert('Notes saved!');
+                }}
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all"
+              >
+                Save Notes
               </button>
             </div>
           </div>

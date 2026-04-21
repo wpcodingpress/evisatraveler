@@ -85,6 +85,25 @@ export default function CountriesPage() {
     setShowModal(true);
   };
 
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this country? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/countries?id=${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchCountries();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete country');
+      }
+    } catch (err) {
+      alert('Failed to delete country');
+    }
+  };
+
   const filteredCountries = countries;
 
   if (loading) {
@@ -188,6 +207,12 @@ export default function CountriesPage() {
                         className="px-3 py-1.5 text-sm font-medium text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
                       >
                         Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(country.id)}
+                        className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        Delete
                       </button>
                     </div>
                   </td>

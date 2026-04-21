@@ -30,6 +30,7 @@ export async function GET(request: Request) {
           email: true,
           firstName: true,
           lastName: true,
+          phone: true,
           role: true,
           isActive: true,
           createdAt: true,
@@ -67,20 +68,59 @@ export async function GET(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    const { id, isActive } = body;
+    const { id, isActive, firstName, lastName, phone, role } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
+    const updateData: any = {};
+    if (isActive !== undefined) updateData.isActive = isActive;
+    if (firstName) updateData.firstName = firstName;
+    if (lastName) updateData.lastName = lastName;
+    if (phone !== undefined) updateData.phone = phone;
+    if (role) updateData.role = role;
+
     const user = await prisma.user.update({
       where: { id },
-      data: { isActive },
+      data: updateData,
     });
 
     return NextResponse.json(user);
   } catch (error) {
     console.error('User update error:', error);
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    if (user.role === 'admin') {
+      return NextResponse.json({ error: 'Cannot delete admin users' }, { status: 400 });
+    }
+
+    await prisma.user.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('User deletion error:', error);
+    return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
   }
 }

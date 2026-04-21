@@ -121,3 +121,39 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Failed to update country' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Country ID is required' }, { status: 400 });
+    }
+
+    const existingRules = await prisma.visaRule.findFirst({
+      where: {
+        OR: [
+          { fromCountryId: id },
+          { toCountryId: id },
+        ],
+      },
+    });
+
+    if (existingRules) {
+      return NextResponse.json(
+        { error: 'Cannot delete country with existing visa rules. Please delete related visa rules first.' },
+        { status: 400 }
+      );
+    }
+
+    await prisma.country.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Country deletion error:', error);
+    return NextResponse.json({ error: 'Failed to delete country' }, { status: 500 });
+  }
+}

@@ -7,9 +7,11 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
+  phone?: string;
   role: string;
   isActive: boolean;
   createdAt: string;
+  updatedAt?: string;
   _count?: { applications: number };
 }
 
@@ -20,6 +22,10 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 });
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<Partial<User> | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -60,6 +66,75 @@ export default function UsersPage() {
       }
     } catch (err) {
       console.error('Failed to update status', err);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/users?id=${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setUsers(users.filter(user => user.id !== id));
+        if (selectedUser?.id === id) {
+          setSelectedUser(null);
+        }
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete user');
+      }
+    } catch (err) {
+      alert('Failed to delete user');
+    }
+  };
+
+  const handleEdit = (user: User) => {
+    setEditingUser({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSaving(true);
+    
+    const form = e.currentTarget;
+    const userData = {
+      id: editingUser?.id,
+      firstName: (form.elements.namedItem('firstName') as HTMLInputElement).value,
+      lastName: (form.elements.namedItem('lastName') as HTMLInputElement).value,
+      phone: (form.elements.namedItem('phone') as HTMLInputElement).value,
+      role: (form.elements.namedItem('role') as HTMLSelectElement).value,
+    };
+
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+      
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to save');
+      }
+      
+      setShowEditModal(false);
+      setEditingUser(null);
+      fetchUsers();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -220,7 +295,28 @@ export default function UsersPage() {
                     </button>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-sm font-medium text-violet-600 hover:text-violet-700">View Details</button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button 
+                        onClick={() => setSelectedUser(user)}
+                        className="text-sm font-medium text-violet-600 hover:text-violet-700"
+                      >
+                        View
+                      </button>
+                      <button 
+                        onClick={() => handleEdit(user)}
+                        className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                      >
+                        Edit
+                      </button>
+                      {user.role !== 'admin' && (
+                        <button 
+                          onClick={() => handleDelete(user.id)}
+                          className="text-sm font-medium text-red-600 hover:text-red-700"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -236,6 +332,134 @@ export default function UsersPage() {
           </div>
         )}
       </div>
+
+      {/* View User Details Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-slate-900">User Details</h2>
+              <button onClick={() => setSelectedUser(null)} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg ${
+                  selectedUser.role === 'admin' ? 'bg-gradient-to-br from-amber-500 to-orange-600' : 'bg-gradient-to-br from-violet-500 to-purple-600'
+                }`}>
+                  {selectedUser.firstName[0]}{selectedUser.lastName[0]}
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-lg">
+                    {selectedUser.firstName} {selectedUser.lastName}
+                  </h3>
+                  <p className="text-slate-500">{selectedUser.email}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-50 rounded-xl">
+                  <p className="text-sm text-slate-500">Role</p>
+                  <p className="font-semibold text-slate-900 capitalize">{selectedUser.role}</p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-xl">
+                  <p className="text-sm text-slate-500">Status</p>
+                  <p className={`font-semibold ${selectedUser.isActive ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {selectedUser.isActive ? 'Active' : 'Inactive'}
+                  </p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-xl">
+                  <p className="text-sm text-slate-500">Joined</p>
+                  <p className="font-semibold text-slate-900">{formatDate(selectedUser.createdAt)}</p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-xl">
+                  <p className="text-sm text-slate-500">Applications</p>
+                  <p className="font-semibold text-slate-900">{selectedUser._count?.applications || 0}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setSelectedUser(null)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors">
+                Close
+              </button>
+              <button onClick={() => { setSelectedUser(null); handleEdit(selectedUser); }} className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all">
+                Edit User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditModal && editingUser && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-slate-900">Edit User</h2>
+              <button onClick={() => { setShowEditModal(false); setEditingUser(null); }} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">First Name</label>
+                  <input 
+                    name="firstName" 
+                    defaultValue={editingUser.firstName || ''}
+                    required
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
+                  <input 
+                    name="lastName" 
+                    defaultValue={editingUser.lastName || ''}
+                    required
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                <input 
+                  name="phone" 
+                  defaultValue={editingUser.phone || ''}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                <select 
+                  name="role" 
+                  defaultValue={editingUser.role || 'user'}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="button" 
+                  onClick={() => { setShowEditModal(false); setEditingUser(null); }} 
+                  className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={saving}
+                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all disabled:opacity-50"
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
