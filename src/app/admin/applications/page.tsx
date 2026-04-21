@@ -522,39 +522,45 @@ export default function ApplicationsPage() {
                 </div>
               )}
 
-              {/* Documents */}
+              {/* Documents - with Image Previews */}
               {selectedApp.documents && selectedApp.documents.length > 0 && (
                 <div className="border-t pt-6">
-                  <h3 className="font-bold text-slate-900 text-lg mb-4">Uploaded Documents</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <h3 className="font-bold text-slate-900 text-lg mb-4">Uploaded Documents & Photos</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {selectedApp.documents.map((doc) => (
-                      <div key={doc.id} className="p-3 bg-slate-50 rounded-lg flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center">
-                            {doc.mimeType?.includes('image') ? (
-                              <svg className="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                            ) : (
-                              <svg className="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                            )}
+                      <div key={doc.id} className="bg-slate-50 rounded-xl overflow-hidden border border-slate-200">
+                        {doc.mimeType?.includes('image') ? (
+                          <div className="relative">
+                            <img 
+                              src={(doc as any).filePath || `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`}
+                              alt={doc.originalName || doc.type}
+                              className="w-full h-32 object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end">
+                              <a 
+                                href={(doc as any).filePath || `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`}
+                                download={doc.originalName || doc.fileName}
+                                target="_blank"
+                                className="w-full py-2 bg-black/50 text-white text-xs font-medium text-center hover:bg-black/70"
+                              >
+                                View Full
+                              </a>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold text-slate-900 capitalize">{doc.type || 'Document'}</p>
-                            <p className="text-xs text-slate-500">{doc.originalName || doc.fileName}</p>
-                            <p className="text-xs text-slate-400">{doc.mimeType} • {Math.round(doc.fileSize / 1024)}KB</p>
+                        ) : (
+                          <div className="h-24 flex items-center justify-center bg-red-50">
+                            <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
                           </div>
+                        )}
+                        <div className="p-2">
+                          <p className="font-semibold text-slate-900 text-sm capitalize">{doc.type || 'Document'}</p>
+                          <p className="text-xs text-slate-500 truncate">{doc.originalName || doc.fileName}</p>
                         </div>
-                        <a 
-                          href={(doc as any).filePath || `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`}
-                          download={doc.originalName || doc.fileName}
-                          target="_blank"
-                          className="px-3 py-1.5 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700 transition-colors"
-                        >
-                          Download
-                        </a>
                       </div>
                     ))}
                   </div>

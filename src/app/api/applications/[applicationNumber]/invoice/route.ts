@@ -409,6 +409,33 @@ export async function GET(request: Request, { params }: Props) {
     }
 
     y = checkAndAddPage(doc, y, MARGIN);
+
+    // Admin Notes Section
+    if (application.notes) {
+      y = checkAndAddPage(doc, y, 40);
+      doc.setDrawColor(200);
+      doc.line(MARGIN, y, pageWidth - MARGIN, y);
+      y += 8;
+      
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Admin Notes', MARGIN, y);
+      y += 8;
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      
+      const notesLines = doc.splitTextToSize(application.notes, contentWidth);
+      notesLines.forEach((line: string) => {
+        y = checkAndAddPage(doc, y, 10);
+        doc.text(line, MARGIN, y);
+        y += 5;
+      });
+      y += 8;
+    }
+
     doc.setTextColor(100, 100, 100);
     doc.setFontSize(9);
     doc.text('Terms & Conditions:', MARGIN, y);
