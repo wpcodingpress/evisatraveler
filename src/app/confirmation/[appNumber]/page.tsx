@@ -109,7 +109,7 @@ export default async function ConfirmationPage({ params }: Props) {
                <div className="p-8 border-t border-purple-100 flex flex-col sm:flex-row gap-4 justify-center">
                  <button
                    onClick={async () => {
-                     const res = await fetch(`/api/applications/${app.applicationNumber}/invoice?applicationNumber=${app.applicationNumber}`);
+                     const res = await fetch(`/api/applications/${app.applicationNumber}/invoice`, { credentials: 'include' });
                      if (res.ok) {
                        const blob = await res.blob();
                        const url = window.URL.createObjectURL(blob);

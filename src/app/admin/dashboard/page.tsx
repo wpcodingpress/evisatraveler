@@ -11,6 +11,7 @@ const statusColors: Record<string, string> = {
 };
 
 interface DashboardStats {
+  completedApplications: number;
   totalApplications: number;
   pendingApplications: number;
   processingApplications: number;
@@ -104,8 +105,8 @@ export default function DashboardPage() {
     { label: 'Pending Review', value: stats.pendingApplications, icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-amber-500 to-orange-600' },
     { label: 'Processing', value: stats.processingApplications, icon: 'M4 4v5h.582m15.582 0a2.996 2.996 0 001.393-5.131L18.43 2.318a2.996 2.996 0 00-1.931-2.75L12 2.5l-4.5 1.818a2.996 2.996 0 00-1.931 2.75L2.43 7.318A2.996 2.996 0 002.818 9.45L4.582 12', gradient: 'from-violet-500 to-indigo-600' },
     { label: 'Approved', value: stats.approvedApplications, icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-emerald-500 to-teal-600' },
-    { label: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-blue-500 to-indigo-600' },
-    { label: 'Paid Revenue', value: `$${stats.paidRevenue?.toLocaleString() || 0}`, icon: 'M9 12l2 2 4-4m5.168 2.168A9 9 0 0121 12a9 9 0 01-9 9 9 9 0 001.664.168M9 12V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1', gradient: 'from-green-500 to-teal-600' },
+    { label: 'Completed', value: stats.completedApplications, icon: 'M9 12l2 2 4-4m5.168 2.168A9 9 0 0121 12a9 9 0 01-9 9 9 9 0 001.664.168', gradient: 'from-blue-500 to-indigo-600' },
+    { label: 'Revenue (Completed)', value: `$${stats.paidRevenue?.toLocaleString() || 0}`, icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1', gradient: 'from-green-500 to-teal-600' },
   ];
 
   const formatDate = (dateString: string) => {

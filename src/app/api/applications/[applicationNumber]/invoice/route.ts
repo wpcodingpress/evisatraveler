@@ -3,11 +3,16 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import jsPDF from 'jspdf';
 
-export async function GET(request: Request) {
+interface Props {
+  params: Promise<{ applicationNumber: string }>;
+}
+
+export async function GET(request: Request, { params }: Props) {
   try {
+    const { applicationNumber: appNum } = await params;
     const { searchParams } = new URL(request.url);
-    const applicationNumber = searchParams.get('applicationNumber');
     const adminView = searchParams.get('admin') === 'true';
+    const applicationNumber = appNum;
 
     if (!applicationNumber) {
       return NextResponse.json({ error: 'Application number required' }, { status: 400 });

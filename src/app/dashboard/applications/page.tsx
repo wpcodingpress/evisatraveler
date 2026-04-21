@@ -121,7 +121,7 @@ export default function ApplicationsPage() {
 
   const downloadInvoice = async (appNumber: string) => {
     try {
-      const res = await fetch(`/api/applications/${appNumber}/invoice?applicationNumber=${appNumber}`);
+      const res = await fetch(`/api/applications/${appNumber}/invoice`, { credentials: 'include' });
       if (res.ok) {
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);

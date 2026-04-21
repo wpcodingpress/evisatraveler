@@ -49,6 +49,7 @@ const statusColors: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-700',
   rejected: 'bg-red-100 text-red-700',
   processing: 'bg-violet-100 text-violet-700',
+  completed: 'bg-blue-100 text-blue-700',
 };
 
 export default function ApplicationsPage() {
@@ -215,6 +216,13 @@ export default function ApplicationsPage() {
           <p className="text-sm font-medium">Approved</p>
         </button>
         <button
+          onClick={() => setStatusFilter('completed')}
+          className={`p-4 rounded-xl border-2 transition-all ${statusFilter === 'completed' ? 'bg-blue-50 text-blue-700 border-blue-400' : 'bg-white border-slate-200 hover:border-slate-300'}`}
+        >
+          <p className="text-2xl font-bold">{stats.completed || 0}</p>
+          <p className="text-sm font-medium">Completed</p>
+        </button>
+        <button
           onClick={() => setStatusFilter('rejected')}
           className={`p-4 rounded-xl border-2 transition-all ${statusFilter === 'rejected' ? 'bg-red-50 text-red-700 border-red-400' : 'bg-white border-slate-200 hover:border-slate-300'}`}
         >
@@ -280,6 +288,7 @@ export default function ApplicationsPage() {
                     <option value="pending">Pending</option>
                     <option value="processing">Processing</option>
                     <option value="approved">Approved</option>
+                    <option value="completed">Completed</option>
                     <option value="rejected">Rejected</option>
                   </select>
                   <button
@@ -568,7 +577,7 @@ export default function ApplicationsPage() {
               <button 
                 onClick={async () => {
                   try {
-                    const res = await fetch(`/api/applications/${selectedApp.applicationNumber}/invoice?admin=true`);
+                    const res = await fetch(`/api/applications/${selectedApp.applicationNumber}/invoice?admin=true`, { credentials: 'include' });
                     if (res.ok) {
                       const blob = await res.blob();
                       const url = window.URL.createObjectURL(blob);
