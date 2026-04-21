@@ -18,6 +18,9 @@ export async function POST(request: Request) {
     const applicationIdOrNumber = formData.get('applicationId') as string;
     const docType = formData.get('docType') as string || 'document';
 
+    console.log('Upload request - applicationIdOrNumber:', applicationIdOrNumber);
+    console.log('Upload request - docType:', docType);
+
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
@@ -26,9 +29,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Application ID required' }, { status: 400 });
     }
 
-    // Get actual numeric ID from DB or use as-is if it's already a numeric ID
+    // Get actual numeric ID from DB
     let actualAppId = applicationIdOrNumber;
     try {
+      console.log('Looking up application:', applicationIdOrNumber);
       const app = await prisma.application.findFirst({
         where: {
           OR: [
@@ -38,12 +42,19 @@ export async function POST(request: Request) {
         },
         select: { id: true }
       });
+      console.log('Application lookup result:', app);
       if (app) {
         actualAppId = app.id;
+        console.log('Using DB ID:', actualAppId);
+      } else {
+        console.log('Application not found, using as-is');
       }
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Application lookup error:', err?.message);
       console.log('Using provided ID directly');
     }
+
+    console.log('Final actualAppId:', actualAppId);
 
     const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
@@ -54,6 +65,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'File too large. Max 10MB allowed.' }, { status: 400 });
     }
 
+    // Use applicationNumber for folder path (for static file serving)
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', applicationIdOrNumber);
     await mkdir(uploadDir, { recursive: true });
 
@@ -64,11 +76,11 @@ export async function POST(request: Request) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filePath, buffer);
+    console.log('File saved to disk:', filePath);
 
+    // Save document record to DB
     let document = null;
     try {
-      console.log('Attempting DB connection for document...');
-      console.log('ApplicationId to use:', actualAppId);
       document = await prisma.document.create({
         data: {
           applicationId: actualAppId,
@@ -82,8 +94,8 @@ export async function POST(request: Request) {
       });
       console.log('Document saved to DB:', document.id);
     } catch (dbError) {
-      console.error('Database error saving document:', JSON.stringify(dbError, null, 2));
-      console.log('Document saved locally only');
+      console.error('Database error saving document:', dbError);
+      console.log('Document saved locally only (not in DB)');
     }
 
     return NextResponse.json({
