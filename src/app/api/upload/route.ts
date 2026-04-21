@@ -68,6 +68,7 @@ export async function POST(request: Request) {
     let document = null;
     try {
       console.log('Attempting DB connection for document...');
+      console.log('ApplicationId to use:', actualAppId);
       document = await prisma.document.create({
         data: {
           applicationId: actualAppId,
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
       });
       console.log('Document saved to DB:', document.id);
     } catch (dbError) {
-      console.error('Database error saving document:', dbError);
+      console.error('Database error saving document:', JSON.stringify(dbError, null, 2));
       console.log('Document saved locally only');
     }
 
