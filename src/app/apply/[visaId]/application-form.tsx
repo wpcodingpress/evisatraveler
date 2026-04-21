@@ -161,7 +161,8 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
         throw new Error(result.error || 'Failed to create application');
       }
       
-      const applicationId = result.applicationNumber;
+      const applicationId = result.id;
+      const applicationNumber = result.applicationNumber;
       
       // Upload each file to server
       const uploadedDocs = [];
@@ -169,7 +170,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
         try {
           const formData = new FormData();
           formData.append('file', fileData.file);
-          formData.append('applicationId', applicationId);
+          formData.append('applicationId', applicationId); // Use numeric ID for DB
           formData.append('docType', docId);
           
           const uploadRes = await fetch('/api/upload', {
