@@ -21,12 +21,11 @@ function NavLink({ href, children, isActive, icon }: { href: string; children: R
 }
 
 // User Menu for logged in users
-function UserMenu({ user, onLogout, pendingApps = 0, onShowNotifications }: { 
+function UserMenu({ user, onLogout, pendingApps = 0,  }: { 
   user: { firstName: string; email: string }; 
   onLogout: () => void; 
   pendingApps?: number;
-  onShowNotifications: () => void;
-}) {
+  }) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   
@@ -85,15 +84,7 @@ function UserMenu({ user, onLogout, pendingApps = 0, onShowNotifications }: {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               My Applications
             </Link>
-            <button
-              onClick={() => { onShowNotifications(); setIsOpen(false); }}
-              className="flex items-center gap-3 w-full px-4 py-2 text-sm text-slate-700 hover:bg-violet-50"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              Notifications
-            </button>
+
             <Link href="/support" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-violet-50" onClick={() => setIsOpen(false)}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               Get Support
@@ -344,7 +335,7 @@ export function Header() {
   const [pendingApps, setPendingApps] = useState(0);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-   const [showNotifications, setShowNotifications] = useState(false);
+ 
    const [showUserMenu, setShowUserMenu] = useState(false);
 
    useEffect(() => {
@@ -538,60 +529,10 @@ export function Header() {
               <div className="w-20 h-10 bg-slate-100 animate-pulse rounded-xl" />
             ) : user ? (
               <>
-                {/* Notification Bell */}
-                <div className="relative hidden sm:block">
-                  <button
-                    onClick={() => setShowNotifications(!showNotifications)}
-                    className="relative text-slate-500 hover:text-violet-600 transition-colors p-2 rounded-lg hover:bg-violet-50"
-                  >
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    {unreadCount > 0 && (
-                      <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center animate-pulse-ring">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                    )}
-                  </button>
-                  
-                  {showNotifications && (
-                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-[40]">
-                      <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-                        <span className="font-semibold text-slate-900">Notifications</span>
-                        {unreadCount > 0 && (
-                          <button onClick={markAllAsRead} className="text-xs text-violet-600 hover:underline">
-                            Mark all read
-                          </button>
-                        )}
-                      </div>
-                      <div className="max-h-96 overflow-y-auto">
-                        {notifications.length > 0 ? (
-                          notifications.map((notif: any) => (
-                            <div 
-                              key={notif.id} 
-                              onClick={() => markAsRead(notif.id)}
-                              className={`p-3 border-b border-slate-100 cursor-pointer hover:bg-slate-50 ${!notif.isRead ? 'bg-violet-50' : ''}`}
-                            >
-                              <p className="font-medium text-sm text-slate-900">{notif.title}</p>
-                              <p className="text-xs text-slate-500">{notif.message}</p>
-                              <p className="text-xs text-slate-400 mt-1">
-                                {new Date(notif.createdAt).toLocaleString()}
-                              </p>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="p-4 text-center text-slate-500">No new notifications</div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
                 <UserMenu 
                   user={user} 
                   onLogout={handleLogout} 
                   pendingApps={pendingApps > 0 ? pendingApps : 0}
-                  onShowNotifications={() => setShowNotifications(!showNotifications)}
                 />
               </>
             ) : (

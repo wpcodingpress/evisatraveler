@@ -7,6 +7,7 @@ const statusColors: Record<string, string> = {
   approved: 'bg-emerald-100 text-emerald-700',
   pending: 'bg-amber-100 text-amber-700',
   processing: 'bg-violet-100 text-violet-700',
+  completed: 'bg-blue-100 text-blue-700',
   rejected: 'bg-red-100 text-red-700',
 };
 
@@ -50,24 +51,30 @@ export default function DashboardPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
+  const fetchData = async () => {
+    try {
+      const res = await fetch('/api/admin/dashboard');
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+      setStats(data.stats);
+      setRecentApps(data.recentApplications || []);
+      setNotifications(data.notifications || []);
+      setLastUpdate(new Date());
+      setError('');
+    } catch (err) {
+      setError('Failed to load dashboard data');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch('/api/admin/dashboard');
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data = await res.json();
-        setStats(data.stats);
-        setRecentApps(data.recentApplications || []);
-        setNotifications(data.notifications || []);
-      } catch (err) {
-        setError('Failed to load dashboard data');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const formatDateTime = (dateString: string) => {
@@ -75,7 +82,7 @@ export default function DashboardPage() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
-  if (loading) {
+  if (loading && !stats) {
     return (
       <div className="animate-pulse space-y-6">
         <div className="h-8 bg-slate-200 rounded w-48" />
@@ -93,20 +100,25 @@ export default function DashboardPage() {
     return (
       <div className="text-center py-12">
         <p className="text-red-500">{error || 'Failed to load data'}</p>
-        <button onClick={() => window.location.reload()} className="mt-4 text-violet-600 hover:text-violet-700">
+        <button onClick={fetchData} className="mt-4 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700">
           Retry
         </button>
       </div>
     );
   }
 
+  const approvedPercent = stats.totalApplications > 0 ? Math.round((stats.approvedApplications / stats.totalApplications) * 100) : 0;
+  const pendingPercent = stats.totalApplications > 0 ? Math.round((stats.pendingApplications / stats.totalApplications) * 100) : 0;
+  const rejectedPercent = stats.totalApplications > 0 ? Math.round((stats.rejectedApplications / stats.totalApplications) * 100) : 0;
+  const completedPercent = stats.totalApplications > 0 ? Math.round((stats.completedApplications / stats.totalApplications) * 100) : 0;
+
   const statCards = [
-    { label: 'Total Applications', value: stats.totalApplications, icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', gradient: 'from-violet-500 to-purple-600' },
-    { label: 'Pending Review', value: stats.pendingApplications, icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-amber-500 to-orange-600' },
-    { label: 'Processing', value: stats.processingApplications, icon: 'M4 4v5h.582m15.582 0a2.996 2.996 0 001.393-5.131L18.43 2.318a2.996 2.996 0 00-1.931-2.75L12 2.5l-4.5 1.818a2.996 2.996 0 00-1.931 2.75L2.43 7.318A2.996 2.996 0 002.818 9.45L4.582 12', gradient: 'from-violet-500 to-indigo-600' },
-    { label: 'Approved', value: stats.approvedApplications, icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-emerald-500 to-teal-600' },
-    { label: 'Completed', value: stats.completedApplications, icon: 'M9 12l2 2 4-4m5.168 2.168A9 9 0 0121 12a9 9 0 01-9 9 9 9 0 001.664.168', gradient: 'from-blue-500 to-indigo-600' },
-    { label: 'Revenue (Completed)', value: `$${stats.paidRevenue?.toLocaleString() || 0}`, icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1', gradient: 'from-green-500 to-teal-600' },
+    { label: 'Total Applications', value: stats.totalApplications, icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', gradient: 'from-violet-500 to-purple-600', href: '/admin/applications' },
+    { label: 'Pending Review', value: stats.pendingApplications, icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-amber-500 to-orange-600', href: '/admin/applications?status=pending' },
+    { label: 'Processing', value: stats.processingApplications, icon: 'M4 4v5h.582m15.582 0a2.996 2.996 0 001.393-5.131L18.43 2.318a2.996 2.996 0 00-1.931-2.75L12 2.5l-4.5 1.818a2.996 2.996 0 00-1.931 2.75L2.43 7.318A2.996 2.996 0 002.818 9.45L4.582 12', gradient: 'from-violet-500 to-indigo-600', href: '/admin/applications?status=processing' },
+    { label: 'Approved', value: stats.approvedApplications, icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-emerald-500 to-teal-600', href: '/admin/applications?status=approved' },
+    { label: 'Completed', value: stats.completedApplications, icon: 'M9 12l2 2 4-4m5.168 2.168A9 9 0 0121 12a9 9 0 01-9 9 9 9 0 001.664.168', gradient: 'from-blue-500 to-indigo-600', href: '/admin/applications?status=completed' },
+    { label: 'Revenue', value: `$${stats.paidRevenue?.toLocaleString() || 0}`, icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1', gradient: 'from-green-500 to-teal-600', href: '/admin/invoices' },
   ];
 
   const formatDate = (dateString: string) => {
@@ -120,24 +132,38 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-slate-900">Dashboard</h1>
           <p className="text-slate-600 mt-1">Welcome back! Here&apos;s what&apos;s happening.</p>
+          {lastUpdate && (
+            <p className="text-xs text-slate-400 mt-1">Last updated: {lastUpdate.toLocaleTimeString()}</p>
+          )}
         </div>
-        <Link href="/admin/applications" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg shadow-violet-600/30 text-sm lg:text-base">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-          View Applications
-        </Link>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={fetchData}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-600 font-medium rounded-xl hover:bg-slate-200 transition-all"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.582 0a2.996 2.996 0 001.393-5.131L18.43 2.318a2.996 2.996 0 00-1.931-2.75L12 2.5l-4.5 1.818a2.996 2.996 0 00-1.931 2.75L2.43 7.318A2.996 2.996 0 002.818 9.45L4.582 12" />
+            </svg>
+            Refresh
+          </button>
+          <Link href="/admin/applications" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg shadow-violet-600/30 text-sm lg:text-base">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            View Applications
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-6">
         {statCards.map((stat, index) => (
-          <div key={index} className="bg-white rounded-2xl p-5 lg:p-6 shadow-sm border border-slate-200 hover:shadow-lg transition-all">
-            <div className={`w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg mb-4`}>
+          <Link key={index} href={stat.href} className="block bg-white rounded-2xl p-5 lg:p-6 shadow-sm border border-slate-200 hover:shadow-lg hover:border-violet-300 transition-all group cursor-pointer">
+            <div className={`w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg mb-4 group-hover:scale-110 transition-transform`}>
               <svg className="w-6 h-6 lg:w-7 lg:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={stat.icon} />
               </svg>
             </div>
             <div className="text-2xl lg:text-3xl font-bold text-slate-900 mb-1">{stat.value}</div>
             <div className="text-xs lg:text-sm text-slate-500">{stat.label}</div>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -148,41 +174,50 @@ export default function DashboardPage() {
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-slate-600">Approved</span>
-                <span className="font-semibold text-slate-900">{stats.approvalRate}%</span>
+                <span className="font-semibold text-slate-900">{approvedPercent}%</span>
               </div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" style={{ width: `${stats.approvalRate}%` }} />
+                <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all" style={{ width: `${approvedPercent}%` }} />
               </div>
             </div>
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-slate-600">Pending</span>
-                <span className="font-semibold text-slate-900">{stats.totalApplications > 0 ? Math.round((stats.pendingApplications / stats.totalApplications) * 100) : 0}%</span>
+                <span className="font-semibold text-slate-900">{pendingPercent}%</span>
               </div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" style={{ width: `${stats.totalApplications > 0 ? (stats.pendingApplications / stats.totalApplications) * 100 : 0}%` }} />
+                <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all" style={{ width: `${pendingPercent}%` }} />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-slate-600">Processing</span>
+                <span className="font-semibold text-slate-900">{completedPercent}%</span>
+              </div>
+              <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all" style={{ width: `${completedPercent}%` }} />
               </div>
             </div>
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-slate-600">Rejected</span>
-                <span className="font-semibold text-slate-900">{stats.totalApplications > 0 ? Math.round((stats.rejectedApplications / stats.totalApplications) * 100) : 0}%</span>
+                <span className="font-semibold text-slate-900">{rejectedPercent}%</span>
               </div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-red-500 to-rose-500 rounded-full" style={{ width: `${stats.totalApplications > 0 ? (stats.rejectedApplications / stats.totalApplications) * 100 : 0}%` }} />
+                <div className="h-full bg-gradient-to-r from-red-500 to-rose-500 rounded-full transition-all" style={{ width: `${rejectedPercent}%` }} />
               </div>
             </div>
           </div>
           <div className="mt-6 pt-5 border-t border-slate-100">
             <div className="flex items-center justify-between">
-              <div>
+              <Link href="/admin/invoices" className="hover:opacity-80 transition-opacity">
                 <p className="text-sm text-slate-500">Total Revenue</p>
                 <p className="text-2xl lg:text-3xl font-bold text-slate-900">${stats.totalRevenue.toLocaleString()}</p>
-              </div>
-              <div className="text-right">
+              </Link>
+              <Link href="/admin/countries" className="text-right hover:opacity-80 transition-opacity">
                 <p className="text-sm text-slate-500">Countries</p>
                 <p className="text-lg font-bold text-slate-900">{stats.totalCountries}</p>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -190,27 +225,26 @@ export default function DashboardPage() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
           <h2 className="text-lg font-bold text-slate-900 mb-6">Quick Stats</h2>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-violet-50 rounded-xl">
+            <Link href="/admin/users" className="p-4 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors">
               <p className="text-2xl font-bold text-violet-700">{stats.totalUsers}</p>
               <p className="text-sm text-violet-600">Total Users</p>
-            </div>
-            <div className="p-4 bg-violet-50 rounded-xl">
+            </Link>
+            <Link href="/admin/visa-rules" className="p-4 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors">
               <p className="text-2xl font-bold text-violet-700">{stats.visaRulesCount}</p>
               <p className="text-sm text-violet-600">Visa Rules</p>
-            </div>
-            <div className="p-4 bg-violet-50 rounded-xl">
+            </Link>
+            <Link href="/admin/countries" className="p-4 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors">
               <p className="text-2xl font-bold text-violet-700">{stats.totalCountries}</p>
               <p className="text-sm text-violet-600">Countries</p>
-            </div>
-            <div className="p-4 bg-violet-50 rounded-xl">
+            </Link>
+            <Link href="/admin/applications" className="p-4 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors">
               <p className="text-2xl font-bold text-violet-700">{stats.totalApplications}</p>
               <p className="text-sm text-violet-600">Applications</p>
-            </div>
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Notifications Section */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="px-4 lg:px-6 py-4 lg:py-5 border-b border-slate-200 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-900">Recent Notifications</h2>
@@ -257,7 +291,7 @@ export default function DashboardPage() {
                   <th className="px-4 lg:px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Visa</th>
                   <th className="px-4 lg:px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
                   <th className="px-4 lg:px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                  <th className="px-4 lg:px-6 py-3-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
+                  <th className="px-4 lg:px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -266,7 +300,7 @@ export default function DashboardPage() {
                     <td className="px-4 lg:px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs lg:text-sm">
-                          {app.user.firstName[0]}{app.user.lastName[0]}
+                          {app.user.firstName?.[0]}{app.user.lastName?.[0]}
                         </div>
                         <div>
                           <p className="font-medium text-slate-900 text-sm lg:text-base">{app.user.firstName} {app.user.lastName}</p>
@@ -274,7 +308,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 lg:px-6 py-4 text-slate-600 text-sm hidden sm:table-cell">{app.visaRule.toCountry.name}</td>
+                    <td className="px-4 lg:px-6 py-4 text-slate-600 text-sm hidden sm:table-cell">{app.visaRule?.toCountry?.name}</td>
                     <td className="px-4 lg:px-6 py-4 text-slate-600 text-sm">{formatDate(app.createdAt)}</td>
                     <td className="px-4 lg:px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${statusColors[app.status] || 'bg-slate-100 text-slate-700'}`}>

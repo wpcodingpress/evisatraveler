@@ -138,6 +138,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
     setIsSubmitting(true);
     setError('');
     try {
+      // Create application first to get ID
       const appData = {
         visaRuleId: visaRule.id,
         travelers,
@@ -160,15 +161,40 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
         throw new Error(result.error || 'Failed to create application');
       }
       
+      const applicationId = result.applicationNumber;
+      
+      // Upload each file to server
+      const uploadedDocs = [];
+      for (const [docId, fileData] of Object.entries(uploadedFiles)) {
+        try {
+          const formData = new FormData();
+          formData.append('file', fileData.file);
+          formData.append('applicationId', applicationId);
+          formData.append('docType', docId);
+          
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            uploadedDocs.push(uploadData.document);
+          }
+        } catch (uploadError) {
+          console.error('Failed to upload file:', docId, uploadError);
+        }
+      }
+      
       // Clear saved form data on successful submission
       localStorage.removeItem(`evisa_form_${visaRule.id}`);
       
-      if (result.paymentUrl) {
+      if (result.paymentUrl && !result.paymentUrl.includes('demo')) {
         window.location.href = result.paymentUrl;
         return;
       }
       
-      router.push(`/confirmation/${result.applicationNumber}`);
+      router.push(`/confirmation/${applicationId}`);
     } catch (err: any) {
       setError(err.message || 'Payment failed. Please try again.');
       setIsSubmitting(false);
