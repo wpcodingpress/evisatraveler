@@ -100,6 +100,7 @@ export async function POST(request: Request) {
       // Demo mode - skip payment and return success
       console.log('Demo mode: Skipping payment, returning success');
       return NextResponse.json({
+        id: application?.id || applicationNumber,
         applicationNumber,
         orderId,
         totalAmount: finalAmount,
@@ -125,6 +126,7 @@ export async function POST(request: Request) {
       // If payment fails, still return application but redirect to confirmation
       console.error('Payment initiation failed:', paymentResult.error);
       return NextResponse.json({
+        id: application?.id || applicationNumber,
         applicationNumber,
         orderId,
         totalAmount: finalAmount,
@@ -135,6 +137,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
+      id: application?.id || applicationNumber,
       applicationNumber,
       orderId,
       totalAmount: finalAmount,
