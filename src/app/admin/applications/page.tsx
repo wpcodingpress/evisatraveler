@@ -94,7 +94,10 @@ export default function ApplicationsPage() {
     }
   };
 
+  const [changingStatus, setChangingStatus] = useState<string | null>(null);
+
   const handleStatusChange = async (id: string, newStatus: string) => {
+    setChangingStatus(id);
     try {
       const res = await fetch('/api/admin/applications', {
         method: 'PATCH',
@@ -105,14 +108,16 @@ export default function ApplicationsPage() {
       if (res.ok) {
         const updated = await res.json();
         setApplications(applications.map(app =>
-          app.id === id ? { ...app, status: newStatus, updatedAt: updated.updatedAt } : app
+          app.id === id ? { ...app, status: newStatus, updatedAt: updated.updatedAt, processedAt: updated.processedAt } : app
         ));
         if (selectedApp?.id === id) {
-          setSelectedApp({ ...selectedApp, status: newStatus, updatedAt: updated.updatedAt });
+          setSelectedApp({ ...selectedApp, status: newStatus, updatedAt: updated.updatedAt, processedAt: updated.processedAt });
         }
       }
     } catch (err) {
       console.error('Failed to update status', err);
+    } finally {
+      setChangingStatus(null);
     }
   };
 
@@ -428,10 +433,10 @@ export default function ApplicationsPage() {
               )}
 
               {/* Trip Details */}
-              {(selectedApp.formData.arrivalDate || selectedApp.formData.departureDate) && (
+              {(selectedApp.formData.arrivalDate || selectedApp.formData.departureDate || selectedApp.formData.portOfEntry || selectedApp.formData.accommodationType) && (
                 <div className="border-t pt-6">
                   <h3 className="font-bold text-slate-900 text-lg mb-4">Trip Details</h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {selectedApp.formData.arrivalDate && (
                       <div className="p-3 bg-slate-50 rounded-lg">
                         <p className="text-xs text-slate-500 uppercase">Arrival Date</p>
@@ -442,6 +447,24 @@ export default function ApplicationsPage() {
                       <div className="p-3 bg-slate-50 rounded-lg">
                         <p className="text-xs text-slate-500 uppercase">Departure Date</p>
                         <p className="font-semibold text-slate-900">{selectedApp.formData.departureDate}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.portOfEntry && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Port of Entry</p>
+                        <p className="font-semibold text-slate-900 capitalize">{selectedApp.formData.portOfEntry}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.accommodationType && (
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Accommodation Type</p>
+                        <p className="font-semibold text-slate-900 capitalize">{selectedApp.formData.accommodationType}</p>
+                      </div>
+                    )}
+                    {selectedApp.formData.accommodationAddress && (
+                      <div className="p-3 bg-slate-50 rounded-lg col-span-2">
+                        <p className="text-xs text-slate-500 uppercase">Accommodation Address</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.formData.accommodationAddress}</p>
                       </div>
                     )}
                   </div>

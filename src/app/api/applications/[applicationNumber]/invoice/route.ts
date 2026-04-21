@@ -186,6 +186,9 @@ export async function GET(request: Request) {
     
     const arrivalDate = formData?.arrivalDate || 'N/A';
     const departureDate = formData?.departureDate || 'N/A';
+    const portOfEntry = formData?.portOfEntry || 'N/A';
+    const accommodationType = formData?.accommodationType || 'N/A';
+    const accommodationAddress = formData?.accommodationAddress || 'N/A';
     const destination = application.visaRule?.toCountry?.name || 'N/A';
     const fromCountry = application.visaRule?.fromCountry?.name || 'N/A';
     
@@ -211,7 +214,24 @@ export async function GET(request: Request) {
     doc.text('Departure Date:', 20, y);
     doc.setTextColor(0, 0, 0);
     doc.text(departureDate, 70, y);
-    y += 15;
+    y += 7;
+
+    if (portOfEntry !== 'N/A') {
+      doc.setTextColor(100, 100, 100);
+      doc.text('Port of Entry:', 20, y);
+      doc.setTextColor(0, 0, 0);
+      doc.text(portOfEntry.charAt(0).toUpperCase() + portOfEntry.slice(1), 70, y);
+      y += 7;
+    }
+
+    if (accommodationType !== 'N/A') {
+      doc.setTextColor(100, 100, 100);
+      doc.text('Accommodation:', 20, y);
+      doc.setTextColor(0, 0, 0);
+      doc.text(accommodationType.charAt(0).toUpperCase() + accommodationType.slice(1) + (accommodationAddress !== 'N/A' ? ` - ${accommodationAddress}` : ''), 70, y);
+      y += 7;
+    }
+    y += 8;
 
     doc.setDrawColor(200);
     doc.line(20, y, pageWidth - 20, y);

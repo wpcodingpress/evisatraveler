@@ -13,13 +13,24 @@ const statusColors: Record<string, string> = {
 interface DashboardStats {
   totalApplications: number;
   pendingApplications: number;
+  processingApplications: number;
   approvedApplications: number;
   rejectedApplications: number;
   totalUsers: number;
   totalCountries: number;
   visaRulesCount: number;
   totalRevenue: number;
+  paidRevenue: number;
   approvalRate: number;
+}
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: string;
 }
 
 interface RecentApp {
@@ -35,6 +46,7 @@ interface RecentApp {
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentApps, setRecentApps] = useState<RecentApp[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -46,6 +58,7 @@ export default function DashboardPage() {
         const data = await res.json();
         setStats(data.stats);
         setRecentApps(data.recentApplications || []);
+        setNotifications(data.notifications || []);
       } catch (err) {
         setError('Failed to load dashboard data');
         console.error(err);
@@ -55,6 +68,11 @@ export default function DashboardPage() {
     };
     fetchData();
   }, []);
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
 
   if (loading) {
     return (
@@ -84,8 +102,10 @@ export default function DashboardPage() {
   const statCards = [
     { label: 'Total Applications', value: stats.totalApplications, icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', gradient: 'from-violet-500 to-purple-600' },
     { label: 'Pending Review', value: stats.pendingApplications, icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-amber-500 to-orange-600' },
+    { label: 'Processing', value: stats.processingApplications, icon: 'M4 4v5h.582m15.582 0a2.996 2.996 0 001.393-5.131L18.43 2.318a2.996 2.996 0 00-1.931-2.75L12 2.5l-4.5 1.818a2.996 2.996 0 00-1.931 2.75L2.43 7.318A2.996 2.996 0 002.818 9.45L4.582 12', gradient: 'from-violet-500 to-indigo-600' },
     { label: 'Approved', value: stats.approvedApplications, icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-emerald-500 to-teal-600' },
     { label: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-blue-500 to-indigo-600' },
+    { label: 'Paid Revenue', value: `$${stats.paidRevenue?.toLocaleString() || 0}`, icon: 'M9 12l2 2 4-4m5.168 2.168A9 9 0 0121 12a9 9 0 01-9 9 9 9 0 001.664.168M9 12V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1', gradient: 'from-green-500 to-teal-600' },
   ];
 
   const formatDate = (dateString: string) => {
@@ -106,7 +126,7 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-6">
         {statCards.map((stat, index) => (
           <div key={index} className="bg-white rounded-2xl p-5 lg:p-6 shadow-sm border border-slate-200 hover:shadow-lg transition-all">
             <div className={`w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg mb-4`}>
@@ -187,6 +207,39 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Notifications Section */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="px-4 lg:px-6 py-4 lg:py-5 border-b border-slate-200 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900">Recent Notifications</h2>
+          <span className="px-2 py-1 bg-violet-100 text-violet-700 text-xs font-semibold rounded-full">
+            {notifications.filter(n => !n.isRead).length} unread
+          </span>
+        </div>
+        {notifications.length > 0 ? (
+          <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
+            {notifications.slice(0, 8).map((notif) => (
+              <div key={notif.id} className={`px-4 lg:px-6 py-4 hover:bg-slate-50 transition-colors ${!notif.isRead ? 'bg-violet-50/50' : ''}`}>
+                <div className="flex items-start gap-3">
+                  <div className={`w-2 h-2 mt-2 rounded-full ${notif.isRead ? 'bg-slate-300' : 'bg-violet-500'}`}></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-slate-900 text-sm">{notif.title}</p>
+                    <p className="text-slate-600 text-sm truncate">{notif.message}</p>
+                    <p className="text-xs text-slate-400 mt-1">{formatDateTime(notif.createdAt)}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-8 text-center text-slate-500">
+            <svg className="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <p>No notifications yet</p>
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
