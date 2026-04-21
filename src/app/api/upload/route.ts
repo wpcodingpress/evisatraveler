@@ -15,15 +15,34 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const applicationId = formData.get('applicationId') as string;
+    const applicationIdOrNumber = formData.get('applicationId') as string;
     const docType = formData.get('docType') as string || 'document';
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    if (!applicationId) {
+    if (!applicationIdOrNumber) {
       return NextResponse.json({ error: 'Application ID required' }, { status: 400 });
+    }
+
+    // Get actual numeric ID from DB or use as-is if it's already a numeric ID
+    let actualAppId = applicationIdOrNumber;
+    try {
+      const app = await prisma.application.findFirst({
+        where: {
+          OR: [
+            { id: applicationIdOrNumber },
+            { applicationNumber: applicationIdOrNumber }
+          ]
+        },
+        select: { id: true }
+      });
+      if (app) {
+        actualAppId = app.id;
+      }
+    } catch (err) {
+      console.log('Using provided ID directly');
     }
 
     const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
@@ -35,7 +54,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'File too large. Max 10MB allowed.' }, { status: 400 });
     }
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', applicationId);
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', applicationIdOrNumber);
     await mkdir(uploadDir, { recursive: true });
 
     const timestamp = Date.now();
@@ -48,19 +67,22 @@ export async function POST(request: Request) {
 
     let document = null;
     try {
+      console.log('Attempting DB connection for document...');
       document = await prisma.document.create({
         data: {
-          applicationId,
+          applicationId: actualAppId,
           type: docType,
           originalName: file.name,
           fileName,
-          filePath: `/uploads/${applicationId}/${fileName}`,
+          filePath: `/uploads/${applicationIdOrNumber}/${fileName}`,
           fileSize: file.size,
           mimeType: file.type,
         },
       });
+      console.log('Document saved to DB:', document.id);
     } catch (dbError) {
-      console.log('Database unavailable, document saved locally only');
+      console.error('Database error saving document:', dbError);
+      console.log('Document saved locally only');
     }
 
     return NextResponse.json({
@@ -78,7 +100,7 @@ export async function POST(request: Request) {
         type: docType,
         originalName: file.name,
         fileName,
-        url: `/uploads/${applicationId}/${fileName}`,
+        url: `/uploads/${applicationIdOrNumber}/${fileName}`,
         fileSize: file.size,
         mimeType: file.type,
       },
