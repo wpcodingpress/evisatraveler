@@ -37,6 +37,7 @@ export async function GET(request: Request, { params }: Props) {
           visaRule: {
             include: { toCountry: true, fromCountry: true },
           },
+          documents: true,
         },
       });
     } catch (error) {
@@ -316,6 +317,34 @@ export async function GET(request: Request, { params }: Props) {
     );
     doc.text(paymentStatus, 60, y);
     y += 15;
+
+    // Documents Section
+    const documents = application.documents as any[] || [];
+    if (documents.length > 0) {
+      doc.setDrawColor(200);
+      doc.line(20, y, pageWidth - 20, y);
+      y += 10;
+      
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Uploaded Documents', 20, y);
+      y += 10;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      
+      for (const docItem of documents) {
+        doc.setTextColor(100, 100, 100);
+        doc.text('Document:', 20, y);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`${docItem.type || 'Document'} - ${docItem.originalName || docItem.fileName}`, 55, y);
+        y += 7;
+      }
+      y += 5;
+    }
+
+    y += 5;
 
     doc.setTextColor(150, 150, 150);
     doc.setFontSize(9);

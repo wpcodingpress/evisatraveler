@@ -7,12 +7,16 @@ export async function GET() {
       totalUsers,
       totalCountries,
       visaRulesCount,
-      applications,
+      allApplications,
+      recentApplications,
       notifications,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.country.count(),
       prisma.visaRule.count({ where: { isActive: true } }),
+      prisma.application.findMany({
+        orderBy: { createdAt: 'desc' },
+      }),
       prisma.application.findMany({
         take: 10,
         orderBy: { createdAt: 'desc' },
@@ -22,23 +26,23 @@ export async function GET() {
         },
       }),
       prisma.notification.findMany({
-        take: 10,
+        take: 20,
         orderBy: { createdAt: 'desc' },
       }),
     ]);
 
-    const totalApplications = applications.length;
-    const pendingApplications = applications.filter(a => a.status === 'pending').length;
-    const processingApplications = applications.filter(a => a.status === 'processing').length;
-    const approvedApplications = applications.filter(a => a.status === 'approved').length;
-    const completedApplications = applications.filter(a => a.status === 'completed').length;
-    const rejectedApplications = applications.filter(a => a.status === 'rejected').length;
-    const totalRevenue = applications.reduce((sum, app) => sum + Number(app.totalAmount), 0);
-    const paidRevenue = applications
+    const totalApplications = allApplications.length;
+    const pendingApplications = allApplications.filter(a => a.status === 'pending').length;
+    const processingApplications = allApplications.filter(a => a.status === 'processing').length;
+    const approvedApplications = allApplications.filter(a => a.status === 'approved').length;
+    const completedApplications = allApplications.filter(a => a.status === 'completed').length;
+    const rejectedApplications = allApplications.filter(a => a.status === 'rejected').length;
+    const totalRevenue = allApplications.reduce((sum, app) => sum + Number(app.totalAmount || 0), 0);
+    const paidRevenue = allApplications
       .filter(a => a.status === 'completed')
-      .reduce((sum, app) => sum + Number(app.totalAmount), 0);
+      .reduce((sum, app) => sum + Number(app.totalAmount || 0), 0);
 
-    const recentApps = applications.slice(0, 5).map(app => {
+    const recentApps = recentApplications.map((app: any) => {
       const fd = app.formData as Record<string, any>;
       return {
         id: app.id,
