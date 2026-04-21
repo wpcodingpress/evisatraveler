@@ -35,11 +35,10 @@ export async function GET() {
     const pendingApplications = allApplications.filter(a => a.status === 'pending').length;
     const processingApplications = allApplications.filter(a => a.status === 'processing').length;
     const approvedApplications = allApplications.filter(a => a.status === 'approved').length;
-    const completedApplications = allApplications.filter(a => a.status === 'completed').length;
     const rejectedApplications = allApplications.filter(a => a.status === 'rejected').length;
     const totalRevenue = allApplications.reduce((sum, app) => sum + Number(app.totalAmount || 0), 0);
     const paidRevenue = allApplications
-      .filter(a => a.status === 'completed')
+      .filter(a => a.paymentStatus === 'paid')
       .reduce((sum, app) => sum + Number(app.totalAmount || 0), 0);
 
     const recentApps = recentApplications.map((app: any) => {
@@ -62,7 +61,6 @@ export async function GET() {
         pendingApplications,
         processingApplications,
         approvedApplications,
-        completedApplications,
         rejectedApplications,
         totalUsers,
         totalCountries,

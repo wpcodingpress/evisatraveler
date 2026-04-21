@@ -107,18 +107,17 @@ export default function DashboardPage() {
     );
   }
 
-  const approvedPercent = stats.totalApplications > 0 ? Math.round((stats.approvedApplications / stats.totalApplications) * 100) : 0;
+const approvedPercent = stats.totalApplications > 0 ? Math.round((stats.approvedApplications / stats.totalApplications) * 100) : 0;
   const pendingPercent = stats.totalApplications > 0 ? Math.round((stats.pendingApplications / stats.totalApplications) * 100) : 0;
   const rejectedPercent = stats.totalApplications > 0 ? Math.round((stats.rejectedApplications / stats.totalApplications) * 100) : 0;
-  const completedPercent = stats.totalApplications > 0 ? Math.round((stats.completedApplications / stats.totalApplications) * 100) : 0;
 
   const statCards = [
     { label: 'Total Applications', value: stats.totalApplications, icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', gradient: 'from-violet-500 to-purple-600', href: '/admin/applications' },
     { label: 'Pending Review', value: stats.pendingApplications, icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-amber-500 to-orange-600', href: '/admin/applications?status=pending' },
     { label: 'Processing', value: stats.processingApplications, icon: 'M4 4v5h.582m15.582 0a2.996 2.996 0 001.393-5.131L18.43 2.318a2.996 2.996 0 00-1.931-2.75L12 2.5l-4.5 1.818a2.996 2.996 0 00-1.931 2.75L2.43 7.318A2.996 2.996 0 002.818 9.45L4.582 12', gradient: 'from-violet-500 to-indigo-600', href: '/admin/applications?status=processing' },
     { label: 'Approved', value: stats.approvedApplications, icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', gradient: 'from-emerald-500 to-teal-600', href: '/admin/applications?status=approved' },
-    { label: 'Completed', value: stats.completedApplications, icon: 'M9 12l2 2 4-4m5.168 2.168A9 9 0 0121 12a9 9 0 01-9 9 9 9 0 001.664.168', gradient: 'from-blue-500 to-indigo-600', href: '/admin/applications?status=completed' },
-    { label: 'Revenue', value: `$${stats.paidRevenue?.toLocaleString() || 0}`, icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1', gradient: 'from-green-500 to-teal-600', href: '/admin/invoices' },
+    { label: 'Rejected', value: stats.rejectedApplications, icon: 'M10 14l2 2 4-4m-5-5l4-4M3 3l18 0', gradient: 'from-red-500 to-rose-600', href: '/admin/applications?status=rejected' },
+    { label: 'Revenue', value: `$${stats.paidRevenue?.toLocaleString() || 0}`, icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0-2.08.402-2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1', gradient: 'from-green-500 to-teal-600', href: '/admin/invoices' },
   ];
 
   const formatDate = (dateString: string) => {
@@ -192,10 +191,10 @@ export default function DashboardPage() {
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-slate-600">Processing</span>
-                <span className="font-semibold text-slate-900">{completedPercent}%</span>
+                <span className="font-semibold text-slate-900">{pendingPercent}%</span>
               </div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all" style={{ width: `${completedPercent}%` }} />
+                <div className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all" style={{ width: `${pendingPercent}%` }} />
               </div>
             </div>
             <div>
