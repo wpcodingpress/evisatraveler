@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { VisaRule } from '@/types';
 import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface ApplicationFormProps {
   visaRule: VisaRule;
@@ -27,6 +28,7 @@ const steps = [
 
 export function ApplicationForm({ visaRule, travelers = 1, processing = 'standard' }: ApplicationFormProps) {
   const router = useRouter();
+  const { selectedCurrency } = useCurrency();
 
   useEffect(() => {
     // Load saved form data from localStorage
@@ -144,7 +146,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
         travelers,
         processing,
         totalAmount: totalPrice,
-        currency: visaRule.currency || 'USD',
+        currency: selectedCurrency.code, // Use selected currency (PKR for Bank Alfalah)
         formData,
         uploadedFiles: Object.keys(uploadedFiles).map(id => ({ docId: id, fileName: uploadedFiles[id].name })),
       };

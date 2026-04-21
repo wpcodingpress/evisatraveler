@@ -50,14 +50,12 @@ const statusColors: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-700 border-amber-200',
   rejected: 'bg-red-100 text-red-700 border-red-200',
   processing: 'bg-blue-100 text-blue-700 border-blue-200',
-  completed: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-400',
 };
 
 const statusLabels: Record<string, string> = {
   pending: 'Pending',
   processing: 'Processing',
   approved: 'Approved',
-  completed: 'Completed',
   rejected: 'Rejected',
 };
 
@@ -223,13 +221,6 @@ export default function ApplicationsPage() {
         >
           <p className="text-2xl font-bold">{stats.approved || 0}</p>
           <p className="text-sm font-medium">Approved</p>
-        </button>
-        <button
-          onClick={() => setStatusFilter('completed')}
-          className={`p-4 rounded-xl border-2 transition-all ${statusFilter === 'completed' ? 'bg-blue-50 text-blue-700 border-blue-400' : 'bg-white border-slate-200 hover:border-slate-300'}`}
-        >
-          <p className="text-2xl font-bold">{stats.completed || 0}</p>
-          <p className="text-sm font-medium">Completed</p>
         </button>
         <button
           onClick={() => setStatusFilter('rejected')}

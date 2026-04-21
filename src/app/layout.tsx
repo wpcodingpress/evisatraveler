@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import PublicLayout from '@/components/PublicLayout';
 import { ScrollToTop } from '@/components/home/scroll-to-top';
+import { CurrencyProvider } from '@/context/CurrencyContext';
 
 export const metadata: Metadata = {
   title: 'eVisaTraveler | Visa Approved in 24-72 Hours | Apply Online',
@@ -21,10 +22,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className="min-h-screen flex flex-col bg-white font-sans antialiased isolate">
-        <PublicLayout>
-          {children}
-        </PublicLayout>
-        <ScrollToTop />
+        <CurrencyProvider>
+          <PublicLayout>
+            {children}
+          </PublicLayout>
+          <ScrollToTop />
+        </CurrencyProvider>
       </body>
     </html>
   );
