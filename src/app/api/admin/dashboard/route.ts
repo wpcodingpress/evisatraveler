@@ -37,16 +37,19 @@ export async function GET() {
       .filter(a => a.paymentStatus === 'paid')
       .reduce((sum, app) => sum + Number(app.totalAmount), 0);
 
-    const recentApps = applications.slice(0, 5).map(app => ({
-      id: app.id,
-      applicationNumber: app.applicationNumber,
-      status: app.status,
-      totalAmount: app.totalAmount,
-      createdAt: app.createdAt,
-      paymentStatus: app.paymentStatus,
-      user: app.user || { firstName: app.formData?.firstName || 'Unknown', lastName: app.formData?.lastName || 'User', email: app.formData?.email || 'N/A' },
-      visaRule: { toCountry: app.visaRule?.toCountry || { name: 'N/A', code: 'N/A', flag: '' } },
-    }));
+    const recentApps = applications.slice(0, 5).map(app => {
+      const fd = app.formData as Record<string, any>;
+      return {
+        id: app.id,
+        applicationNumber: app.applicationNumber,
+        status: app.status,
+        totalAmount: app.totalAmount,
+        createdAt: app.createdAt,
+        paymentStatus: app.paymentStatus,
+        user: app.user || { firstName: fd?.firstName || 'Unknown', lastName: fd?.lastName || 'User', email: fd?.email || 'N/A' },
+        visaRule: { toCountry: app.visaRule?.toCountry || { name: 'N/A', code: 'N/A', flag: '' } },
+      };
+    });
 
     return NextResponse.json({
       stats: {
