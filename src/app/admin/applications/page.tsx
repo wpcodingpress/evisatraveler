@@ -39,6 +39,7 @@ interface Application {
     type: string;
     originalName: string;
     fileName: string;
+    filePath: string;
     mimeType: string;
     fileSize: number;
   }>;
@@ -527,12 +528,14 @@ export default function ApplicationsPage() {
                 <div className="border-t pt-6">
                   <h3 className="font-bold text-slate-900 text-lg mb-4">Uploaded Documents & Photos</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {selectedApp.documents.map((doc) => (
+                    {selectedApp.documents.map((doc) => {
+                      const imageUrl = doc.filePath || `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`;
+                      return (
                       <div key={doc.id} className="bg-slate-50 rounded-xl overflow-hidden border border-slate-200">
                         {doc.mimeType?.includes('image') ? (
                           <div className="relative">
                             <img 
-                              src={(doc as any).filePath || `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`}
+                              src={imageUrl}
                               alt={doc.originalName || doc.type}
                               className="w-full h-32 object-cover"
                               onError={(e) => {
@@ -541,9 +544,10 @@ export default function ApplicationsPage() {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end">
                               <a 
-                                href={(doc as any).filePath || `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`}
+                                href={imageUrl}
                                 download={doc.originalName || doc.fileName}
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 className="w-full py-2 bg-black/50 text-white text-xs font-medium text-center hover:bg-black/70"
                               >
                                 View Full
@@ -561,8 +565,9 @@ export default function ApplicationsPage() {
                           <p className="font-semibold text-slate-900 text-sm capitalize">{doc.type || 'Document'}</p>
                           <p className="text-xs text-slate-500 truncate">{doc.originalName || doc.fileName}</p>
                         </div>
-                      </div>
-                    ))}
+</div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
