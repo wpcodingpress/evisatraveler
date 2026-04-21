@@ -17,10 +17,15 @@ rm -rf evisatraveler next evisa 2>/dev/null
 git clone https://github.com/wpcodingpress/evisatraveler.git
 ```
 
-## 4. Install dependencies
+## 4. Install dependencies (postinstall will auto-generate Prisma client)
 ```bash
 cd evisatraveler
 npm install
+```
+
+## 4b. Verify Prisma client is generated (if postinstall didn't run)
+```bash
+npx prisma generate
 ```
 
 ## 5. Create environment file
