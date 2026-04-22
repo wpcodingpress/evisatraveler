@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { CurrencySelector } from '@/components/CurrencySelector';
 
 function NavLink({ href, children, isActive, icon }: { href: string; children: React.ReactNode; isActive: boolean; icon?: string }) {
   return (
@@ -523,8 +524,9 @@ export function Header() {
             <NavLinks />
           </nav>
 
-          {/* Auth Buttons - Desktop */}
+{/* Auth Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-4">
+            <CurrencySelector />
             {loading ? (
               <div className="w-20 h-10 bg-slate-100 animate-pulse rounded-xl" />
             ) : user ? (
