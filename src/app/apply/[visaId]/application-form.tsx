@@ -99,6 +99,17 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
     passportExpiry: '', arrivalDate: '', departureDate: '',
   });
 
+  useEffect(() => {
+    // Resume from existing application if available
+    if (existingApplication?.formData && typeof existingApplication.formData === 'object') {
+      const savedData = existingApplication.formData as Record<string, string>;
+      setFormData(prev => ({ ...prev, ...savedData }));
+      if (existingApplication.currentStep) {
+        setCurrentStep(existingApplication.currentStep);
+      }
+    }
+  }, [existingApplication]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -106,16 +117,6 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
       </div>
     );
   }
-
-  // Resume from existing application if available
-  useEffect(() => {
-    if (existingApplication?.formData) {
-      setFormData(existingApplication.formData);
-      if (existingApplication.currentStep) {
-        setCurrentStep(existingApplication.currentStep);
-      }
-    }
-  }, [existingApplication]);
 
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
