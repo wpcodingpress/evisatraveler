@@ -86,6 +86,44 @@ export async function POST(request: Request) {
   }
 }
 
+export async function DELETE(request: Request) {
+  try {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('user_id');
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const notificationId = searchParams.get('id');
+
+    if (!notificationId) {
+      return NextResponse.json({ error: 'Notification ID required' }, { status: 400 });
+    }
+
+    const notif = await prisma.notification.findUnique({
+      where: { id: notificationId },
+    });
+
+    if (!notif) {
+      return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
+    }
+
+    if (notif.userId && notif.userId !== userId.value) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    await prisma.notification.delete({
+      where: { id: notificationId },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Notification delete error:', error);
+    return NextResponse.json({ error: 'Failed to delete notification' }, { status: 500 });
+  }
+}
+
 export async function PATCH(request: Request) {
   try {
     const cookieStore = await cookies();
@@ -94,7 +132,6 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user role
     let user;
     try {
       user = await prisma.user.findUnique({
@@ -113,7 +150,6 @@ export async function PATCH(request: Request) {
     const { id, isRead, markAllRead } = body;
 
     if (markAllRead) {
-      // For users, only mark their own notifications as read
       const where: any = {};
       if (user.role !== 'admin') {
         where.userId = userId.value;
@@ -127,7 +163,6 @@ export async function PATCH(request: Request) {
     }
 
     if (id) {
-      // Verify ownership for non-admin
       const notif = await prisma.notification.findUnique({
         where: { id },
       });

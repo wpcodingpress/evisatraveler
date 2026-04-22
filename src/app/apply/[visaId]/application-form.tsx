@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { VisaRule } from '@/types';
@@ -51,67 +51,108 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
     passportExpiry: '', arrivalDate: '', departureDate: '',
   });
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+        setIsAuthenticated(data.authenticated);
+      } catch {
+        setIsAuthenticated(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     if (dataLoaded) return;
-    const savedKey = `evisa_form_${visaRule.id}`;
-    const saved = localStorage.getItem(savedKey);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.formData) setFormData(prev => ({ ...prev, ...parsed.formData }));
-        if (parsed.uploadedFiles) setUploadedFiles(parsed.uploadedFiles);
-        if (parsed.currentStep) setCurrentStep(parsed.currentStep);
-      } catch (e) {
-        console.error('Failed to parse saved form data', e);
+    
+    const loadProgress = async () => {
+      if (isAuthenticated) {
+        try {
+          const res = await fetch(`/api/applications/progress?visaRuleId=${visaRule.id}`);
+          if (res.ok) {
+            const progress = await res.json();
+            if (progress && progress.formData) {
+              setFormData(prev => ({ ...prev, ...progress.formData }));
+            }
+            if (progress && progress.uploadedFiles) {
+              setUploadedFiles(progress.uploadedFiles);
+            }
+            if (progress && progress.currentStep) {
+              setCurrentStep(progress.currentStep);
+            }
+          }
+        } catch (e) {
+          console.error('Failed to load progress from DB', e);
+        }
       }
-    }
-    setDataLoaded(true);
-  }, [visaRule.id]);
+      
+      const savedKey = `evisa_guest_${visaRule.id}`;
+      const saved = localStorage.getItem(savedKey);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.formData && !isAuthenticated) {
+            setFormData(prev => ({ ...prev, ...parsed.formData }));
+          }
+          if (parsed.uploadedFiles && !isAuthenticated) {
+            setUploadedFiles(parsed.uploadedFiles);
+          }
+          if (parsed.currentStep && !isAuthenticated) {
+            setCurrentStep(parsed.currentStep);
+          }
+        } catch (e) {
+          console.error('Failed to parse saved form data', e);
+        }
+      }
+      
+      if (existingApplication?.formData) {
+        setFormData(prev => ({ ...prev, ...(existingApplication.formData as Record<string, string>) }));
+        if (existingApplication.currentStep) setCurrentStep(existingApplication.currentStep);
+      }
+      
+      setDataLoaded(true);
+    };
+    
+    loadProgress();
+  }, [visaRule.id, isAuthenticated, existingApplication, dataLoaded]);
 
-  useEffect(() => {
-    if (existingApplication?.formData) {
-      setFormData(prev => ({ ...prev, ...(existingApplication.formData as Record<string, string>) }));
-      if (existingApplication.currentStep) setCurrentStep(existingApplication.currentStep);
-    }
-  }, [existingApplication]);
-
-  useEffect(() => {
-    if (!dataLoaded) return;
-    const savedKey = `evisa_form_${visaRule.id}`;
-    const current = localStorage.getItem(savedKey);
-    const currentData = current ? JSON.parse(current) : {};
-    localStorage.setItem(savedKey, JSON.stringify({
-      ...currentData,
-      formData,
-      uploadedFiles,
-      currentStep,
+  const saveProgress = useCallback(async (data: typeof formData, files: typeof uploadedFiles, step: number) => {
+    const payload = {
+      visaRuleId: visaRule.id,
+      formData: data,
+      uploadedFiles: files,
+      currentStep: step,
       travelers,
       processing,
-      savedAt: new Date().toISOString()
+    };
+
+    if (isAuthenticated) {
+      try {
+        await fetch('/api/applications/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } catch (e) {
+        console.error('Failed to save progress to DB', e);
+      }
+    }
+
+    const savedKey = isAuthenticated ? `evisa_auth_${visaRule.id}` : `evisa_guest_${visaRule.id}`;
+    localStorage.setItem(savedKey, JSON.stringify({
+      ...payload,
+      savedAt: new Date().toISOString(),
     }));
-  }, [formData, uploadedFiles, currentStep, dataLoaded]);
+  }, [visaRule.id, isAuthenticated, travelers, processing]);
 
   useEffect(() => {
-    if (dataLoaded) trackIncomplete(currentStep);
-  }, [currentStep, dataLoaded]);
-
-  const trackIncomplete = async (step: number) => {
     if (!dataLoaded) return;
-    try {
-      await fetch('/api/applications/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          visaRuleId: visaRule.id,
-          step,
-          callbackUrl: `/apply/${visaRule.id}?travelers=${travelers}&processing=${processing}`,
-          travelers,
-          processing,
-        }),
-      });
-    } catch { /* Silent fail */ }
-  };
+    saveProgress(formData, uploadedFiles, currentStep);
+  }, [formData, uploadedFiles, currentStep, dataLoaded, saveProgress]);
 
   if (loading) {
     return (
@@ -150,13 +191,13 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
     }
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (canProceed() && currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
   };
 
-  const handleBack = async () => {
+  const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
@@ -166,17 +207,15 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
     setIsSubmitting(true);
     setError('');
     try {
-      // Calculate payment amount in PKR for Bank Alfalah
       const paymentAmount = usdTotal * selectedCurrency.exchangeRate;
       
-      // Create application first to get ID
       const appData = {
         visaRuleId: visaRule.id,
         travelers,
         processing,
-        totalAmount: usdTotal, // Store USD amount in database
-        currency: 'PKR', // Bank Alfalah always accepts PKR
-        paymentAmount: paymentAmount, // Actual PKR amount for payment
+        totalAmount: usdTotal,
+        currency: 'PKR',
+        paymentAmount: paymentAmount,
         formData,
         uploadedFiles: Object.keys(uploadedFiles).map(id => ({ docId: id, fileName: uploadedFiles[id].name })),
       };
@@ -196,32 +235,12 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
       const applicationId = result.id;
       const applicationNumber = result.applicationNumber;
       
-      // Upload each file to server
-      const uploadedDocs = [];
-      for (const [docId, fileData] of Object.entries(uploadedFiles)) {
-        try {
-          const formData = new FormData();
-          formData.append('file', fileData.file);
-          formData.append('applicationId', applicationId); // Use numeric ID for DB
-          formData.append('docType', docId);
-          
-          const uploadRes = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          });
-          
-          if (uploadRes.ok) {
-            const uploadData = await uploadRes.json();
-            uploadedDocs.push(uploadData.document);
-          }
-        } catch (uploadError) {
-          console.error('Failed to upload file:', docId, uploadError);
-        }
+      if (isAuthenticated) {
+        await fetch(`/api/applications/progress?visaRuleId=${visaRule.id}`, { method: 'DELETE' }).catch(() => {});
       }
-      
-      // Clear saved form data on successful submission
-      localStorage.removeItem(`evisa_form_${visaRule.id}`);
-      
+      localStorage.removeItem(`evisa_guest_${visaRule.id}`);
+      localStorage.removeItem(`evisa_auth_${visaRule.id}`);
+
       if (result.paymentUrl && !result.paymentUrl.includes('demo')) {
         window.location.href = result.paymentUrl;
         return;
@@ -388,7 +407,6 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
           : 0;
         return (
           <div className="space-y-6">
-            {/* Visa Summary Card */}
             <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200">
               <h4 className="font-bold text-violet-900 mb-3 flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -406,7 +424,6 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
               </div>
             </div>
 
-            {/* Full Traveler Details */}
             <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-5 border border-slate-200">
               <h4 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -436,10 +453,6 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                   <p className="font-semibold text-slate-900 capitalize">{formData.gender || 'Not specified'}</p>
                 </div>
                 <div className="p-3 bg-white rounded-lg border border-slate-100">
-                  <p className="text-slate-500 text-xs uppercase tracking-wide">Nationality</p>
-                  <p className="font-semibold text-slate-900">{formData.nationality || 'Not specified'}</p>
-                </div>
-                <div className="p-3 bg-white rounded-lg border border-slate-100">
                   <p className="text-slate-500 text-xs uppercase tracking-wide">Passport Number</p>
                   <p className="font-semibold text-slate-900">{formData.passportNumber}</p>
                 </div>
@@ -458,7 +471,6 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
               </div>
             </div>
 
-            {/* Pricing */}
             <div className="border-t-2 border-violet-200 pt-4 bg-white rounded-xl p-4">
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
@@ -478,7 +490,6 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
               </div>
             </div>
 
-            {/* Payment Banner */}
             <div className="mt-4 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 rounded-xl p-4 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -521,7 +532,6 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
             <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-to-br from-purple-500/30 to-fuchsia-500/30 rounded-full blur-xl" />
             
             <div className="relative">
-              {/* Form Header with Flag and Route Info */}
               <div className="p-5 border-b border-violet-100 bg-gradient-to-r from-violet-50 to-purple-50">
                 <div className="flex items-center gap-4 mb-4">
                   <span className="text-5xl" role="img" aria-label="{visaRule.toCountry.name} flag">{visaRule.toCountry.flag}</span>

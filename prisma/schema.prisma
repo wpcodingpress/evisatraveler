@@ -17,7 +17,8 @@ model User {
   role       String       @default("user")
   isActive    Boolean      @default(true)
   applications Application[]
-  notifications Notification[]  // Add this line
+  applicationProgress ApplicationProgress[]
+  notifications Notification[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 }
@@ -56,6 +57,7 @@ model VisaRule {
   isActive      Boolean       @default(true)
   sortOrder     Int          @default(0)
   applications  Application[]
+  progress      ApplicationProgress[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
@@ -93,6 +95,25 @@ model Document {
   fileSize     Int
   mimeType     String
   createdAt    DateTime   @default(now())
+}
+
+model ApplicationProgress {
+  id             String     @id @default(cuid())
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visaRuleId     String
+  visaRule       VisaRule   @relation(fields: [visaRuleId], references: [id])
+  formData       Json
+  uploadedFiles  Json?
+  currentStep    Int       @default(1)
+  travelers     Int       @default(1)
+  processing    String    @default("standard")
+  lastActivity  DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([userId, visaRuleId])
+  @@index([userId])
 }
 
 model Notification {

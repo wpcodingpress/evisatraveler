@@ -11,16 +11,19 @@ interface User {
   email: string;
 }
 
-interface IncompleteApp {
-  id?: string;
+interface ApplicationProgress {
+  id: string;
   visaRuleId: string;
-  startedAt: string;
-  step: number;
-  callbackUrl?: string;
-  travelers?: number;
-  processing?: string;
-  applicationNumber?: string;
-  status?: string;
+  currentStep: number;
+  travelers: number;
+  processing: string;
+  lastActivity: string;
+  visaRule?: {
+    id: string;
+    toCountry?: { name: string; flag: string };
+    fromCountry?: { name: string; flag: string };
+    visaType: string;
+  };
 }
 
 interface Application {
@@ -31,8 +34,6 @@ interface Application {
   totalAmount: any;
   createdAt: string;
   visaRuleId?: string;
-  formData?: any;
-  currentStep?: number;
   visaRule?: {
     id?: string;
     toCountry?: { name: string; flag: string };
@@ -43,10 +44,9 @@ interface Application {
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [incompleteApps, setIncompleteApps] = useState<IncompleteApp[]>([]);
+  const [progressList, setProgressList] = useState<ApplicationProgress[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'applications'>('overview');
 
   useEffect(() => {
     checkAuth();
@@ -73,60 +73,43 @@ export default function DashboardPage() {
 
   const loadData = async () => {
     try {
-      const appsRes = await fetch('/api/applications');
-      const appsData = await appsRes.json();
-      setApplications(Array.isArray(appsData) ? appsData : []);
-      
-      // Only show pending/processing applications in incomplete panel
-      // Once completed/approved/rejected, they disappear from incomplete list
-      if (Array.isArray(appsData)) {
-        const incompleteFromDB = appsData
-          .filter((app: Application) => app.status === 'pending' || app.status === 'processing')
-          .map((app: Application) => ({
-            visaRuleId: app.visaRuleId || app.id,
-            startedAt: app.createdAt,
-            step: 4, // In DB means submitted
-            callbackUrl: '/dashboard/applications',
-            applicationNumber: app.applicationNumber,
-            status: app.status,
-            id: app.id,
-          }));
-        
-        setIncompleteApps(incompleteFromDB);
-      }
-    } catch {
-      setApplications([]);
-    }
+      const [progressRes, appsRes] = await Promise.all([
+        fetch('/api/applications/progress'),
+        fetch('/api/applications'),
+      ]);
 
+      if (progressRes.ok) {
+        const progressData = await progressRes.json();
+        setProgressList(Array.isArray(progressData) ? progressData : []);
+      }
+
+      if (appsRes.ok) {
+        const appsData = await appsRes.json();
+        setApplications(Array.isArray(appsData) ? appsData : []);
+      }
+    } catch (error) {
+      console.error('Load data error:', error);
+    }
     setLoading(false);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'approved': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      case 'processing': return 'bg-violet-100 text-violet-700 border-violet-200';
-      case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
-      default: return 'bg-amber-100 text-amber-700 border-amber-200';
+  const removeProgress = async (progress: ApplicationProgress) => {
+    if (!confirm(`Remove "${progress.visaRule?.visaType} Visa" from your saved applications?`)) {
+      return;
     }
-  };
-
-  const clearIncomplete = async (appId: string) => {
     try {
-      await fetch('/api/applications', {
+      await fetch(`/api/applications/progress?visaRuleId=${progress.visaRuleId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ applicationId: appId }),
       });
-      setIncompleteApps(prev => prev.filter(app => (app.id || app.visaRuleId) !== appId));
-      setApplications(prev => prev.filter(app => app.id !== appId));
+      setProgressList(prev => prev.filter(p => p.id !== progress.id));
     } catch (error) {
-      console.error('Delete failed:', error);
-      alert('Failed to delete application');
+      console.error('Remove progress failed:', error);
+      alert('Failed to remove');
     }
   };
 
   const deleteApplication = async (appId: string) => {
-    if (!confirm('Are you sure you want to delete this application? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to delete this application? This cannot be undone.')) {
       return;
     }
     try {
@@ -142,11 +125,24 @@ export default function DashboardPage() {
     }
   };
 
-  const totalIncomplete = incompleteApps.length;
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case 'processing': return 'bg-violet-100 text-violet-700 border-violet-200';
+      case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
+      default: return 'bg-amber-100 text-amber-700 border-amber-200';
+    }
+  };
+
+  const getStepName = (step: number) => {
+    const steps = ['', 'Personal Info', 'Trip Details', 'Documents', 'Review & Pay'];
+    return steps[step] || `Step ${step}`;
+  };
+
   const pendingApps = applications.filter(a => a.status === 'pending').length;
   const processingApps = applications.filter(a => a.status === 'processing').length;
   const approvedApps = applications.filter(a => a.status === 'approved').length;
-  const total = applications.length;
+  const totalApps = applications.length;
 
   if (loading) {
     return (
@@ -168,7 +164,6 @@ export default function DashboardPage() {
   return (
     <main className="flex-1 py-8 md:py-12 bg-slate-50">
       <div className="container-custom">
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
@@ -187,7 +182,6 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Link href="/visa" className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:shadow-lg hover:border-violet-300 transition-all group">
             <div className="flex items-center gap-3">
@@ -211,7 +205,7 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">{total}</p>
+                <p className="text-2xl font-bold text-slate-900">{totalApps}</p>
                 <p className="text-sm text-slate-500">Applications</p>
               </div>
             </div>
@@ -246,9 +240,8 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* INCOMPLETE Applications Alert */}
-        {totalIncomplete > 0 && (
-          <div className="relative bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl shadow-xl overflow-hidden mb-8">
+        {progressList.length > 0 && (
+          <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl shadow-xl overflow-hidden mb-8">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvc3ZnPg==')] opacity-30" />
             <div className="relative p-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -259,47 +252,55 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">Pending Applications</h2>
-                    <p className="text-amber-100">Complete your pending applications to process them faster</p>
+                    <h2 className="text-xl font-bold text-white">Saved Applications</h2>
+                    <p className="text-amber-100">Continue your in-progress visa applications</p>
                   </div>
                 </div>
                 <span className="px-5 py-2 bg-white text-amber-600 font-bold rounded-full">
-                  {totalIncomplete} Pending
+                  {progressList.length} In Progress
                 </span>
               </div>
 
-              <div className="space-y-3">
-                {incompleteApps.map((app, index) => (
-                  <div key={app.id || index} className="flex items-center justify-between p-4 bg-white/95 backdrop-blur rounded-xl">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 font-bold">
-                        {index + 1}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {progressList.map((progress) => (
+                  <div key={progress.id} className="flex flex-col p-4 bg-white/95 backdrop-blur rounded-xl">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{progress.visaRule?.toCountry?.flag}</span>
+                        <div>
+                          <p className="font-semibold text-slate-900">{progress.visaRule?.visaType} Visa</p>
+                          <p className="text-xs text-slate-500">{progress.visaRule?.fromCountry?.flag} → {progress.visaRule?.toCountry?.flag}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-semibold text-slate-900">{app.applicationNumber || 'Application'}</p>
-                        <p className="text-sm text-slate-500">
-                          Status: <span className="font-semibold capitalize">{app.status}</span>
-                          &nbsp;•&nbsp;
-                          {new Date(app.startedAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Link 
-                        href={app.callbackUrl || '/dashboard/applications'} 
-                        className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all"
-                      >
-                        View
-                      </Link>
-                      <button 
-                        onClick={() => clearIncomplete(app.id || app.visaRuleId)}
-                        className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete"
+                      <button
+                        onClick={() => removeProgress(progress)}
+                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Remove"
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
+                    </div>
+                    <div className="mt-auto space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-500">Step</span>
+                        <span className="font-medium text-violet-600">{getStepName(progress.currentStep)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-500">Travelers</span>
+                        <span className="font-medium text-slate-700">{progress.travelers}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-500">Processing</span>
+                        <span className="font-medium text-slate-700 capitalize">{progress.processing}</span>
+                      </div>
+                      <Link
+                        href={`/apply/${progress.visaRuleId}?travelers=${progress.travelers}&processing=${progress.processing}`}
+                        className="w-full mt-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all text-center"
+                      >
+                        Continue →
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -308,7 +309,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
             <div className="flex items-center justify-between mb-3">
@@ -354,17 +354,16 @@ export default function DashboardPage() {
                 </svg>
               </div>
             </div>
-            <p className="text-2xl font-bold text-slate-900">{total}</p>
+            <p className="text-2xl font-bold text-slate-900">{totalApps}</p>
             <p className="text-sm text-slate-500">Total</p>
           </div>
         </div>
 
-        {/* Recent Applications */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="p-6 border-b border-slate-100 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-slate-900">Recent Applications</h2>
-              <p className="text-sm text-slate-500">Your latest visa applications</p>
+              <p className="text-sm text-slate-500">Your submitted visa applications</p>
             </div>
             <div className="flex items-center gap-3">
               <Link href="/track" className="text-sm text-violet-600 font-medium hover:text-violet-700">
@@ -405,39 +404,39 @@ export default function DashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {applications.slice(0, 5).map(app => (
-                     <tr key={app.id} className="hover:bg-slate-50 transition-colors">
-                       <td className="py-4 px-6">
-                         <p className="font-semibold text-slate-900">{app.applicationNumber}</p>
-                         <p className="text-sm text-slate-500">{app.visaRule?.visaType}</p>
-                       </td>
-                       <td className="py-4 px-6 hidden md:table-cell">
-                         <span className="text-slate-600">{app.visaRule?.toCountry?.flag} {app.visaRule?.toCountry?.name}</span>
-                       </td>
-                       <td className="py-4 px-6">
-                         <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold capitalize border ${getStatusColor(app.status)}`}>
-                           {app.status}
-                         </span>
-                       </td>
-                       <td className="py-4 px-6 text-slate-600">
-                         {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '-'}
-                       </td>
-                       <td className="py-4 px-6 text-right">
-                         <div className="flex items-center justify-end gap-3">
-                           <Link href={`/confirmation/${app.applicationNumber}`} className="text-violet-600 font-medium hover:text-violet-700">
-                             View
-                           </Link>
-                           {app.status === 'pending' && (
-                             <button
-                               onClick={() => deleteApplication(app.id)}
-                               className="text-red-600 font-medium hover:text-red-700 text-sm"
-                               title="Delete application"
-                             >
-                               Delete
-                             </button>
-                           )}
-                         </div>
-                       </td>
-                     </tr>
+                    <tr key={app.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-4 px-6">
+                        <p className="font-semibold text-slate-900">{app.applicationNumber}</p>
+                        <p className="text-sm text-slate-500">{app.visaRule?.visaType}</p>
+                      </td>
+                      <td className="py-4 px-6 hidden md:table-cell">
+                        <span className="text-slate-600">{app.visaRule?.toCountry?.flag} {app.visaRule?.toCountry?.name}</span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold capitalize border ${getStatusColor(app.status)}`}>
+                          {app.status}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-slate-600">
+                        {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '-'}
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <Link href={`/confirmation/${app.applicationNumber}`} className="text-violet-600 font-medium hover:text-violet-700">
+                            View
+                          </Link>
+                          {app.status === 'pending' && (
+                            <button
+                              onClick={() => deleteApplication(app.id)}
+                              className="text-red-600 font-medium hover:text-red-700 text-sm"
+                              title="Delete application"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   ))}
                 </tbody>
               </table>

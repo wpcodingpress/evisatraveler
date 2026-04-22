@@ -48,6 +48,29 @@ export async function GET(request: Request) {
         applicationNumber: existingApp.applicationNumber,
         visaType: existingApp.visaRule?.visaType,
         destination: existingApp.visaRule?.toCountry?.name,
+        hasProgress: false,
+      });
+    }
+
+    const progress = await prisma.applicationProgress.findUnique({
+      where: {
+        userId_visaRuleId: {
+          userId,
+          visaRuleId,
+        },
+      },
+    });
+
+    if (progress) {
+      return NextResponse.json({
+        exists: true,
+        status: 'in_progress',
+        applicationId: null,
+        applicationNumber: null,
+        visaType: null,
+        destination: null,
+        hasProgress: true,
+        currentStep: progress.currentStep,
       });
     }
 
