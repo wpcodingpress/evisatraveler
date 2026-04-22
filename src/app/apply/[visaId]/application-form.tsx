@@ -28,11 +28,10 @@ const steps = [
 
 export function ApplicationForm({ visaRule, travelers = 1, processing = 'standard' }: ApplicationFormProps) {
   const router = useRouter();
-  const { selectedCurrency, convertPrice, formatPrice, loading } = useCurrency();
+  const { selectedCurrency, formatPrice, loading } = useCurrency();
   const basePrice = typeof visaRule.price === 'number' ? visaRule.price : Number(visaRule.price);
   const urgentFee = processing === 'urgent' ? Math.round(basePrice * 0.5) : 0;
   const usdTotal = (basePrice + urgentFee) * travelers;
-  const totalPrice = convertPrice(usdTotal);
 
   useEffect(() => {
     // Load saved form data from localStorage
@@ -147,14 +146,17 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
     setIsSubmitting(true);
     setError('');
     try {
+      // Calculate payment amount in PKR for Bank Alfalah
+      const paymentAmount = usdTotal * selectedCurrency.exchangeRate;
+      
       // Create application first to get ID
       const appData = {
         visaRuleId: visaRule.id,
         travelers,
         processing,
         totalAmount: usdTotal, // Store USD amount in database
-        currency: selectedCurrency.code, // Store selected currency (PKR for Bank Alfalah)
-        paymentAmount: totalPrice, // Actual payment amount in selected currency
+        currency: 'PKR', // Bank Alfalah always accepts PKR
+        paymentAmount: paymentAmount, // Actual PKR amount for payment
         formData,
         uploadedFiles: Object.keys(uploadedFiles).map(id => ({ docId: id, fileName: uploadedFiles[id].name })),
       };
@@ -451,7 +453,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                 )}
                 <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-200">
                   <span className="text-lg font-bold text-slate-900">Total Payable</span>
-                  <span className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">{formatPrice(totalPrice)}</span>
+                  <span className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">{formatPrice(usdTotal)}</span>
                 </div>
               </div>
             </div>
@@ -511,7 +513,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                     <p className="text-slate-500 text-xs mt-0.5">{travelers} traveler{travelers > 1 ? 's' : ''} • {processing === 'urgent' ? 'Express Processing' : 'Standard Processing'}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">{formatPrice(totalPrice)}</p>
+                    <p className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">{formatPrice(usdTotal)}</p>
                     <p className="text-xs text-slate-500">total</p>
                   </div>
                 </div>
