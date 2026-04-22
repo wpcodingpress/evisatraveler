@@ -101,6 +101,10 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
   const formatPrice = (usdPrice: number): string => {
     const converted = convertPrice(usdPrice);
+    // For PKR, don't use thousand separators to avoid confusion (3920 vs 3,920)
+    if (selectedCurrency.code === 'PKR') {
+      return `${selectedCurrency.symbol}${Math.round(converted).toLocaleString('en-US', { useGrouping: false })}`;
+    }
     return `${selectedCurrency.symbol}${converted.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
