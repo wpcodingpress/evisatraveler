@@ -38,7 +38,14 @@ export default function ProfilePage() {
         router.push('/login?callback=/dashboard/profile');
         return;
       }
-      setUser(data.user);
+
+      const profileRes = await fetch('/api/user/profile');
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
+      } else {
+        setUser(data.user);
+      }
     } catch {
       router.push('/login?callback=/dashboard/profile');
     } finally {

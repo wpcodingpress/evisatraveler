@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     });
     cookieStore.set('user_id', user!.id, { path: '/' });
     cookieStore.set('user_email', user!.email, { path: '/' });
-    cookieStore.set('user_name', user!.firstName, { path: '/' });
+    cookieStore.set('user_name', `${user!.firstName} ${user!.lastName || ''}`.trim(), { path: '/' });
 
     return NextResponse.json({
       user: {
@@ -66,6 +66,7 @@ export async function POST(request: Request) {
         email: user!.email,
         firstName: user!.firstName,
         lastName: user!.lastName || '',
+        phone: user!.phone || '',
         role: user!.role || 'user',
       },
     });

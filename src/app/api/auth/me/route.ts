@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
@@ -13,12 +14,43 @@ export async function GET() {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
+    let user;
+    try {
+      user = await prisma.user.findUnique({
+        where: { id: userId.value },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+        },
+      });
+    } catch {
+      user = null;
+    }
+
+    if (user) {
+      return NextResponse.json({
+        authenticated: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
+        },
+      });
+    }
+
     return NextResponse.json({
       authenticated: true,
       user: {
         id: userId.value,
         email: userEmail?.value || '',
         firstName: userName?.value || 'User',
+        lastName: '',
+        phone: '',
       },
     });
   } catch (error) {
