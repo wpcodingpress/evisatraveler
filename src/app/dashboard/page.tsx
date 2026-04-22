@@ -12,6 +12,7 @@ interface User {
 }
 
 interface IncompleteApp {
+  id?: string;
   visaRuleId: string;
   startedAt: string;
   step: number;
