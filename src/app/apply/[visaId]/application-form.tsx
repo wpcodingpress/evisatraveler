@@ -29,7 +29,6 @@ const steps = [
 export function ApplicationForm({ visaRule, travelers = 1, processing = 'standard' }: ApplicationFormProps) {
   const router = useRouter();
   const { selectedCurrency, convertPrice, formatPrice } = useCurrency();
-  
   const basePrice = typeof visaRule.price === 'number' ? visaRule.price : Number(visaRule.price);
   const urgentFee = processing === 'urgent' ? Math.round(basePrice * 0.5) : 0;
   const usdTotal = (basePrice + urgentFee) * travelers;
@@ -87,21 +86,17 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{[key: string]: UploadedFile}>({});
   const [error, setError] = useState('');
-  
-  const basePrice = typeof visaRule.price === 'number' ? visaRule.price : Number(visaRule.price);
-  const urgentFee = processing === 'urgent' ? Math.round(basePrice * 0.5) : 0;
-  const usdTotal = (basePrice + urgentFee) * travelers;
-  const totalPrice = convertPrice(usdTotal);
-
-  useEffect(() => {
-    // Re-render when currency changes
-  }, [selectedCurrency.code, totalPrice]);
-  
+  const [currencyKey, setCurrencyKey] = useState(0); // Force re-render on currency change
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     dateOfBirth: '', gender: '', nationality: '', passportNumber: '',
     passportExpiry: '', arrivalDate: '', departureDate: '',
   });
+
+  // Update currencyKey when currency changes to force price recalculation
+  useEffect(() => {
+    setCurrencyKey(k => k + 1);
+  }, [selectedCurrency.code]);
 
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
