@@ -53,11 +53,6 @@ export default function VisaPage() {
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState(search);
   const [totalItems, setTotalItems] = useState(0);
-  const [currencyKey, setCurrencyKey] = useState(0);
-
-  useEffect(() => {
-    setCurrencyKey(k => k + 1);
-  }, [selectedCurrency.code]);
 
   useEffect(() => {
     fetchDestinations();
@@ -223,7 +218,7 @@ export default function VisaPage() {
                       <div className="flex items-end justify-between">
                         <div>
                           <p className="text-slate-500 text-xs">Starting from</p>
-                          <p key={currencyKey} className="text-2xl font-bold text-slate-900">{formatPrice(destination.price)}</p>
+                          <p className="text-2xl font-bold text-slate-900">{formatPrice(destination.price)}</p>
                         </div>
                         <span className="px-4 py-2.5 bg-violet-600 text-white font-semibold rounded-lg flex items-center gap-2 group-hover:bg-violet-700 transition-all duration-300">
                           Apply
