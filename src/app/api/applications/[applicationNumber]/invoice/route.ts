@@ -330,8 +330,12 @@ export async function GET(request: Request, { params }: Props) {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('Total Amount', MARGIN + 5, y + 12);
-    doc.setFontSize(16);
-    doc.text(`$${Number(application.totalAmount).toFixed(2)} ${application.currency || 'USD'}`, pageWidth - MARGIN - 5, y + 20, { align: 'right' });
+    const usdAmount = Number(application.totalAmount);
+    const pkrAmount = usdAmount * 280;
+    doc.setFontSize(14);
+    doc.text(`$${usdAmount.toFixed(2)} USD`, pageWidth - MARGIN - 5, y + 15, { align: 'right' });
+    doc.setFontSize(12);
+    doc.text(`₨ ${pkrAmount.toFixed(2)} PKR`, pageWidth - MARGIN - 5, y + 25, { align: 'right' });
     y += 45;
 
     y = checkAndAddPage(doc, y, MARGIN);

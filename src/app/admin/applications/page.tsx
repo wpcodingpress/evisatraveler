@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface Application {
   id: string;
@@ -45,6 +46,8 @@ interface Application {
   }>;
 }
 
+const EXCHANGE_RATE = 280;
+
 const statusColors: Record<string, string> = {
   approved: 'bg-emerald-100 text-emerald-700 border-emerald-200',
   pending: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -70,6 +73,12 @@ export default function ApplicationsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 50;
+  const { formatPrice } = useCurrency();
+
+  const formatAdminPrice = (usdAmount: number) => {
+    const pkrAmount = usdAmount * EXCHANGE_RATE;
+    return `$${usdAmount.toFixed(2)} / ₨ ${pkrAmount.toFixed(2)}`;
+  };
 
   useEffect(() => {
     fetchApplications();
@@ -588,14 +597,14 @@ export default function ApplicationsPage() {
                 </div>
               )}
 
-              {/* Payment & Status Section */}
+{/* Payment & Status Section */}
               <div className="border-t pt-6">
                 <h3 className="font-bold text-slate-900 text-lg mb-4">Payment & Status</h3>
                 <div className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl">
                   <div className="flex flex-wrap justify-between items-center gap-4">
                     <div>
                       <p className="text-sm text-slate-500">Total Amount</p>
-                      <p className="text-2xl font-bold text-slate-900">${Number(selectedApp.totalAmount || 0)} {selectedApp.currency || 'USD'}</p>
+                      <p className="text-2xl font-bold text-slate-900">{formatAdminPrice(Number(selectedApp.totalAmount || 0))}</p>
                     </div>
                     <div className="flex gap-2">
                       <span className={`px-4 py-2 rounded-full text-sm font-semibold capitalize ${statusColors[selectedApp.status] || 'bg-slate-100 text-slate-700'}`}>
