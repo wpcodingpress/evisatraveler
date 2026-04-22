@@ -147,7 +147,7 @@ export function VisaDetailsClient({ visaRules, slug }: VisaDetailsClientProps) {
                 </div>
                 <div className="p-6 space-y-4">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-transparent bg-gradient-to-r from-purple-600 to-green-500 bg-clip-text">{formatPrice(selectedVisa.price)}</span>
+                    <span className="text-4xl font-bold text-transparent bg-gradient-to-r from-purple-600 to-green-500 bg-clip-text">{formatPrice(Number(selectedVisa.price))}</span>
                     <span className="text-slate-500">per person</span>
                   </div>
                   <ul className="space-y-3 text-sm">

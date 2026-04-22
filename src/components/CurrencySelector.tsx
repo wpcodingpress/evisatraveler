@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useCurrency, currencies } from '@/context/CurrencyContext';
+import { useCurrency } from '@/context/CurrencyContext';
 
 export function CurrencySelector() {
-  const { selectedCurrency, setCurrency, formatPrice } = useCurrency();
+  const { selectedCurrency, setCurrency, currencies } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
