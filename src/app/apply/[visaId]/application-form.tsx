@@ -41,32 +41,63 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
   const urgentFee = processing === 'urgent' ? Math.round(basePrice * 0.5) : 0;
   const usdTotal = (basePrice + urgentFee) * travelers;
 
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<{[key: string]: UploadedFile}>({});
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    firstName: '', lastName: '', email: '', phone: '',
+    dateOfBirth: '', gender: '', nationality: '', passportNumber: '',
+    passportExpiry: '', arrivalDate: '', departureDate: '',
+  });
+  const [dataLoaded, setDataLoaded] = useState(false);
+
   useEffect(() => {
-    // Load saved form data from localStorage
+    if (dataLoaded) return;
     const savedKey = `evisa_form_${visaRule.id}`;
     const saved = localStorage.getItem(savedKey);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Restore all saved data
-        if (parsed.formData && typeof parsed.formData === 'object') {
-          setFormData(parsed.formData);
-        }
-        if (parsed.uploadedFiles && typeof parsed.uploadedFiles === 'object') {
-          setUploadedFiles(parsed.uploadedFiles);
-        }
-        if (parsed.currentStep && typeof parsed.currentStep === 'number') {
-          setCurrentStep(parsed.currentStep);
-        }
-        console.log('Restored saved form data from step', parsed.currentStep);
+        if (parsed.formData) setFormData(prev => ({ ...prev, ...parsed.formData }));
+        if (parsed.uploadedFiles) setUploadedFiles(parsed.uploadedFiles);
+        if (parsed.currentStep) setCurrentStep(parsed.currentStep);
       } catch (e) {
         console.error('Failed to parse saved form data', e);
       }
     }
-    trackIncomplete(1);
+    setDataLoaded(true);
   }, [visaRule.id]);
 
+  useEffect(() => {
+    if (existingApplication?.formData) {
+      setFormData(prev => ({ ...prev, ...(existingApplication.formData as Record<string, string>) }));
+      if (existingApplication.currentStep) setCurrentStep(existingApplication.currentStep);
+    }
+  }, [existingApplication]);
+
+  useEffect(() => {
+    if (!dataLoaded) return;
+    const savedKey = `evisa_form_${visaRule.id}`;
+    const current = localStorage.getItem(savedKey);
+    const currentData = current ? JSON.parse(current) : {};
+    localStorage.setItem(savedKey, JSON.stringify({
+      ...currentData,
+      formData,
+      uploadedFiles,
+      currentStep,
+      travelers,
+      processing,
+      savedAt: new Date().toISOString()
+    }));
+  }, [formData, uploadedFiles, currentStep, dataLoaded]);
+
+  useEffect(() => {
+    if (dataLoaded) trackIncomplete(currentStep);
+  }, [currentStep, dataLoaded]);
+
   const trackIncomplete = async (step: number) => {
+    if (!dataLoaded) return;
     try {
       await fetch('/api/applications/start', {
         method: 'POST',
@@ -79,39 +110,8 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
           processing,
         }),
       });
-      
-      // Save form data to localStorage for persistence
-      localStorage.setItem(`evisa_form_${visaRule.id}`, JSON.stringify({
-        formData,
-        uploadedFiles,
-        currentStep: step,
-        travelers,
-        processing,
-        savedAt: new Date().toISOString()
-      }));
     } catch { /* Silent fail */ }
   };
-  
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<{[key: string]: UploadedFile}>({});
-  const [error, setError] = useState('');
-  const [formData, setFormData] = useState({
-    firstName: '', lastName: '', email: '', phone: '',
-    dateOfBirth: '', gender: '', nationality: '', passportNumber: '',
-    passportExpiry: '', arrivalDate: '', departureDate: '',
-  });
-
-  useEffect(() => {
-    // Resume from existing application if available
-    if (existingApplication?.formData && typeof existingApplication.formData === 'object') {
-      const savedData = existingApplication.formData as Record<string, string>;
-      setFormData(prev => ({ ...prev, ...savedData }));
-      if (existingApplication.currentStep) {
-        setCurrentStep(existingApplication.currentStep);
-      }
-    }
-  }, [existingApplication]);
 
   if (loading) {
     return (
@@ -149,23 +149,6 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
       default: return true;
     }
   };
-
-  // Auto-save form data to localStorage whenever it changes
-  useEffect(() => {
-    const savedKey = `evisa_form_${visaRule.id}`;
-    const current = localStorage.getItem(savedKey);
-    const currentData = current ? JSON.parse(current) : {};
-    
-    localStorage.setItem(savedKey, JSON.stringify({
-      ...currentData,
-      formData,
-      uploadedFiles,
-      currentStep,
-      travelers,
-      processing,
-      savedAt: new Date().toISOString()
-    }));
-  }, [formData, uploadedFiles, currentStep, travelers, processing, visaRule.id]);
 
   const handleNext = async () => {
     if (canProceed() && currentStep < 4) {
