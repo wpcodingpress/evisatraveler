@@ -164,10 +164,6 @@ export async function DELETE(request: Request) {
     const cookieStore = await cookies();
     const userId = cookieStore.get('user_id');
     
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const app = await prisma.application.findUnique({
       where: { id: applicationId },
       include: { user: true },
@@ -177,20 +173,29 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
-    // Users can only delete their own apps if they're in 'pending' status (before payment/processing)
-    if (app.userId !== userId.value && !app.user) {
+    // If user is logged in, verify they own this application
+    if (userId && app.userId && app.userId !== userId.value) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Only allow deletion of pending applications
-    if (app.status !== 'pending') {
-      return NextResponse.json({ 
-        error: 'Cannot delete application once processing has begun' 
-      }, { status: 400 });
-    }
+    // Delete associated documents first
+    await prisma.document.deleteMany({
+      where: { applicationId },
+    });
 
+    // Delete the application
     await prisma.application.delete({
       where: { id: applicationId },
+    });
+
+    // Also delete from incomplete apps cookie if present
+    const incompleteAppsStr = cookieStore.get('incomplete_apps')?.value || '[]';
+    const incompleteApps = JSON.parse(incompleteAppsStr).filter((app: any) => app.visaRuleId !== applicationId);
+    cookieStore.set('incomplete_apps', JSON.stringify(incompleteApps), {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
     });
 
     return NextResponse.json({ success: true });

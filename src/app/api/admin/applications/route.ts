@@ -191,6 +191,12 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
+    // Delete associated documents first
+    await prisma.document.deleteMany({
+      where: { applicationId: id },
+    });
+
+    // Delete the application
     await prisma.application.delete({
       where: { id },
     });

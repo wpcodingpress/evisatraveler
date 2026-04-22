@@ -72,37 +72,26 @@ export default function DashboardPage() {
 
   const loadData = async () => {
     try {
-      const incompleteRes = await fetch('/api/applications/start');
-      const incompleteData = await incompleteRes.json();
-      setIncompleteApps(incompleteData.incomplete || []);
-    } catch {
-      setIncompleteApps([]);
-    }
-
-    try {
       const appsRes = await fetch('/api/applications');
       const appsData = await appsRes.json();
       setApplications(Array.isArray(appsData) ? appsData : []);
       
-      // Also load incomplete from user's pending/processing applications in DB
+      // Only show pending/processing applications in incomplete panel
+      // Once completed/approved/rejected, they disappear from incomplete list
       if (Array.isArray(appsData)) {
-        const pendingFromDB = appsData
+        const incompleteFromDB = appsData
           .filter((app: Application) => app.status === 'pending' || app.status === 'processing')
           .map((app: Application) => ({
             visaRuleId: app.visaRuleId || app.id,
             startedAt: app.createdAt,
-            step: 4, // If in DB, it means they submitted
-            callbackUrl: '/apply/' + (app.visaRuleId || app.id),
+            step: 4, // In DB means submitted
+            callbackUrl: '/dashboard/applications',
             applicationNumber: app.applicationNumber,
             status: app.status,
+            id: app.id,
           }));
         
-        // Merge with cookie incomplete (avoid duplicates)
-        setIncompleteApps(prev => {
-          const existingIds = prev.map(a => a.visaRuleId);
-          const newPending = pendingFromDB.filter((p: any) => !existingIds.includes(p.visaRuleId));
-          return [...prev, ...newPending];
-        });
+        setIncompleteApps(incompleteFromDB);
       }
     } catch {
       setApplications([]);
@@ -120,16 +109,18 @@ export default function DashboardPage() {
     }
   };
 
-  const clearIncomplete = async (visaRuleId: string) => {
+  const clearIncomplete = async (appId: string) => {
     try {
-      await fetch('/api/applications/complete', {
-        method: 'POST',
+      await fetch('/api/applications', {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ visaRuleId }),
+        body: JSON.stringify({ applicationId: appId }),
       });
-      setIncompleteApps(prev => prev.filter(app => app.visaRuleId !== visaRuleId));
-    } catch {
-      // Ignore
+      setIncompleteApps(prev => prev.filter(app => (app.id || app.visaRuleId) !== appId));
+      setApplications(prev => prev.filter(app => app.id !== appId));
+    } catch (error) {
+      console.error('Delete failed:', error);
+      alert('Failed to delete application');
     }
   };
 
@@ -267,7 +258,7 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">Incomplete Applications</h2>
+                    <h2 className="text-xl font-bold text-white">Pending Applications</h2>
                     <p className="text-amber-100">Complete your pending applications to process them faster</p>
                   </div>
                 </div>
@@ -278,29 +269,31 @@ export default function DashboardPage() {
 
               <div className="space-y-3">
                 {incompleteApps.map((app, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-white/95 backdrop-blur rounded-xl">
+                  <div key={app.id || index} className="flex items-center justify-between p-4 bg-white/95 backdrop-blur rounded-xl">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 font-bold">
                         {index + 1}
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900">Application - Step {app.step} of 4</p>
+                        <p className="font-semibold text-slate-900">{app.applicationNumber || 'Application'}</p>
                         <p className="text-sm text-slate-500">
-                          Started: {new Date(app.startedAt).toLocaleDateString()}
+                          Status: <span className="font-semibold capitalize">{app.status}</span>
+                          &nbsp;•&nbsp;
+                          {new Date(app.startedAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <Link 
-                        href={app.callbackUrl || '/apply/' + app.visaRuleId} 
+                        href={app.callbackUrl || '/dashboard/applications'} 
                         className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all"
                       >
-                        Continue
+                        View
                       </Link>
                       <button 
-                        onClick={() => clearIncomplete(app.visaRuleId)}
+                        onClick={() => clearIncomplete(app.id || app.visaRuleId)}
                         className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Discard"
+                        title="Delete"
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
