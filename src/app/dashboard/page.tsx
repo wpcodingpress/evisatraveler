@@ -29,7 +29,11 @@ interface Application {
   paymentStatus: string;
   totalAmount: any;
   createdAt: string;
+  visaRuleId?: string;
+  formData?: any;
+  currentStep?: number;
   visaRule?: {
+    id?: string;
     toCountry?: { name: string; flag: string };
     visaType?: string;
   };
