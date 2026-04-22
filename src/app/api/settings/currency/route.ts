@@ -5,7 +5,7 @@ import { join } from 'path';
 const SETTINGS_FILE = join(process.cwd(), 'data', 'currency-settings.json');
 
 const defaultSettings = {
-  defaultCurrency: 'USD',
+  defaultCurrency: 'PKR',
   exchangeRates: {
     USD: 1,
     PKR: 280,

@@ -45,10 +45,10 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<CurrencySettings | null>(null);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>({
-    code: 'USD',
-    symbol: '$',
-    name: 'US Dollar',
-    exchangeRate: 1,
+    code: 'PKR',
+    symbol: '₨',
+    name: 'Pakistani Rupee',
+    exchangeRate: 280,
   });
   const [loading, setLoading] = useState(true);
 
@@ -61,13 +61,13 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
           setSettings(data);
           
           const savedCurrency = localStorage.getItem('preferred_currency');
-          const currencyCode = savedCurrency || data.defaultCurrency || 'USD';
-          const rate = data.exchangeRates?.[currencyCode] || 1;
+          const currencyCode = savedCurrency || data.defaultCurrency || 'PKR';
+          const rate = data.exchangeRates?.[currencyCode] || data.exchangeRates?.PKR || 280;
           
           setSelectedCurrency({
             code: currencyCode,
-            symbol: currencySymbols[currencyCode] || '$',
-            name: currencyNames[currencyCode] || 'US Dollar',
+            symbol: currencySymbols[currencyCode] || '₨',
+            name: currencyNames[currencyCode] || 'Pakistani Rupee',
             exchangeRate: rate,
           });
         }
