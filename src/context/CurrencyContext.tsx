@@ -101,14 +101,9 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
   const formatPrice = (usdPrice: number): string => {
     const converted = convertPrice(usdPrice);
-    // For PKR, use dot as thousand separator with 2 decimal places: ₨ 3920.00
+    // For PKR: ₨ 3920.00 (NO thousand separator, only dot for paisa/decimals)
     if (selectedCurrency.code === 'PKR') {
-      const formatted = converted.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-      // Replace comma with dot for thousand separator
-      return `${selectedCurrency.symbol} ${formatted.replace(/,/g, '.')}`;
+      return `${selectedCurrency.symbol} ${converted.toFixed(2)}`;
     }
     return `${selectedCurrency.symbol}${converted.toLocaleString(undefined, {
       minimumFractionDigits: 0,
