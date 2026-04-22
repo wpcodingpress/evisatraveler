@@ -4,13 +4,21 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { VisaRule } from '@/types';
-import { formatCurrency } from '@/lib/utils';
 import { useCurrency } from '@/context/CurrencyContext';
+
+interface ExistingApplication {
+  id: string;
+  applicationNumber: string;
+  status: string;
+  formData: any;
+  currentStep?: number;
+}
 
 interface ApplicationFormProps {
   visaRule: VisaRule;
   travelers?: number;
   processing?: string;
+  existingApplication?: ExistingApplication | null;
 }
 
 interface UploadedFile {
@@ -26,7 +34,7 @@ const steps = [
   { id: 4, title: 'Review & Pay', description: 'Confirm and pay' },
 ];
 
-export function ApplicationForm({ visaRule, travelers = 1, processing = 'standard' }: ApplicationFormProps) {
+export function ApplicationForm({ visaRule, travelers = 1, processing = 'standard', existingApplication }: ApplicationFormProps) {
   const router = useRouter();
   const { selectedCurrency, formatPrice, loading } = useCurrency();
   const basePrice = typeof visaRule.price === 'number' ? visaRule.price : Number(visaRule.price);
@@ -98,6 +106,16 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
       </div>
     );
   }
+
+  // Resume from existing application if available
+  useEffect(() => {
+    if (existingApplication?.formData) {
+      setFormData(existingApplication.formData);
+      if (existingApplication.currentStep) {
+        setCurrentStep(existingApplication.currentStep);
+      }
+    }
+  }, [existingApplication]);
 
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

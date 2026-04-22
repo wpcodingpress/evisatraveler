@@ -16,6 +16,10 @@ interface IncompleteApp {
   startedAt: string;
   step: number;
   callbackUrl?: string;
+  travelers?: number;
+  processing?: string;
+  applicationNumber?: string;
+  status?: string;
 }
 
 interface Application {
@@ -75,6 +79,27 @@ export default function DashboardPage() {
       const appsRes = await fetch('/api/applications');
       const appsData = await appsRes.json();
       setApplications(Array.isArray(appsData) ? appsData : []);
+      
+      // Also load incomplete from user's pending/processing applications in DB
+      if (Array.isArray(appsData)) {
+        const pendingFromDB = appsData
+          .filter((app: Application) => app.status === 'pending' || app.status === 'processing')
+          .map((app: Application) => ({
+            visaRuleId: app.visaRuleId || app.id,
+            startedAt: app.createdAt,
+            step: 4, // If in DB, it means they submitted
+            callbackUrl: '/apply/' + (app.visaRuleId || app.id),
+            applicationNumber: app.applicationNumber,
+            status: app.status,
+          }));
+        
+        // Merge with cookie incomplete (avoid duplicates)
+        setIncompleteApps(prev => {
+          const existingIds = prev.map(a => a.visaRuleId);
+          const newPending = pendingFromDB.filter((p: any) => !existingIds.includes(p.visaRuleId));
+          return [...prev, ...newPending];
+        });
+      }
     } catch {
       setApplications([]);
     }
