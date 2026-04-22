@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface Destination {
   id: string;
@@ -43,6 +43,7 @@ function shimmerCards() {
 
 export default function VisaPage() {
   const searchParams = useSearchParams();
+  const { formatPrice } = useCurrency();
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page') || '1');
   const currentPage = page;
@@ -217,7 +218,7 @@ export default function VisaPage() {
                       <div className="flex items-end justify-between">
                         <div>
                           <p className="text-slate-500 text-xs">Starting from</p>
-                          <p className="text-2xl font-bold text-slate-900">{formatCurrency(destination.price)}</p>
+                          <p className="text-2xl font-bold text-slate-900">{formatPrice(destination.price)}</p>
                         </div>
                         <span className="px-4 py-2.5 bg-violet-600 text-white font-semibold rounded-lg flex items-center gap-2 group-hover:bg-violet-700 transition-all duration-300">
                           Apply

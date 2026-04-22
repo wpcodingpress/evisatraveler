@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { formatCurrency, getCountryFlagEmoji } from '@/lib/utils';
+import { getCountryFlagEmoji } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface Country {
   id: string;
@@ -31,6 +32,7 @@ interface VisaRule {
 export default function VisaSearchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { formatPrice } = useCurrency();
   
   const initialFrom = searchParams.get('from') || '';
   const initialTo = searchParams.get('to') || '';
@@ -324,7 +326,7 @@ export default function VisaSearchPage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-slate-500 text-xs">From</p>
-                          <p className="text-2xl font-bold text-slate-900">{formatCurrency(destination.minPrice)}</p>
+                          <p className="text-2xl font-bold text-slate-900">{formatPrice(destination.minPrice)}</p>
                         </div>
                         <span className="px-4 py-2.5 bg-violet-600 text-white font-semibold rounded-lg flex items-center gap-2 group-hover:bg-violet-700 transition-all">
                           View
@@ -451,7 +453,7 @@ export default function VisaSearchPage() {
                       <div className="bg-slate-50 rounded-xl p-4 mb-6">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-slate-600">Visa Fee × 1</span>
-                          <span className="font-semibold text-slate-900">${selectedVisa.price}</span>
+                          <span className="font-semibold text-slate-900">{formatPrice(selectedVisa.price)}</span>
                         </div>
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-slate-600">Service Fee</span>
@@ -459,7 +461,7 @@ export default function VisaSearchPage() {
                         </div>
                         <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-200">
                           <span className="font-bold text-slate-900">Total</span>
-                          <span className="text-2xl font-bold text-violet-600">${selectedVisa.price}</span>
+                          <span className="text-2xl font-bold text-violet-600">{formatPrice(selectedVisa.price)}</span>
                         </div>
                       </div>
 

@@ -6,15 +6,28 @@ interface Currency {
   code: string;
   symbol: string;
   name: string;
-  exchangeRate: number; // USD to this currency
+  exchangeRate: number;
 }
 
-const currencies: Currency[] = [
-  { code: 'USD', symbol: '$', name: 'US Dollar', exchangeRate: 1 },
-  { code: 'PKR', symbol: '₨', name: 'Pakistani Rupee', exchangeRate: 280 }, // Default rate
-  { code: 'EUR', symbol: '€', name: 'Euro', exchangeRate: 0.92 },
-  { code: 'GBP', symbol: '£', name: 'British Pound', exchangeRate: 0.79 },
-];
+interface CurrencySettings {
+  defaultCurrency: string;
+  exchangeRates: Record<string, number>;
+  enabledCurrencies: string[];
+}
+
+const currencySymbols: Record<string, string> = {
+  USD: '$',
+  PKR: '₨',
+  EUR: '€',
+  GBP: '£',
+};
+
+const currencyNames: Record<string, string> = {
+  USD: 'US Dollar',
+  PKR: 'Pakistani Rupee',
+  EUR: 'Euro',
+  GBP: 'British Pound',
+};
 
 interface CurrencyContextType {
   selectedCurrency: Currency;
@@ -23,27 +36,63 @@ interface CurrencyContextType {
   convertPrice: (usdPrice: number) => number;
   formatPrice: (usdPrice: number) => string;
   isPKR: boolean;
+  exchangeRate: number;
+  loading: boolean;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(currencies[0]);
+  const [settings, setSettings] = useState<CurrencySettings | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>({
+    code: 'USD',
+    symbol: '$',
+    name: 'US Dollar',
+    exchangeRate: 1,
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedCurrency = localStorage.getItem('preferred_currency');
-    if (savedCurrency) {
-      const currency = currencies.find(c => c.code === savedCurrency);
-      if (currency) setSelectedCurrency(currency);
+    async function fetchSettings() {
+      try {
+        const res = await fetch('/api/settings/currency');
+        if (res.ok) {
+          const data = await res.json();
+          setSettings(data);
+          
+          const savedCurrency = localStorage.getItem('preferred_currency');
+          const currencyCode = savedCurrency || data.defaultCurrency || 'USD';
+          const rate = data.exchangeRates?.[currencyCode] || 1;
+          
+          setSelectedCurrency({
+            code: currencyCode,
+            symbol: currencySymbols[currencyCode] || '$',
+            name: currencyNames[currencyCode] || 'US Dollar',
+            exchangeRate: rate,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch currency settings:', error);
+      } finally {
+        setLoading(false);
+      }
     }
+    fetchSettings();
   }, []);
 
   const setCurrency = (code: string) => {
-    const currency = currencies.find(c => c.code === code);
-    if (currency) {
-      setSelectedCurrency(currency);
-      localStorage.setItem('preferred_currency', code);
-    }
+    if (!settings) return;
+    
+    const rate = settings.exchangeRates?.[code] || 1;
+    const newCurrency = {
+      code,
+      symbol: currencySymbols[code] || '$',
+      name: currencyNames[code] || code,
+      exchangeRate: rate,
+    };
+    
+    setSelectedCurrency(newCurrency);
+    localStorage.setItem('preferred_currency', code);
   };
 
   const convertPrice = (usdPrice: number): number => {
@@ -58,6 +107,16 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     })}`;
   };
 
+  const currencies: Currency[] = settings?.enabledCurrencies?.map(code => ({
+    code,
+    symbol: currencySymbols[code] || '$',
+    name: currencyNames[code] || code,
+    exchangeRate: settings.exchangeRates?.[code] || 1,
+  })) || [
+    { code: 'USD', symbol: '$', name: 'US Dollar', exchangeRate: 1 },
+    { code: 'PKR', symbol: '₨', name: 'Pakistani Rupee', exchangeRate: 280 },
+  ];
+
   return (
     <CurrencyContext.Provider
       value={{
@@ -67,6 +126,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         convertPrice,
         formatPrice,
         isPKR: selectedCurrency.code === 'PKR',
+        exchangeRate: selectedCurrency.exchangeRate,
+        loading,
       }}
     >
       {children}
@@ -81,5 +142,3 @@ export function useCurrency() {
   }
   return context;
 }
-
-export { currencies };
