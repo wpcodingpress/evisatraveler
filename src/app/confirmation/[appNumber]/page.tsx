@@ -5,6 +5,16 @@ import { notFound, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
 
+interface Document {
+  id: string;
+  type: string;
+  originalName: string;
+  fileName: string;
+  filePath: string;
+  mimeType: string;
+  fileSize: number;
+}
+
 interface Application {
   id: string;
   applicationNumber: string;
@@ -21,6 +31,7 @@ interface Application {
       flag: string;
     };
   };
+  documents: Document[];
 }
 
 function ConfirmationContent({ appNumber }: { appNumber: string }) {
@@ -136,6 +147,61 @@ function ConfirmationContent({ appNumber }: { appNumber: string }) {
             </li>
           </ul>
         </div>
+
+        {app.documents && app.documents.length > 0 && (
+          <div className="mx-8 mb-8">
+            <h3 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1-1m1 1l-1 1m-3-1a1 1 0 000 1h3m-6 0a1 1 0 100-1h3m-6 0a1 1 0 000-1h3" />
+              </svg>
+              Uploaded Documents & Photos
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {app.documents.map((doc) => {
+                const imageUrl = doc.filePath || `/uploads/${app.applicationNumber}/${doc.fileName}`;
+                return (
+                  <div key={doc.id} className="bg-slate-50 rounded-xl overflow-hidden border border-slate-200 hover:border-purple-400 hover:shadow-lg transition-all">
+                    {doc.mimeType?.includes('image') ? (
+                      <div className="relative aspect-square">
+                        <img 
+                          src={imageUrl}
+                          alt={doc.originalName || doc.type}
+                          className="w-full h-full object-cover cursor-pointer"
+                          onClick={() => window.open(imageUrl, '_blank')}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-2">
+                          <button 
+                            onClick={() => window.open(imageUrl, '_blank')}
+                            className="w-full py-2 px-3 bg-white/90 hover:bg-white text-purple-600 rounded-lg text-sm font-semibold flex items-center justify-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            View Full
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="aspect-square flex items-center justify-center bg-red-50">
+                        <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="p-2 bg-white">
+                      <p className="font-semibold text-slate-900 text-sm capitalize">{doc.type || 'Document'}</p>
+                      <p className="text-xs text-slate-500 truncate">{doc.originalName || doc.fileName}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="p-8 border-t border-purple-100 flex flex-col sm:flex-row gap-4 justify-center">
           <button
