@@ -29,6 +29,11 @@ const steps = [
 export function ApplicationForm({ visaRule, travelers = 1, processing = 'standard' }: ApplicationFormProps) {
   const router = useRouter();
   const { selectedCurrency, convertPrice, formatPrice } = useCurrency();
+  
+  const basePrice = typeof visaRule.price === 'number' ? visaRule.price : Number(visaRule.price);
+  const urgentFee = processing === 'urgent' ? Math.round(basePrice * 0.5) : 0;
+  const usdTotal = (basePrice + urgentFee) * travelers;
+  const totalPrice = convertPrice(usdTotal);
 
   useEffect(() => {
     // Load saved form data from localStorage
@@ -86,7 +91,11 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
   const basePrice = typeof visaRule.price === 'number' ? visaRule.price : Number(visaRule.price);
   const urgentFee = processing === 'urgent' ? Math.round(basePrice * 0.5) : 0;
   const usdTotal = (basePrice + urgentFee) * travelers;
-  const totalPrice = convertPrice(usdTotal); // Convert to selected currency
+  const totalPrice = convertPrice(usdTotal);
+
+  useEffect(() => {
+    // Re-render when currency changes
+  }, [selectedCurrency.code, totalPrice]);
   
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',

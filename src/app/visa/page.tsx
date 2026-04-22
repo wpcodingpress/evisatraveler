@@ -43,7 +43,7 @@ function shimmerCards() {
 
 export default function VisaPage() {
   const searchParams = useSearchParams();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, selectedCurrency } = useCurrency();
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page') || '1');
   const currentPage = page;
@@ -56,7 +56,7 @@ export default function VisaPage() {
 
   useEffect(() => {
     fetchDestinations();
-  }, [search, page]);
+  }, [search, page, selectedCurrency.code]);
 
   const fetchDestinations = async () => {
     try {
