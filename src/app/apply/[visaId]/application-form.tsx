@@ -48,14 +48,17 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setFormData(parsed.formData || {});
-        if (parsed.uploadedFiles) {
+        // Restore all saved data
+        if (parsed.formData && typeof parsed.formData === 'object') {
+          setFormData(parsed.formData);
+        }
+        if (parsed.uploadedFiles && typeof parsed.uploadedFiles === 'object') {
           setUploadedFiles(parsed.uploadedFiles);
         }
-        if (parsed.currentStep) {
+        if (parsed.currentStep && typeof parsed.currentStep === 'number') {
           setCurrentStep(parsed.currentStep);
         }
-        console.log('Restored saved form data');
+        console.log('Restored saved form data from step', parsed.currentStep);
       } catch (e) {
         console.error('Failed to parse saved form data', e);
       }
@@ -147,17 +150,32 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
     }
   };
 
+  // Auto-save form data to localStorage whenever it changes
+  useEffect(() => {
+    const savedKey = `evisa_form_${visaRule.id}`;
+    const current = localStorage.getItem(savedKey);
+    const currentData = current ? JSON.parse(current) : {};
+    
+    localStorage.setItem(savedKey, JSON.stringify({
+      ...currentData,
+      formData,
+      uploadedFiles,
+      currentStep,
+      travelers,
+      processing,
+      savedAt: new Date().toISOString()
+    }));
+  }, [formData, uploadedFiles, currentStep, travelers, processing, visaRule.id]);
+
   const handleNext = async () => {
     if (canProceed() && currentStep < 4) {
       setCurrentStep(currentStep + 1);
-      await trackIncomplete(currentStep + 1);
     }
   };
 
   const handleBack = async () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-      await trackIncomplete(currentStep - 1);
     }
   };
 
