@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { VisaRule } from '@/types';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -12,8 +12,13 @@ interface VisaDetailsClientProps {
 
 export function VisaDetailsClient({ visaRules, slug }: VisaDetailsClientProps) {
   const router = useRouter();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, selectedCurrency } = useCurrency();
   const [selectedVisa, setSelectedVisa] = useState<VisaRule | null>(visaRules[0] || null);
+  const [currencyKey, setCurrencyKey] = useState(0);
+
+  useEffect(() => {
+    setCurrencyKey(k => k + 1);
+  }, [selectedCurrency.code]);
 
   if (!selectedVisa) return null;
 
@@ -147,7 +152,7 @@ export function VisaDetailsClient({ visaRules, slug }: VisaDetailsClientProps) {
                 </div>
                 <div className="p-6 space-y-4">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-transparent bg-gradient-to-r from-purple-600 to-green-500 bg-clip-text">{formatPrice(Number(selectedVisa.price))}</span>
+                    <span key={currencyKey} className="text-4xl font-bold text-transparent bg-gradient-to-r from-purple-600 to-green-500 bg-clip-text">{formatPrice(Number(selectedVisa.price))}</span>
                     <span className="text-slate-500">per person</span>
                   </div>
                   <ul className="space-y-3 text-sm">

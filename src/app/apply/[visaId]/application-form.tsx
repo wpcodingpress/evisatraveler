@@ -35,6 +35,10 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
   const totalPrice = convertPrice(usdTotal);
 
   useEffect(() => {
+    // Update prices when currency changes
+  }, [selectedCurrency.code, totalPrice]);
+
+  useEffect(() => {
     // Load saved form data from localStorage
     const savedKey = `evisa_form_${visaRule.id}`;
     const saved = localStorage.getItem(savedKey);
@@ -439,7 +443,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-600">Visa Fee × {travelers}</span>
-                  <span className="font-semibold">{formatPrice(basePrice * travelers)}</span>
+                  <span key={totalPrice} className="font-semibold">{formatPrice(basePrice * travelers)}</span>
                 </div>
                 {urgentFee > 0 && (
                   <div className="flex justify-between items-center text-amber-600">
@@ -449,7 +453,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                 )}
                 <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-200">
                   <span className="text-lg font-bold text-slate-900">Total Payable</span>
-                  <span className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">{formatPrice(totalPrice)}</span>
+                  <span key={totalPrice} className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">{formatPrice(totalPrice)}</span>
                 </div>
               </div>
             </div>
@@ -509,7 +513,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                     <p className="text-slate-500 text-xs mt-0.5">{travelers} traveler{travelers > 1 ? 's' : ''} • {processing === 'urgent' ? 'Express Processing' : 'Standard Processing'}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">{formatPrice(totalPrice)}</p>
+                    <p key={totalPrice} className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">{formatPrice(totalPrice)}</p>
                     <p className="text-xs text-slate-500">total</p>
                   </div>
                 </div>
@@ -570,7 +574,7 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
                       </>
                     ) : (
                       <>
-                        Pay {formatPrice(usdTotal)} Now →
+                        <span key={totalPrice}>Pay {formatPrice(usdTotal)} Now →</span>
                       </>
                     )}
                   </button>
