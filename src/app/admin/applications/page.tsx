@@ -1,171 +1,170 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { useCurrency } from '@/context/CurrencyContext';
+import { useState, useEffect } from 'react'
+import { useCurrency } from '@/context/CurrencyContext'
 
 interface Application {
-  id: string;
-  applicationNumber: string;
-  status: string;
-  paymentStatus: string;
-  totalAmount: number;
-  currency: string;
-  createdAt: string;
-  updatedAt: string;
-  processedAt: string | null;
-  notes: string | null;
-  formData: Record<string, any>;
+  id: string
+  applicationNumber: string
+  status: string
+  paymentStatus: string
+  totalAmount: number
+  currency: string
+  createdAt: string
+  updatedAt: string
+  processedAt: string | null
+  notes: string | null
+  formData: Record<string, any>
   user: { 
-    firstName: string; 
-    lastName: string; 
-    email: string;
-    phone?: string;
-    role?: string;
-    createdAt?: string;
-  } | null;
+    firstName: string
+    lastName: string
+    email: string
+    phone?: string
+    role?: string
+    createdAt?: string
+  } | null
   visaRule: { 
-    visaType: string;
-    processingTime: string;
-    processingDays: number;
-    maxStayDays: number;
-    validityDays: number;
-    entryType: string;
-    price: number;
-    currency: string;
-    toCountry: { name: string; code: string; flag: string };
-    fromCountry: { name: string; code: string; flag: string };
-  } | null;
+    visaType: string
+    processingTime: string
+    processingDays: number
+    maxStayDays: number
+    validityDays: number
+    entryType: string
+    price: number
+    currency: string
+    toCountry: { name: string; code: string; flag: string }
+    fromCountry: { name: string; code: string; flag: string }
+  } | null
   documents: Array<{
-    id: string;
-    type: string;
-    originalName: string;
-    fileName: string;
-    filePath: string;
-    mimeType: string;
-    fileSize: number;
-  }>;
+    id: string
+    type: string
+    originalName: string
+    fileName: string
+    filePath: string
+    mimeType: string
+    fileSize: number
+  }>
 }
 
-const EXCHANGE_RATE = 280;
+const EXCHANGE_RATE = 280
 
 const statusColors: Record<string, string> = {
   approved: 'bg-emerald-100 text-emerald-700 border-emerald-200',
   pending: 'bg-amber-100 text-amber-700 border-amber-200',
   rejected: 'bg-red-100 text-red-700 border-red-200',
   processing: 'bg-blue-100 text-blue-700 border-blue-200',
-};
+}
 
 const statusLabels: Record<string, string> = {
   pending: 'Pending',
   processing: 'Processing',
   approved: 'Approved',
   rejected: 'Rejected',
-};
+}
 
 export default function ApplicationsPage() {
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [stats, setStats] = useState<Record<string, number>>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 50;
-  const { formatPrice } = useCurrency();
+  const [applications, setApplications] = useState<Application[]>([])
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [selectedApp, setSelectedApp] = useState<Application | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [stats, setStats] = useState<Record<string, number>>({})
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [changingStatus, setChangingStatus] = useState<string | null>(null)
+  const itemsPerPage = 50
+  const { formatPrice } = useCurrency()
 
   const formatAdminPrice = (usdAmount: number) => {
-    const pkrAmount = usdAmount * EXCHANGE_RATE;
-    return `$${usdAmount.toFixed(2)} / ₨ ${pkrAmount.toFixed(2)}`;
-  };
+    const pkrAmount = usdAmount * EXCHANGE_RATE
+    return `$${usdAmount.toFixed(2)} / Rs ${pkrAmount.toFixed(2)}`
+  }
 
   useEffect(() => {
-    fetchApplications();
-  }, [search, statusFilter, currentPage]);
+    fetchApplications()
+  }, [search, statusFilter, currentPage])
 
   const fetchApplications = async () => {
     try {
-      setLoading(true);
-      setError('');
-      const params = new URLSearchParams();
-      params.set('page', String(currentPage));
-      params.set('limit', String(itemsPerPage));
-      if (search) params.set('search', search);
-      if (statusFilter !== 'all') params.set('status', statusFilter);
+      setLoading(true)
+      setError('')
+      const params = new URLSearchParams()
+      params.set('page', String(currentPage))
+      params.set('limit', String(itemsPerPage))
+      if (search) params.set('search', search)
+      if (statusFilter !== 'all') params.set('status', statusFilter)
       
-      const res = await fetch(`/api/admin/applications?${params}`);
+      const res = await fetch(`/api/admin/applications?${params}`)
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to fetch');
+        const errData = await res.json()
+        throw new Error(errData.error || 'Failed to fetch')
       }
-      const data = await res.json();
-      setApplications(data.applications || []);
-      setStats(data.stats || {});
-      setTotalPages(data.pagination?.totalPages || 1);
+      const data = await res.json()
+      setApplications(data.applications || [])
+      setStats(data.stats || {})
+      setTotalPages(data.pagination?.totalPages || 1)
     } catch (err: any) {
-      setError(err.message || 'Failed to load applications');
-      console.error('Fetch error:', err);
+      setError(err.message || 'Failed to load applications')
+      console.error('Fetch error:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
-
-  const [changingStatus, setChangingStatus] = useState<string | null>(null);
+  }
 
   const handleStatusChange = async (id: string, newStatus: string) => {
-    setChangingStatus(id);
+    setChangingStatus(id)
     try {
       const res = await fetch('/api/admin/applications', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: newStatus, processedAt: new Date().toISOString() }),
-      });
+      })
       
       if (res.ok) {
-        const updated = await res.json();
+        const updated = await res.json()
         setApplications(applications.map(app =>
           app.id === id ? { ...app, status: newStatus, updatedAt: updated.updatedAt, processedAt: updated.processedAt } : app
-        ));
+        ))
         if (selectedApp?.id === id) {
-          setSelectedApp({ ...selectedApp, status: newStatus, updatedAt: updated.updatedAt, processedAt: updated.processedAt });
+          setSelectedApp({ ...selectedApp, status: newStatus, updatedAt: updated.updatedAt, processedAt: updated.processedAt })
         }
       }
     } catch (err) {
-      console.error('Failed to update status', err);
+      console.error('Failed to update status', err)
     } finally {
-      setChangingStatus(null);
+      setChangingStatus(null)
     }
-  };
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this application? This action cannot be undone.')) {
-      return;
+      return
     }
     try {
       const res = await fetch(`/api/admin/applications?id=${id}`, {
         method: 'DELETE',
-      });
+      })
       if (res.ok) {
-        setApplications(applications.filter(app => app.id !== id));
+        setApplications(applications.filter(app => app.id !== id))
         if (selectedApp?.id === id) {
-          setSelectedApp(null);
+          setSelectedApp(null)
         }
       } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to delete application');
+        const data = await res.json()
+        alert(data.error || 'Failed to delete application')
       }
     } catch (err) {
-      console.error('Failed to delete application', err);
-      alert('Failed to delete application');
+      console.error('Failed to delete application', err)
+      alert('Failed to delete application')
     }
-  };
+  }
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
+    if (!dateString) return 'N/A'
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
 
   if (loading && applications.length === 0) {
     return (
@@ -179,10 +178,10 @@ export default function ApplicationsPage() {
           {[...Array(5)].map((_, i) => <div key={i} className="h-20 bg-slate-200 rounded-2xl" />)}
         </div>
       </div>
-    );
+    )
   }
 
-  const total = stats.pending + stats.processing + stats.approved + stats.rejected || applications.length;
+  const total = stats.pending + stats.processing + stats.approved + stats.rejected || applications.length
 
   return (
     <div className="space-y-6">
@@ -272,7 +271,7 @@ export default function ApplicationsPage() {
                       {app.status}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-500">{app.applicationNumber || 'N/A'} • {app.user?.email || 'No email'}</p>
+                  <p className="text-sm text-slate-500">{app.applicationNumber || 'N/A'} - {app.user?.email || 'No email'}</p>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-4 lg:gap-6">
@@ -337,366 +336,348 @@ export default function ApplicationsPage() {
         </div>
       )}
 
-{selectedApp && (
+      {selectedApp && (
         <div 
-          className="fixed inset-0 z-[9999] overflow-y-auto"
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)' }}
-          onClick={(e) => e.target === e.currentTarget && setSelectedApp(null)}
+          className="fixed inset-0 z-50 overflow-y-auto"
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', margin: 0, padding: 0 }}
+          onClick={(e) => { if (e.target === e.currentTarget) setSelectedApp(null) }}
         >
-          <div className="min-h-screen flex items-start justify-center py-4 px-2">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl overflow-hidden mt-0">
-            {/* Header */}
-            <div className="sticky top-0 bg-gradient-to-r from-violet-600 to-purple-600 px-4 sm:px-6 py-4 flex items-center justify-between z-10">
-              <h2 className="text-lg sm:text-xl font-bold text-white">Application Details</h2>
-              <button 
-                onClick={() => setSelectedApp(null)} 
-                className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            {/* Content - Scrollable */}
-            <div className="max-h-[75vh] sm:max-h-[80vh] overflow-y-auto p-4 sm:p-6 space-y-6">
-              {/* User Info Section */}
-              <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                  {(selectedApp.user?.firstName?.[0] || '?')}{(selectedApp.user?.lastName?.[0] || '')}
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-slate-900 text-base sm:text-lg truncate">
-                    {selectedApp.user?.firstName || 'Unknown'} {selectedApp.user?.lastName || 'User'}
-                  </h3>
-                  <p className="text-slate-500 text-sm truncate">{selectedApp.user?.email || 'No email'}</p>
-                  {selectedApp.user?.phone && <p className="text-slate-500 text-sm">{selectedApp.user.phone}</p>}
-                </div>
+          <div className="min-h-full flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-8">
+              <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                <h2 className="text-xl font-bold text-white">Application Details</h2>
+                <button 
+                  onClick={() => setSelectedApp(null)} 
+                  className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
+              
+              <div className="max-h-[75vh] sm:max-h-[80vh] overflow-y-auto p-4 sm:p-6 space-y-6">
+                <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                    {(selectedApp.user?.firstName?.[0] || '?')}{(selectedApp.user?.lastName?.[0] || '')}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-slate-900 text-base sm:text-lg truncate">
+                      {selectedApp.user?.firstName || 'Unknown'} {selectedApp.user?.lastName || 'User'}
+                    </h3>
+                    <p className="text-slate-500 text-sm truncate">{selectedApp.user?.email || 'No email'}</p>
+                    {selectedApp.user?.phone && <p className="text-slate-500 text-sm">{selectedApp.user.phone}</p>}
+                  </div>
+                </div>
 
-              {/* Basic Info Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div className="p-3 sm:p-4 bg-slate-50 rounded-xl">
-                  <p className="text-xs sm:text-sm text-slate-500">Application No.</p>
-                  <p className="font-semibold text-slate-900 text-sm sm:text-base">{selectedApp.applicationNumber || 'N/A'}</p>
-                </div>
-                <div className="p-3 sm:p-4 bg-slate-50 rounded-xl">
-                  <p className="text-xs sm:text-sm text-slate-500">Submitted Date</p>
-                  <p className="font-semibold text-slate-900 text-sm sm:text-base">{formatDate(selectedApp.createdAt)}</p>
-                </div>
-                {selectedApp.processedAt && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                   <div className="p-3 sm:p-4 bg-slate-50 rounded-xl">
-                    <p className="text-xs sm:text-sm text-slate-500">Processed Date</p>
-                    <p className="font-semibold text-slate-900 text-sm sm:text-base">{formatDate(selectedApp.processedAt)}</p>
+                    <p className="text-xs sm:text-sm text-slate-500">Application No.</p>
+                    <p className="font-semibold text-slate-900 text-sm sm:text-base">{selectedApp.applicationNumber || 'N/A'}</p>
+                  </div>
+                  <div className="p-3 sm:p-4 bg-slate-50 rounded-xl">
+                    <p className="text-xs sm:text-sm text-slate-500">Submitted Date</p>
+                    <p className="font-semibold text-slate-900 text-sm sm:text-base">{formatDate(selectedApp.createdAt)}</p>
+                  </div>
+                  {selectedApp.processedAt && (
+                    <div className="p-3 sm:p-4 bg-slate-50 rounded-xl">
+                      <p className="text-xs sm:text-sm text-slate-500">Processed Date</p>
+                      <p className="font-semibold text-slate-900 text-sm sm:text-base">{formatDate(selectedApp.processedAt)}</p>
+                    </div>
+                  )}
+                  <div className="p-3 sm:p-4 bg-slate-50 rounded-xl">
+                    <p className="text-xs sm:text-sm text-slate-500">Visa Type</p>
+                    <p className="font-semibold text-slate-900 text-sm sm:text-base">{selectedApp.visaRule?.visaType || 'N/A'}</p>
+                  </div>
+                  <div className="p-4 bg-slate-50 rounded-xl">
+                    <p className="text-sm text-slate-500">Destination</p>
+                    <p className="font-semibold text-slate-900">{selectedApp.visaRule?.toCountry?.flag} {selectedApp.visaRule?.toCountry?.name || 'N/A'}</p>
+                  </div>
+                  <div className="p-4 bg-slate-50 rounded-xl">
+                    <p className="text-sm text-slate-500">From Country</p>
+                    <p className="font-semibold text-slate-900">{selectedApp.visaRule?.fromCountry?.flag} {selectedApp.visaRule?.fromCountry?.name || 'N/A'}</p>
+                  </div>
+                </div>
+
+                {selectedApp.formData && Object.keys(selectedApp.formData).length > 0 && (
+                  <div className="border-t pt-6">
+                    <h3 className="font-bold text-slate-900 text-lg mb-4">Applicant Information</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {selectedApp.formData.firstName && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">First Name</p>
+                          <p className="font-semibold text-slate-900">{selectedApp.formData.firstName}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.lastName && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Last Name</p>
+                          <p className="font-semibold text-slate-900">{selectedApp.formData.lastName}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.email && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Email</p>
+                          <p className="font-semibold text-slate-900">{selectedApp.formData.email}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.phone && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Phone</p>
+                          <p className="font-semibold text-slate-900">{selectedApp.formData.phone}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.dateOfBirth && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Date of Birth</p>
+                          <p className="font-semibold text-slate-900">{selectedApp.formData.dateOfBirth}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.gender && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Gender</p>
+                          <p className="font-semibold text-slate-900 capitalize">{selectedApp.formData.gender}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.nationality && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Nationality</p>
+                          <p className="font-semibold text-slate-900">{selectedApp.formData.nationality}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.passportNumber && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Passport Number</p>
+                          <p className="font-semibold text-slate-900">{selectedApp.formData.passportNumber}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.passportExpiry && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Passport Expiry</p>
+                          <p className="font-semibold text-slate-900">{selectedApp.formData.passportExpiry}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
-                <div className="p-3 sm:p-4 bg-slate-50 rounded-xl">
-                  <p className="text-xs sm:text-sm text-slate-500">Visa Type</p>
-                  <p className="font-semibold text-slate-900 text-sm sm:text-base">{selectedApp.visaRule?.visaType || 'N/A'}</p>
-                </div>
-                <div className="p-4 bg-slate-50 rounded-xl">
-                  <p className="text-sm text-slate-500">Destination</p>
-                  <p className="font-semibold text-slate-900">{selectedApp.visaRule?.toCountry?.flag} {selectedApp.visaRule?.toCountry?.name || 'N/A'}</p>
-                </div>
-                <div className="p-4 bg-slate-50 rounded-xl">
-                  <p className="text-sm text-slate-500">From Country</p>
-                  <p className="font-semibold text-slate-900">{selectedApp.visaRule?.fromCountry?.flag} {selectedApp.visaRule?.fromCountry?.name || 'N/A'}</p>
-                </div>
-              </div>
 
-              {/* Full Form Data Section */}
-              {selectedApp.formData && Object.keys(selectedApp.formData).length > 0 && (
-                <div className="border-t pt-6">
-                  <h3 className="font-bold text-slate-900 text-lg mb-4">Applicant Information</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {selectedApp.formData.firstName && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">First Name</p>
-                        <p className="font-semibold text-slate-900">{selectedApp.formData.firstName}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.lastName && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Last Name</p>
-                        <p className="font-semibold text-slate-900">{selectedApp.formData.lastName}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.email && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Email</p>
-                        <p className="font-semibold text-slate-900">{selectedApp.formData.email}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.phone && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Phone</p>
-                        <p className="font-semibold text-slate-900">{selectedApp.formData.phone}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.dateOfBirth && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Date of Birth</p>
-                        <p className="font-semibold text-slate-900">{selectedApp.formData.dateOfBirth}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.gender && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Gender</p>
-                        <p className="font-semibold text-slate-900 capitalize">{selectedApp.formData.gender}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.nationality && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Nationality</p>
-                        <p className="font-semibold text-slate-900">{selectedApp.formData.nationality}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.passportNumber && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Passport Number</p>
-                        <p className="font-semibold text-slate-900">{selectedApp.formData.passportNumber}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.passportExpiry && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Passport Expiry</p>
-                        <p className="font-semibold text-slate-900">{selectedApp.formData.passportExpiry}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Trip Details */}
-              {(selectedApp.formData.arrivalDate || selectedApp.formData.departureDate || selectedApp.formData.portOfEntry || selectedApp.formData.accommodationType) && (
-                <div className="border-t pt-6">
-                  <h3 className="font-bold text-slate-900 text-lg mb-4">Trip Details</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {selectedApp.formData.arrivalDate && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Arrival Date</p>
-                        <p className="font-semibold text-slate-900">{selectedApp.formData.arrivalDate}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.departureDate && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Departure Date</p>
-                        <p className="font-semibold text-slate-900">{selectedApp.formData.departureDate}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.portOfEntry && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Port of Entry</p>
-                        <p className="font-semibold text-slate-900 capitalize">{selectedApp.formData.portOfEntry}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.accommodationType && (
-                      <div className="p-3 bg-slate-50 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase">Accommodation Type</p>
-                        <p className="font-semibold text-slate-900 capitalize">{selectedApp.formData.accommodationType}</p>
-                      </div>
-                    )}
-                    {selectedApp.formData.accommodationAddress && (
-                      <div className="p-3 bg-slate-50 rounded-lg col-span-2">
-                        <p className="text-xs text-slate-500 uppercase">Accommodation Address</p>
-                        <p className="font-semibold text-slate-900">{selectedApp.formData.accommodationAddress}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Visa Rule Details */}
-              {selectedApp.visaRule && (
-                <div className="border-t pt-6">
-                  <h3 className="font-bold text-slate-900 text-lg mb-4">Visa Information</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="p-3 bg-slate-50 rounded-lg">
-                      <p className="text-xs text-slate-500 uppercase">Processing Time</p>
-                      <p className="font-semibold text-slate-900">{selectedApp.visaRule.processingTime || 'N/A'}</p>
-                    </div>
-                    <div className="p-3 bg-slate-50 rounded-lg">
-                      <p className="text-xs text-slate-500 uppercase">Max Stay Days</p>
-                      <p className="font-semibold text-slate-900">{selectedApp.visaRule.maxStayDays || 'N/A'}</p>
-                    </div>
-                    <div className="p-3 bg-slate-50 rounded-lg">
-                      <p className="text-xs text-slate-500 uppercase">Validity Days</p>
-                      <p className="font-semibold text-slate-900">{selectedApp.visaRule.validityDays || 'N/A'}</p>
-                    </div>
-                    <div className="p-3 bg-slate-50 rounded-lg">
-                      <p className="text-xs text-slate-500 uppercase">Entry Type</p>
-                      <p className="font-semibold text-slate-900">{selectedApp.visaRule.entryType || 'N/A'}</p>
-                    </div>
-                    <div className="p-3 bg-slate-50 rounded-lg">
-                      <p className="text-xs text-slate-500 uppercase">Base Price</p>
-                      <p className="font-semibold text-slate-900">${selectedApp.visaRule.price || 0}</p>
+                {(selectedApp.formData.arrivalDate || selectedApp.formData.departureDate || selectedApp.formData.portOfEntry || selectedApp.formData.accommodationType) && (
+                  <div className="border-t pt-6">
+                    <h3 className="font-bold text-slate-900 text-lg mb-4">Trip Details</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {selectedApp.formData.arrivalDate && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Arrival Date</p>
+                          <p className="font-semibold text-slate-900">{selectedApp.formData.arrivalDate}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.departureDate && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Departure Date</p>
+                          <p className="font-semibold text-slate-900">{selectedApp.formData.departureDate}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.portOfEntry && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Port of Entry</p>
+                          <p className="font-semibold text-slate-900 capitalize">{selectedApp.formData.portOfEntry}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.accommodationType && (
+                        <div className="p-3 bg-slate-50 rounded-lg">
+                          <p className="text-xs text-slate-500 uppercase">Accommodation Type</p>
+                          <p className="font-semibold text-slate-900 capitalize">{selectedApp.formData.accommodationType}</p>
+                        </div>
+                      )}
+                      {selectedApp.formData.accommodationAddress && (
+                        <div className="p-3 bg-slate-50 rounded-lg col-span-2">
+                          <p className="text-xs text-slate-500 uppercase">Accommodation Address</p>
+                          <p className="font-semibold text-slate-900">{selectedApp.formData.accommodationAddress}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-{/* Documents - with Image Previews - Clickable */}
-              {selectedApp.documents && selectedApp.documents.length > 0 && (
-                <div className="border-t pt-6">
-                  <h3 className="font-bold text-slate-900 text-base sm:text-lg mb-4">Uploaded Documents & Photos</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                    {selectedApp.documents.map((doc) => {
-                      const imageUrl = doc.filePath 
-                        ? (doc.filePath.startsWith('/') ? doc.filePath : `/${doc.filePath}`)
-                        : `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`;
-                      const isImage = doc.mimeType?.startsWith('image/') || 
-                        doc.fileName?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
-                      return (
-                      <div key={doc.id} className="group relative bg-slate-50 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-violet-400 hover:shadow-lg transition-all">
-                        {isImage ? (
-                          <div className="relative aspect-square">
-                            <img 
-                              src={imageUrl}
-                              alt={doc.originalName || doc.type}
-                              className="w-full h-full object-cover cursor-pointer"
-                              onClick={() => window.open(imageUrl, '_blank')}
-                              onError={(e) => {
-                                const img = e.target as HTMLImageElement;
-                                img.style.display = 'none';
-                                const parent = img.parentElement;
-                                if (parent) parent.style.background = '#fee2e2';
-                              }}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 sm:p-3">
-                              <button 
-                                onClick={() => window.open(imageUrl, '_blank')}
-                                className="w-full py-2 px-3 bg-white/90 hover:bg-white text-violet-600 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors mb-1"
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                {selectedApp.visaRule && (
+                  <div className="border-t pt-6">
+                    <h3 className="font-bold text-slate-900 text-lg mb-4">Visa Information</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Processing Time</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.visaRule.processingTime || 'N/A'}</p>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Max Stay Days</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.visaRule.maxStayDays || 'N/A'}</p>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Validity Days</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.visaRule.validityDays || 'N/A'}</p>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Entry Type</p>
+                        <p className="font-semibold text-slate-900">{selectedApp.visaRule.entryType || 'N/A'}</p>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-lg">
+                        <p className="text-xs text-slate-500 uppercase">Base Price</p>
+                        <p className="font-semibold text-slate-900">${selectedApp.visaRule.price || 0}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedApp.documents && selectedApp.documents.length > 0 && (
+                  <div className="border-t pt-6">
+                    <h3 className="font-bold text-slate-900 text-base sm:text-lg mb-4">Uploaded Documents and Photos</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                      {selectedApp.documents.map((doc) => {
+                        const imageUrl = doc.filePath 
+                          ? (doc.filePath.startsWith('/') ? doc.filePath : `/${doc.filePath}`)
+                          : `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`
+                        const isImage = doc.mimeType?.startsWith('image/') || 
+                          doc.fileName?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                        return (
+                          <div key={doc.id} className="group relative bg-slate-50 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-violet-400 hover:shadow-lg transition-all">
+                            {isImage ? (
+                              <div className="relative aspect-square">
+                                <img 
+                                  src={imageUrl}
+                                  alt={doc.originalName || doc.type}
+                                  className="w-full h-full object-cover cursor-pointer"
+                                  onClick={() => window.open(imageUrl, '_blank')}
+                                  onError={(e) => {
+                                    const img = e.target as HTMLImageElement
+                                    img.style.display = 'none'
+                                    const parent = img.parentElement
+                                    if (parent) parent.style.background = '#fee2e2'
+                                  }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 sm:p-3">
+                                  <button 
+                                    onClick={() => window.open(imageUrl, '_blank')}
+                                    className="w-full py-2 px-3 bg-white/90 hover:bg-white text-violet-600 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors mb-1"
+                                  >
+                                    View Full
+                                  </button>
+                                  <a 
+                                    href={imageUrl}
+                                    download={doc.originalName || doc.fileName}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full py-2 px-3 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+                                  >
+                                    Download
+                                  </a>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="aspect-square flex flex-col items-center justify-center bg-red-50 p-4">
+                                <svg className="w-10 h-10 text-red-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                                View Full
-                              </button>
-                              <a 
-                                href={imageUrl}
-                                download={doc.originalName || doc.fileName}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full py-2 px-3 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                                Download
-                              </a>
+                                <span className="text-xs text-red-400 font-medium">PDF</span>
+                              </div>
+                            )}
+                            <div className="p-2 sm:p-3 bg-white">
+                              <p className="font-semibold text-slate-900 text-xs sm:text-sm capitalize">{doc.type || 'Document'}</p>
+                              <p className="text-xs text-slate-500 truncate hidden sm:block">{doc.originalName || doc.fileName}</p>
                             </div>
                           </div>
-                        ) : (
-                          <div className="aspect-square flex flex-col items-center justify-center bg-red-50 p-4">
-                            <svg className="w-10 h-10 text-red-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <span className="text-xs text-red-400 font-medium">PDF</span>
-                          </div>
-                        )}
-                        <div className="p-2 sm:p-3 bg-white">
-                          <p className="font-semibold text-slate-900 text-xs sm:text-sm capitalize">{doc.type || 'Document'}</p>
-                          <p className="text-xs text-slate-500 truncate hidden sm:block">{doc.originalName || doc.fileName}</p>
-                        </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="border-t pt-6">
+                  <h3 className="font-bold text-slate-900 text-lg mb-4">Payment and Status</h3>
+                  <div className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl">
+                    <div className="flex flex-wrap justify-between items-center gap-4">
+                      <div>
+                        <p className="text-sm text-slate-500">Total Amount</p>
+                        <p className="text-2xl font-bold text-slate-900">{formatAdminPrice(Number(selectedApp.totalAmount || 0))}</p>
                       </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-{/* Payment & Status Section */}
-              <div className="border-t pt-6">
-                <h3 className="font-bold text-slate-900 text-lg mb-4">Payment & Status</h3>
-                <div className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl">
-                  <div className="flex flex-wrap justify-between items-center gap-4">
-                    <div>
-                      <p className="text-sm text-slate-500">Total Amount</p>
-                      <p className="text-2xl font-bold text-slate-900">{formatAdminPrice(Number(selectedApp.totalAmount || 0))}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <span className={`px-4 py-2 rounded-full text-sm font-semibold capitalize ${statusColors[selectedApp.status] || 'bg-slate-100 text-slate-700'}`}>
-                        {selectedApp.status}
-                      </span>
-                      <span className={`px-4 py-2 rounded-full text-sm font-semibold capitalize ${
-                        selectedApp.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' :
-                        selectedApp.paymentStatus === 'pending' ? 'bg-amber-100 text-amber-700' :
-                        'bg-slate-100 text-slate-700'
-                      }`}>
-                        {selectedApp.paymentStatus || 'pending'}
-                      </span>
+                      <div className="flex gap-2">
+                        <span className={`px-4 py-2 rounded-full text-sm font-semibold capitalize ${statusColors[selectedApp.status] || 'bg-slate-100 text-slate-700'}`}>
+                          {selectedApp.status}
+                        </span>
+                        <span className={`px-4 py-2 rounded-full text-sm font-semibold capitalize ${
+                          selectedApp.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' :
+                          selectedApp.paymentStatus === 'pending' ? 'bg-amber-100 text-amber-700' :
+                          'bg-slate-100 text-slate-700'
+                        }`}>
+                          {selectedApp.paymentStatus || 'pending'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                <div className="border-t pt-6">
+                  <h3 className="font-bold text-slate-900 text-lg mb-4">Admin Notes</h3>
+                  <textarea
+                    id="adminNotes"
+                    defaultValue={selectedApp.notes || ''}
+                    placeholder="Add notes about this application..."
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    rows={3}
+                  />
+                </div>
               </div>
 
-              {/* Admin Notes */}
-              <div className="border-t pt-6">
-                <h3 className="font-bold text-slate-900 text-lg mb-4">Admin Notes</h3>
-                <textarea
-                  id="adminNotes"
-                  defaultValue={selectedApp.notes || ''}
-                  placeholder="Add notes about this application..."
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
-                  rows={3}
-                />
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3 mt-6">
-              <button 
-                onClick={() => handleDelete(selectedApp.id)}
-                className="px-4 py-2.5 border border-red-200 text-red-600 font-medium rounded-xl hover:bg-red-50 transition-colors"
-              >
-                Delete
-              </button>
-              <button 
-                onClick={async () => {
-                  try {
-                    const res = await fetch(`/api/applications/${selectedApp.applicationNumber}/invoice?admin=true`, { credentials: 'include' });
-                    if (res.ok) {
-                      const blob = await res.blob();
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `invoice-${selectedApp.applicationNumber}.pdf`;
-                      a.click();
-                      window.URL.revokeObjectURL(url);
-                    } else {
-                      alert('Failed to generate invoice');
+              <div className="flex flex-wrap gap-3 mt-6">
+                <button 
+                  onClick={() => handleDelete(selectedApp.id)}
+                  className="px-4 py-2.5 border border-red-200 text-red-600 font-medium rounded-xl hover:bg-red-50 transition-colors"
+                >
+                  Delete
+                </button>
+                <button 
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`/api/applications/${selectedApp.applicationNumber}/invoice?admin=true`, { credentials: 'include' })
+                      if (res.ok) {
+                        const blob = await res.blob()
+                        const url = window.URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = `invoice-${selectedApp.applicationNumber}.pdf`
+                        a.click()
+                        window.URL.revokeObjectURL(url)
+                      } else {
+                        alert('Failed to generate invoice')
+                      }
+                    } catch (err) {
+                      alert('Failed to generate invoice')
                     }
-                  } catch (err) {
-                    alert('Failed to generate invoice');
-                  }
-                }}
-                className="px-4 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors"
-              >
-                Download Invoice
-              </button>
-              <button onClick={() => setSelectedApp(null)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors">
-                Close
-              </button>
-              <button 
-                onClick={async () => {
-                  const notes = (document.getElementById('adminNotes') as HTMLTextAreaElement)?.value;
-                  await fetch('/api/admin/applications', {
-method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: selectedApp.id, notes }),
-                  });
-                  alert('Notes saved!');
-                }}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all"
-              >
-                Save Notes
-              </button>
+                  }}
+                  className="px-4 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+                >
+                  Download Invoice
+                </button>
+                <button onClick={() => setSelectedApp(null)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors">
+                  Close
+                </button>
+                <button 
+                  onClick={async () => {
+                    const notes = (document.getElementById('adminNotes') as HTMLTextAreaElement)?.value
+                    await fetch('/api/admin/applications', {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ id: selectedApp.id, notes }),
+                    })
+                    alert('Notes saved!')
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all"
+                >
+                  Save Notes
+                </button>
+              </div>
             </div>
-          </div>
           </div>
         </div>
       )}
     </div>
-  );
+  )
 }
