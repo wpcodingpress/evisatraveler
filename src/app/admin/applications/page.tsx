@@ -339,7 +339,7 @@ export default function ApplicationsPage() {
       {selectedApp && (
         <div 
           className="fixed inset-0 z-[9999] overflow-y-auto"
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', marginTop: 0 }}
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', marginTop: '0px', marginBottom: '0px', marginLeft: '0px', marginRight: '0px', padding: 0 }}
           onClick={(e) => { if (e.target === e.currentTarget) setSelectedApp(null) }}
         >
           <div className="min-h-full flex items-center justify-center p-4">
