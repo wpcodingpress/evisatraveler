@@ -94,37 +94,11 @@ export async function POST(request: Request) {
       };
     }
 
-    // Demo mode - skip payment gateway and proceed
-    if (process.env.DEMO_PAYMENT === 'true' || process.env.BANK_ALFALAH_MERCHANT_ID === 'YOUR_MERCHANT_ID' || !process.env.BANK_ALFALAH_MERCHANT_ID) {
-      // Demo mode - skip payment and return success
-      console.log('Demo mode: Skipping payment gateway, marking as paid');
-      
-      // Update application payment status if exists
-      if (application?.id) {
-        await prisma.application.update({
-          where: { id: application.id },
-          data: { paymentStatus: 'paid' },
-        }).catch(() => {});
-      }
-      
-      return NextResponse.json({
-        id: application?.id || applicationNumber,
-        applicationNumber,
-        orderId,
-        totalAmount: finalAmount,
-        currency,
-        message: 'Application created (demo mode - payment bypassed)',
-        paymentStatus: 'paid',
-        paymentUrl: `/confirmation/${applicationNumber}?demo=true&paid=true`,
-        paymentAction: 'none',
-      });
-    }
-
     // Convert USD to PKR (1 USD = 280 PKR)
     const amountInPkr = Math.round(finalAmount * 280);
     const transactionId = applicationNumber.replace(/-/g, '').substring(0, 20);
 
-    // Return payment form that auto-submits to Bank Alfalah
+    // Return payment form that auto-submits to Bank Alfalah APG
     return NextResponse.json({
       id: application?.id || applicationNumber,
       applicationNumber,
@@ -137,6 +111,7 @@ export async function POST(request: Request) {
       // This will trigger the frontend to call the payment initiation endpoint
       paymentUrl: `/api/payment/initiate?applicationId=${application?.id || applicationNumber}&amount=${finalAmount}`,
       paymentAction: 'redirect',
+      paymentStatus: 'pending',
     });
   } catch (error) {
     console.error('Application creation error:', error);
