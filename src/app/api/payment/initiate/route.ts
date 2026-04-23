@@ -49,6 +49,14 @@ export async function POST(request: NextRequest) {
 
     const transactionRef = generateTransactionRef(application.applicationNumber);
     const amountInPkr = convertUsdToPkr(amount);
+    
+    console.log('Creating payment form for:', {
+      transactionRef,
+      amountInPkr,
+      merchantId: process.env.BANK_ALFALAH_MERCHANT_ID,
+      storeId: process.env.BANK_ALFALAH_STORE_ID,
+    });
+    
     const formData = createHandshakeFormData({
       transactionReferenceNumber: transactionRef,
       amount: amountInPkr,

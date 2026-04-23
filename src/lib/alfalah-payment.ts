@@ -62,6 +62,13 @@ interface PaymentFormData {
 
 function getConfig(): APGConfig {
   const isProduction = process.env.NODE_ENV === 'production';
+  console.log('APG Config:', {
+    merchantId: process.env.BANK_ALFALAH_MERCHANT_ID,
+    storeId: process.env.BANK_ALFALAH_STORE_ID,
+    username: process.env.BANK_ALFALAH_USERNAME,
+    isProduction,
+    nodeEnv: process.env.NODE_ENV,
+  });
   return {
     merchantId: process.env.BANK_ALFALAH_MERCHANT_ID || '233660',
     storeId: process.env.BANK_ALFALAH_STORE_ID || '524469',
