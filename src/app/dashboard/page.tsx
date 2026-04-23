@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface User {
   id: string;
@@ -23,6 +24,7 @@ interface ApplicationProgress {
     toCountry?: { name: string; flag: string };
     fromCountry?: { name: string; flag: string };
     visaType: string;
+    price?: number;
   };
 }
 
@@ -31,18 +33,21 @@ interface Application {
   applicationNumber: string;
   status: string;
   paymentStatus: string;
-  totalAmount: any;
+  totalAmount: number;
+  currency: string;
   createdAt: string;
   visaRuleId?: string;
   visaRule?: {
     id?: string;
     toCountry?: { name: string; flag: string };
+    fromCountry?: { name: string; flag: string };
     visaType?: string;
   };
 }
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { formatPrice } = useCurrency();
   const [user, setUser] = useState<User | null>(null);
   const [progressList, setProgressList] = useState<ApplicationProgress[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
@@ -242,7 +247,6 @@ export default function DashboardPage() {
 
         {progressList.length > 0 && (
           <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl shadow-xl overflow-hidden mb-8">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvc3ZnPg==')] opacity-30" />
             <div className="relative p-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-4">
@@ -403,7 +407,7 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {applications.slice(0, 5).map(app => (
+                  {applications.slice(0, 5).map((app) => (
                     <tr key={app.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-4 px-6">
                         <p className="font-semibold text-slate-900">{app.applicationNumber}</p>
