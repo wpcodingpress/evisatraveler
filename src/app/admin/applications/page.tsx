@@ -184,13 +184,14 @@ export default function ApplicationsPage() {
   const total = stats.pending + stats.processing + stats.approved + stats.rejected || applications.length
 
   return (
-    <div className="space-y-0">
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
-          <span>{error}</span>
-          <button onClick={fetchApplications} className="text-sm font-medium underline">Try again</button>
-        </div>
-      )}
+    <>
+      <div className="space-y-6">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
+            <span>{error}</span>
+            <button onClick={fetchApplications} className="text-sm font-medium underline">Try again</button>
+          </div>
+        )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-slate-900">Applications</h1>
@@ -338,8 +339,8 @@ export default function ApplicationsPage() {
 
       {selectedApp && (
         <div 
-          className="fixed inset-0 z-[9999] overflow-y-auto -mt-6"
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', marginTop: '-1.5rem !important', padding: '0 !important' }}
+          className="fixed inset-0 z-[9999] overflow-y-auto"
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', margin: 0, padding: 0 }}
           onClick={(e) => { if (e.target === e.currentTarget) setSelectedApp(null) }}
         >
           <div className="min-h-screen flex items-start justify-center py-4 px-2">
@@ -678,6 +679,7 @@ export default function ApplicationsPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
