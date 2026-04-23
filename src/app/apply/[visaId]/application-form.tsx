@@ -264,13 +264,11 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
         return;
       }
       
-      // Fallback for demo mode or other payment methods
-      if (result.paymentUrl && !result.paymentUrl.includes('demo') && !result.paymentUrl.includes('/api/')) {
-        window.location.href = result.paymentUrl;
+      // Handle demo mode or direct confirmation
+      if (result.paymentAction === 'none' || result.paymentStatus === 'paid' || (result.paymentUrl && result.paymentUrl.includes('demo'))) {
+        router.push(`/confirmation/${applicationId}?demo=true&paid=true`);
         return;
       }
-      
-      router.push(`/confirmation/${applicationId}`);
     } catch (err: any) {
       setError(err.message || 'Payment failed. Please try again.');
       setIsSubmitting(false);

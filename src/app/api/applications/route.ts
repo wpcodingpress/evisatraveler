@@ -94,18 +94,29 @@ export async function POST(request: Request) {
       };
     }
 
-    // Handle demo mode (no payment gateway)
-    if (process.env.BANK_ALFALAH_MERCHANT_ID === 'YOUR_MERCHANT_ID' || !process.env.BANK_ALFALAH_MERCHANT_ID) {
+    // Demo mode - skip payment gateway and proceed
+    if (process.env.DEMO_PAYMENT === 'true' || process.env.BANK_ALFALAH_MERCHANT_ID === 'YOUR_MERCHANT_ID' || !process.env.BANK_ALFALAH_MERCHANT_ID) {
       // Demo mode - skip payment and return success
-      console.log('Demo mode: Skipping payment, returning success');
+      console.log('Demo mode: Skipping payment gateway, marking as paid');
+      
+      // Update application payment status if exists
+      if (application?.id) {
+        await prisma.application.update({
+          where: { id: application.id },
+          data: { paymentStatus: 'paid' },
+        }).catch(() => {});
+      }
+      
       return NextResponse.json({
         id: application?.id || applicationNumber,
         applicationNumber,
         orderId,
         totalAmount: finalAmount,
         currency,
-        message: 'Application created (demo mode)',
-        paymentUrl: `/confirmation/${applicationNumber}?demo=true`,
+        message: 'Application created (demo mode - payment bypassed)',
+        paymentStatus: 'paid',
+        paymentUrl: `/confirmation/${applicationNumber}?demo=true&paid=true`,
+        paymentAction: 'none',
       });
     }
 
