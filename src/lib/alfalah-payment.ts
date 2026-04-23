@@ -116,6 +116,27 @@ export function encryptRequestHash(data: string, key1: string, key2: string): st
 }
 
 /**
+ * Verify webhook signature
+ */
+export function verifyResponseSignature(
+  transactionId: string,
+  amount: string,
+  responseCode: string,
+  status: string,
+  signature: string
+): boolean {
+  const config = getConfig();
+  
+  const data = `${transactionId}${amount}${responseCode}${status}`;
+  const expectedSignature = crypto
+    .createHmac('sha256', config.merchantHash)
+    .update(data)
+    .digest('base64');
+  
+  return signature === expectedSignature;
+}
+
+/**
  * Generate map string for hash calculation
  * Format: key1=value1&key2=value2&...
  */
