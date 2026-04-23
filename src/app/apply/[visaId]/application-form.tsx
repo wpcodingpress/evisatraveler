@@ -257,7 +257,15 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
       }
       localStorage.removeItem(`evisa_guest_${visaRule.id}`);
 
-      if (result.paymentUrl && !result.paymentUrl.includes('demo')) {
+      // Check if we need to redirect to payment gateway
+      if (result.paymentAction === 'redirect' && result.paymentUrl) {
+        // Redirect to our payment initiation endpoint which returns auto-submit form
+        window.location.href = result.paymentUrl;
+        return;
+      }
+      
+      // Fallback for demo mode or other payment methods
+      if (result.paymentUrl && !result.paymentUrl.includes('demo') && !result.paymentUrl.includes('/api/')) {
         window.location.href = result.paymentUrl;
         return;
       }

@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { generateApplicationNumber, generateOrderId } from '@/lib/utils';
-import { initiateBankAlfalahPayment } from '@/lib/bank-alfalah';
 import { z } from 'zod';
 
 const applicationSchema = z.object({
@@ -110,40 +109,23 @@ export async function POST(request: Request) {
       });
     }
 
-    // Initiate Bank Alfalah payment
-    const paymentResult = await initiateBankAlfalahPayment({
-      amount: finalAmount,
-      currency: currency || 'USD',
-      orderId,
-      productDescription: `eVisa - Tourist Visa application`,
-      customerName: `${formData.firstName} ${formData.lastName}`.trim(),
-      customerEmail: formData.email,
-      customerPhone: formData.phone || '',
-      callbackUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/api/payment/callback?app=${applicationNumber}`,
-    });
+    // Convert USD to PKR (1 USD = 280 PKR)
+    const amountInPkr = Math.round(finalAmount * 280);
+    const transactionId = applicationNumber.replace(/-/g, '').substring(0, 20);
 
-    if (!paymentResult.success) {
-      // If payment fails, still return application but redirect to confirmation
-      console.error('Payment initiation failed:', paymentResult.error);
-      return NextResponse.json({
-        id: application?.id || applicationNumber,
-        applicationNumber,
-        orderId,
-        totalAmount: finalAmount,
-        currency,
-        message: 'Application created',
-        paymentUrl: `/confirmation/${applicationNumber}?pending=true`,
-      });
-    }
-
+    // Return payment form that auto-submits to Bank Alfalah
     return NextResponse.json({
       id: application?.id || applicationNumber,
       applicationNumber,
       orderId,
       totalAmount: finalAmount,
+      totalAmountPkr: amountInPkr,
       currency,
-      paymentUrl: paymentResult.paymentUrl,
-      transactionId: paymentResult.transactionId,
+      transactionId,
+      message: 'Redirecting to payment',
+      // This will trigger the frontend to call the payment initiation endpoint
+      paymentUrl: `/api/payment/initiate?applicationId=${application?.id || applicationNumber}&amount=${finalAmount}`,
+      paymentAction: 'redirect',
     });
   } catch (error) {
     console.error('Application creation error:', error);

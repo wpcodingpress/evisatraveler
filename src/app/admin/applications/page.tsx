@@ -184,14 +184,13 @@ export default function ApplicationsPage() {
   const total = stats.pending + stats.processing + stats.approved + stats.rejected || applications.length
 
   return (
-    <>
-      <div className="space-y-6">
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
-            <span>{error}</span>
-            <button onClick={fetchApplications} className="text-sm font-medium underline">Try again</button>
-          </div>
-        )}
+    <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={fetchApplications} className="text-sm font-medium underline">Try again</button>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-slate-900">Applications</h1>
@@ -340,7 +339,7 @@ export default function ApplicationsPage() {
       {selectedApp && (
         <div 
           className="fixed inset-0 z-[9999] overflow-y-auto"
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', margin: 0, padding: 0 }}
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', top: 0, left: 0, right: 0, bottom: 0 }}
           onClick={(e) => { if (e.target === e.currentTarget) setSelectedApp(null) }}
         >
           <div className="min-h-screen flex items-start justify-center py-4 px-2">
@@ -348,14 +347,14 @@ export default function ApplicationsPage() {
                 <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
                   <h2 className="text-xl font-bold text-white">Application Details</h2>
                   <button 
-                  onClick={() => setSelectedApp(null)} 
-                  className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+                    onClick={() => setSelectedApp(null)} 
+                    className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
               
               <div className="max-h-[75vh] sm:max-h-[80vh] overflow-y-auto p-4 sm:p-6 space-y-6">
                 <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl">
@@ -679,7 +678,6 @@ export default function ApplicationsPage() {
           </div>
         </div>
       )}
-      </div>
-    </>
+    </div>
   )
 }
