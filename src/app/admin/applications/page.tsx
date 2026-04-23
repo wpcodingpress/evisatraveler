@@ -339,11 +339,11 @@ export default function ApplicationsPage() {
       {selectedApp && (
         <div 
           className="fixed inset-0 z-[9999] overflow-y-auto"
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', marginTop: '0px', marginBottom: '0px', marginLeft: '0px', marginRight: '0px', padding: 0 }}
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', margin: '0 !important', padding: '0 !important' }}
           onClick={(e) => { if (e.target === e.currentTarget) setSelectedApp(null) }}
         >
-          <div className="min-h-full flex items-center justify-center p-4">
-            <div className="bg-white w-full sm:rounded-2xl shadow-2xl sm:w-full sm:max-w-4xl sm:my-8">
+          <div className="min-h-screen flex items-start justify-center py-4 px-2">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl overflow-hidden mt-0">
                 <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
                   <h2 className="text-xl font-bold text-white">Application Details</h2>
                   <button 
