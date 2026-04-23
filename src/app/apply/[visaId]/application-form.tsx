@@ -254,18 +254,8 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
 
       if (isAuthenticated) {
         await fetch(`/api/applications/progress?visaRuleId=${visaRule.id}`, { method: 'DELETE' }).catch(() => {});
-        fetch('/api/user/profile', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            phone: formData.phone,
-          }),
-        }).catch(() => {});
       }
       localStorage.removeItem(`evisa_guest_${visaRule.id}`);
-      localStorage.removeItem(`evisa_auth_${visaRule.id}`);
 
       if (result.paymentUrl && !result.paymentUrl.includes('demo')) {
         window.location.href = result.paymentUrl;

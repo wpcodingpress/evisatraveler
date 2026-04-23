@@ -339,10 +339,12 @@ export default function ApplicationsPage() {
 
 {selectedApp && (
         <div 
-          className="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] flex items-start justify-center overflow-y-auto"
+          className="fixed inset-0 z-[9999] overflow-y-auto"
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)' }}
           onClick={(e) => e.target === e.currentTarget && setSelectedApp(null)}
         >
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl my-4 mx-2 overflow-hidden">
+          <div className="min-h-screen flex items-start justify-center py-4 px-2">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl overflow-hidden mt-0">
             {/* Header */}
             <div className="sticky top-0 bg-gradient-to-r from-violet-600 to-purple-600 px-4 sm:px-6 py-4 flex items-center justify-between z-10">
               <h2 className="text-lg sm:text-xl font-bold text-white">Application Details</h2>
@@ -680,7 +682,7 @@ export default function ApplicationsPage() {
                 onClick={async () => {
                   const notes = (document.getElementById('adminNotes') as HTMLTextAreaElement)?.value;
                   await fetch('/api/admin/applications', {
-                    method: 'PATCH',
+method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: selectedApp.id, notes }),
                   });
@@ -691,6 +693,7 @@ export default function ApplicationsPage() {
                 Save Notes
               </button>
             </div>
+          </div>
           </div>
         </div>
       )}
