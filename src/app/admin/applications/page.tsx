@@ -338,15 +338,18 @@ export default function ApplicationsPage() {
 
       {selectedApp && (
         <div 
-          className="fixed inset-0 z-50 overflow-y-auto"
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', margin: 0, padding: 0 }}
-          onClick={(e) => { if (e.target === e.currentTarget) setSelectedApp(null) }}
+          className="fixed inset-0 z-50"
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)' }}
         >
-          <div className="min-h-full flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-8">
-              <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-                <h2 className="text-xl font-bold text-white">Application Details</h2>
-                <button 
+          <div 
+            className="fixed inset-0 overflow-y-auto"
+            onClick={(e) => { if (e.target === e.currentTarget) setSelectedApp(null) }}
+          >
+            <div className="min-h-screen flex items-center justify-center p-0 sm:p-4">
+              <div className="bg-white w-full sm:rounded-2xl shadow-2xl sm:w-full sm:max-w-4xl sm:my-8">
+                <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                  <h2 className="text-xl font-bold text-white">Application Details</h2>
+                  <button 
                   onClick={() => setSelectedApp(null)} 
                   className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors"
                 >
@@ -673,6 +676,7 @@ export default function ApplicationsPage() {
                 >
                   Save Notes
                 </button>
+              </div>
               </div>
             </div>
           </div>
