@@ -158,10 +158,14 @@ function ConfirmationContent({ appNumber }: { appNumber: string }) {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {app.documents.map((doc) => {
-                const imageUrl = doc.filePath || `/uploads/${app.applicationNumber}/${doc.fileName}`;
+                const imageUrl = doc.filePath 
+                  ? (doc.filePath.startsWith('/') ? doc.filePath : `/${doc.filePath}`)
+                  : `/uploads/${app.applicationNumber}/${doc.fileName}`;
+                const isImage = doc.mimeType?.startsWith('image/') || 
+                  doc.fileName?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
                 return (
-                  <div key={doc.id} className="bg-slate-50 rounded-xl overflow-hidden border border-slate-200 hover:border-purple-400 hover:shadow-lg transition-all">
-                    {doc.mimeType?.includes('image') ? (
+                  <div key={doc.id} className="group relative bg-slate-50 rounded-xl overflow-hidden border border-slate-200 hover:border-purple-400 hover:shadow-lg transition-all">
+                    {isImage ? (
                       <div className="relative aspect-square">
                         <img 
                           src={imageUrl}
@@ -169,13 +173,16 @@ function ConfirmationContent({ appNumber }: { appNumber: string }) {
                           className="w-full h-full object-cover cursor-pointer"
                           onClick={() => window.open(imageUrl, '_blank')}
                           onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
+                            const img = e.target as HTMLImageElement;
+                            img.style.display = 'none';
+                            const parent = img.parentElement;
+                            if (parent) parent.style.background = '#fee2e2';
                           }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-2">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
                           <button 
                             onClick={() => window.open(imageUrl, '_blank')}
-                            className="w-full py-2 px-3 bg-white/90 hover:bg-white text-purple-600 rounded-lg text-sm font-semibold flex items-center justify-center gap-2"
+                            className="w-full py-2 px-3 bg-white/90 hover:bg-white text-purple-600 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors mb-1"
                           >
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -183,13 +190,26 @@ function ConfirmationContent({ appNumber }: { appNumber: string }) {
                             </svg>
                             View Full
                           </button>
+                          <a 
+                            href={imageUrl}
+                            download={doc.originalName || doc.fileName}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-2 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download
+                          </a>
                         </div>
                       </div>
                     ) : (
-                      <div className="aspect-square flex items-center justify-center bg-red-50">
-                        <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="aspect-square flex flex-col items-center justify-center bg-red-50 p-4">
+                        <svg className="w-10 h-10 text-red-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
+                        <span className="text-xs text-red-400 font-medium">PDF</span>
                       </div>
                     )}
                     <div className="p-2 bg-white">
