@@ -209,38 +209,6 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
     try {
       const paymentAmount = usdTotal * selectedCurrency.exchangeRate;
 
-      let uploadedDocuments: Array<{type: string; fileName: string; originalName: string; filePath: string; mimeType: string; fileSize: number}> = [];
-
-      for (const [docId, doc] of Object.entries(uploadedFiles)) {
-        if (doc.file) {
-          try {
-            const formData = new FormData();
-            formData.append('file', doc.file);
-            formData.append('applicationId', 'temp');
-            formData.append('docType', docId);
-
-            const uploadRes = await fetch('/api/upload', {
-              method: 'POST',
-              body: formData,
-            });
-
-            if (uploadRes.ok) {
-              const uploadData = await uploadRes.json();
-              uploadedDocuments.push({
-                type: docId,
-                fileName: uploadData.document?.fileName || doc.name,
-                originalName: doc.name,
-                filePath: uploadData.document?.filePath || `/uploads/temp/${doc.name}`,
-                mimeType: doc.file.type,
-                fileSize: doc.file.size,
-              });
-            }
-          } catch (uploadErr) {
-            console.error('File upload failed:', uploadErr);
-          }
-        }
-      }
-      
       const appData = {
         visaRuleId: visaRule.id,
         travelers,
@@ -249,7 +217,6 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
         currency: 'PKR',
         paymentAmount: paymentAmount,
         formData,
-        documents: uploadedDocuments,
       };
       
       const res = await fetch('/api/applications', {
@@ -266,6 +233,24 @@ export function ApplicationForm({ visaRule, travelers = 1, processing = 'standar
       
       const applicationId = result.id;
       const applicationNumber = result.applicationNumber;
+
+      for (const [docId, doc] of Object.entries(uploadedFiles)) {
+        if (doc.file) {
+          try {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', doc.file);
+            uploadFormData.append('applicationId', applicationNumber);
+            uploadFormData.append('docType', docId);
+
+            await fetch('/api/upload', {
+              method: 'POST',
+              body: uploadFormData,
+            });
+          } catch (uploadErr) {
+            console.error('File upload failed:', uploadErr);
+          }
+        }
+      }
 
       if (isAuthenticated) {
         await fetch(`/api/applications/progress?visaRuleId=${visaRule.id}`, { method: 'DELETE' }).catch(() => {});

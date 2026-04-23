@@ -12,14 +12,6 @@ const applicationSchema = z.object({
   processing: z.string().optional().default('standard'),
   totalAmount: z.number().optional(),
   currency: z.string().optional().default('USD'),
-  documents: z.array(z.object({
-    type: z.string(),
-    fileName: z.string(),
-    originalName: z.string(),
-    filePath: z.string(),
-    mimeType: z.string(),
-    fileSize: z.number(),
-  })).optional(),
 });
 
 export async function POST(request: Request) {
@@ -34,7 +26,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { visaRuleId, formData, travelers, processing, totalAmount, currency, documents: docData } = validation.data;
+    const { visaRuleId, formData, travelers, processing, totalAmount, currency } = validation.data;
 
     let visaRule;
     try {
@@ -78,22 +70,6 @@ export async function POST(request: Request) {
           user: true,
         },
       });
-
-      if (docData && docData.length > 0) {
-        for (const doc of docData) {
-          await prisma.document.create({
-            data: {
-              applicationId: application.id,
-              type: doc.type,
-              fileName: doc.fileName,
-              originalName: doc.originalName,
-              filePath: doc.filePath,
-              mimeType: doc.mimeType,
-              fileSize: doc.fileSize,
-            },
-          });
-        }
-      }
 
       await prisma.notification.create({
         data: {
