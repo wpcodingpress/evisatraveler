@@ -42,6 +42,8 @@ interface PaymentResponse {
 
 import crypto from 'crypto';
 
+import crypto from 'crypto';
+
 function generateHash(data: string): string {
   return crypto.createHash('sha256').update(data).digest('hex');
 }

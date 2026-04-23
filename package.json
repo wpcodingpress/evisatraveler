@@ -2,12 +2,15 @@
   "name": "evisa-traveler",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
+"scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/plugin-preview": "^5.22.0"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
