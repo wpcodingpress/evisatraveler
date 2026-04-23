@@ -232,6 +232,7 @@ export function createSSOFormData(payment: PaymentRequest, authToken: string): P
     transactionTypeId,
     transactionAmount: amountStr,
     ipnUrl: config.ipnUrl,
+    isRedirectionRequest: '1',
   };
 }
 
