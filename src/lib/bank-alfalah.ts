@@ -40,8 +40,9 @@ interface PaymentResponse {
   requiresOtp?: boolean;
 }
 
+import crypto from 'crypto';
+
 function generateHash(data: string): string {
-  const crypto = require('crypto');
   return crypto.createHash('sha256').update(data).digest('hex');
 }
 

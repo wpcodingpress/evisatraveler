@@ -52,7 +52,7 @@ interface PaymentFormData {
   merchantPassword: string;
   transactionReferenceNumber: string;
   requestHash: string;
-  isRedirectionRequest: string;
+  isRedirectionRequest?: string;
   authToken?: string;
   currency?: string;
   transactionTypeId?: string;
