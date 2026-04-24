@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { applicationId, amount, customerEmail, customerPhone, customerName } = body;
-
+    
     if (!applicationId || !amount) {
       return new NextResponse(
         JSON.stringify({ error: 'Missing required fields: applicationId, amount' }),
@@ -101,6 +101,94 @@ export async function POST(request: NextRequest) {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
           }
+        }
+      );
+    }
+    
+    let application;
+    try {
+      application = await prisma.application.findUnique({
+        where: { id: applicationId },
+        include: { user: true },
+      });
+      
+      if (!application) {
+        application = await prisma.application.findFirst({
+          where: { applicationNumber: applicationId },
+          include: { user: true },
+        });
+      }
+    } catch {
+      return new NextResponse(
+        JSON.stringify({ error: 'Database unavailable' }),
+        { status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+    
+    if (!application) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Application not found' }),
+        { status: 404, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+    
+    const transactionRef = generateTransactionRef(application.applicationNumber);
+    const amountInPkr = convertUsdToPkr(amount);
+    
+    const config = {
+      merchantId: process.env.BANK_ALFALAH_MERCHANT_ID || '233660',
+      storeId: process.env.BANK_ALFALAH_STORE_ID || '524469',
+      username: process.env.BANK_ALFALAH_USERNAME || 'fykoqu',
+      password: process.env.BANK_ALFALAH_PASSWORD || 'P4SmutaC6YVvFzk4yqF7CA==',
+      merchantHash: process.env.BANK_ALFALAH_SECRET_KEY || 'OUU362MB1upc67ZO/pNWYAfQ8A/8LuYyWpNuGSXiBtFvFzk4yqF7CA==',
+      key1: process.env.BANK_ALFALAH_KEY1 || 'FWBhnJmJWXuUee2J',
+      key2: process.env.BANK_ALFALAH_KEY2 || '3200254418025343',
+      returnUrl: process.env.BANK_ALFALAH_RETURN_URL || 'https://evisatraveler.com/api/payment/return',
+      transactionRef,
+      amount: amountInPkr,
+    };
+    
+    console.log('Starting payment handshake for:', transactionRef);
+    
+    const handshakeResult = await doHandshake(config);
+    
+    if (!handshakeResult.success) {
+      console.error('Handshake failed:', handshakeResult.error);
+      return NextResponse.redirect(
+        new URL(`/payment/failed?error=handshake_failed&reason=${encodeURIComponent(handshakeResult.error || 'Payment gateway error')}`, 'https://evisatraveler.com')
+      );
+    }
+    
+    const authToken = handshakeResult.authToken!;
+    console.log('Handshake successful, AuthToken:', authToken.substring(0, 30) + '...');
+    
+    // Create SSO form data with proper hash generation
+    const paymentRequest = {
+      transactionReferenceNumber: transactionRef,
+      amount: config.amount,
+      currency: 'PKR',
+      transactionTypeId: '3',
+    };
+    
+    const ssoFormData = createSSOFormData(paymentRequest, authToken);
+    const html = createSSOFormHtml(ssoFormData);
+    
+    return new NextResponse(html, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+    
+  } catch (error) {
+    console.error('Payment initiation error:', error);
+    return new NextResponse(
+      JSON.stringify({ error: 'Failed to initiate payment' }),
+      { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+    );
+  }
+}
         }
       );
     }
@@ -192,11 +280,95 @@ export async function GET(request: NextRequest) {
   const amount = searchParams.get('amount');
 
   if (!applicationId || !amount) {
-    return NextResponse.json(
-      { error: 'Missing required parameters: applicationId, amount' },
-      { status: 400 }
+    return new NextResponse(
+      JSON.stringify({ error: 'Missing required parameters: applicationId, amount' }),
+      { status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
     );
   }
+
+  try {
+    const amountNum = parseFloat(amount);
+
+    let application;
+    try {
+      application = await prisma.application.findUnique({
+        where: { id: applicationId },
+        include: { user: true },
+      });
+      
+      if (!application) {
+        application = await prisma.application.findFirst({
+          where: { applicationNumber: applicationId },
+          include: { user: true },
+        });
+      }
+    } catch {
+      return new NextResponse(
+        JSON.stringify({ error: 'Database unavailable' }),
+        { status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+
+    if (!application) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Application not found' }),
+        { status: 404, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+
+    const transactionRef = generateTransactionRef(application.applicationNumber);
+    const amountInPkr = convertUsdToPkr(amountNum);
+
+    const config = {
+      merchantId: process.env.BANK_ALFALAH_MERCHANT_ID || '233660',
+      storeId: process.env.BANK_ALFALAH_STORE_ID || '524469',
+      username: process.env.BANK_ALFALAH_USERNAME || 'fykoqu',
+      password: process.env.BANK_ALFALAH_PASSWORD || 'P4SmutaC6YVvFzk4yqF7CA==',
+      merchantHash: process.env.BANK_ALF_ALAH_SECRET_KEY || 'OUU362MB1upc67ZO/pNWYAfQ8A/8LuYyWpNuGSXiBtFvFzk4yqF7CA==',
+      key1: process.env.BANK_ALF_ALAH_KEY1 || 'FWBhnJmJWXuUee2J',
+      key2: process.env.BANK_ALF_ALAH_KEY2 || '3200254418025343',
+      returnUrl: process.env.BANK_ALF_ALAH_RETURN_URL || 'https://evisatraveler.com/api/payment/return',
+      transactionRef,
+      amount: amountInPkr,
+    };
+
+    const handshakeResult = await doHandshake(config);
+
+    if (!handshakeResult.success) {
+      return NextResponse.redirect(
+        new URL(`/payment/failed?error=handshake_failed&reason=${encodeURIComponent(handshakeResult.error || 'Payment gateway error')}`, 'https://evisatraveler.com')
+      );
+    }
+
+    const authToken = handshakeResult.authToken!;
+
+    // Create SSO form data with proper hash generation
+    const paymentRequest = {
+      transactionReferenceNumber: transactionRef,
+      amount: config.amount,
+      currency: 'PKR',
+      transactionTypeId: '3',
+    };
+
+    const ssoFormData = createSSOFormData(paymentRequest, authToken);
+    const html = createSSOFormHtml(ssoFormData);
+
+    return new NextResponse(html, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+
+  } catch (error) {
+    console.error('Payment initiation error:', error);
+    return new NextResponse(
+      JSON.stringify({ error: 'Failed to initiate payment' }),
+      { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+    );
+  }
+}
 
   try {
     const amountNum = parseFloat(amount);
