@@ -75,15 +75,33 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
   }
 }
 
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { applicationId, amount, customerEmail, customerPhone, customerName } = body;
 
     if (!applicationId || !amount) {
-      return NextResponse.json(
-        { error: 'Missing required fields: applicationId, amount' },
-        { status: 400 }
+      return new NextResponse(
+        JSON.stringify({ error: 'Missing required fields: applicationId, amount' }),
+        { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          }
+        }
       );
     }
 
