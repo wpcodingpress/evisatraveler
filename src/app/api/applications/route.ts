@@ -108,8 +108,8 @@ export async function POST(request: Request) {
       currency,
       transactionId,
       message: 'Redirecting to payment',
-      // Use client-side payment (runs in user's browser)
-      paymentUrl: `/payment/${application?.id || applicationNumber}?amount=${finalAmount}`,
+      // Use client-side payment page (application ID is in URL path)
+      paymentUrl: `/payment/${application?.id || applicationNumber}`,
       paymentAction: 'redirect',
       paymentStatus: 'pending',
     });

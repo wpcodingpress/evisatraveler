@@ -25,10 +25,14 @@ interface PaymentParams {
   transactionTypeId: string;
 }
 
-function PaymentContent() {
+// This component receives applicationId via props from the dynamic route
+function PaymentContent({ appId }: { appId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const applicationId = searchParams.get('applicationId') || searchParams.get('id');
+  
+  // Also check query params as fallback
+  const queryAppId = searchParams.get('applicationId') || searchParams.get('id') || appId;
+  const amount = searchParams.get('amount');
   
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -37,15 +41,15 @@ function PaymentContent() {
 
   useEffect(() => {
     async function initPayment() {
-      if (!applicationId) {
+      if (!queryAppId) {
         setError('Missing application ID');
         setLoading(false);
         return;
       }
       
       try {
-        // Get params from API (no Bank Alfalah connection)
-        const res = await fetch(`/api/payment/params?applicationId=${applicationId}`);
+        // Get params from API
+        const res = await fetch(`/api/payment/params?applicationId=${queryAppId}`);
         const data = await res.json();
         
         if (!res.ok || data.error) {
@@ -67,13 +71,13 @@ function PaymentContent() {
     }
     
     initPayment();
-  }, [applicationId]);
+  }, [queryAppId]);
 
   async function startClientSidePayment(paymentParams: PaymentParams) {
     try {
       setProcessing(true);
       
-      // Create encryption function
+      // Encryption function
       const encryptData = async (data: string, key1: string, key2: string): Promise<string> => {
         const key = key1.slice(0, 16);
         const iv = key2.slice(0, 16);
@@ -99,7 +103,7 @@ function PaymentContent() {
         return encryptData(mapString, key1, key2);
       };
 
-      // Step 1: Prepare handshake parameters
+      // Prepare handshake parameters
       const handshakeParams: Record<string, string> = {
         HS_ChannelId: paymentParams.channelId,
         HS_IsRedirectionRequest: paymentParams.isRedirectionRequest,
@@ -112,12 +116,11 @@ function PaymentContent() {
         HS_TransactionReferenceNumber: paymentParams.transactionReferenceNumber,
       };
       
-      // Generate and add hash
       handshakeParams.HS_RequestHash = await generateHash(handshakeParams, paymentParams.key1, paymentParams.key2);
       
       console.log('Starting client-side handshake...');
       
-      // Step 2: Post to Bank Alfalah from browser
+      // Post to Bank Alfalah
       const formData = new URLSearchParams();
       Object.entries(handshakeParams).forEach(([key, value]) => {
         formData.append(key, value);
@@ -139,7 +142,7 @@ function PaymentContent() {
       const authToken = result.AuthToken;
       console.log('Got AuthToken, starting SSO...');
       
-      // Step 3: Create and submit SSO form
+      // Create and submit SSO form
       const ssoParams = new URLSearchParams();
       ssoParams.append('AuthToken', authToken);
       ssoParams.append('ChannelId', paymentParams.channelId);
@@ -154,7 +157,6 @@ function PaymentContent() {
       ssoParams.append('TransactionReferenceNumber', paymentParams.transactionReferenceNumber);
       ssoParams.append('TransactionAmount', paymentParams.amount);
       
-      // Create hidden form and submit
       const ssoForm = document.createElement('form');
       ssoForm.method = 'POST';
       ssoForm.action = paymentParams.ssoUrl;
@@ -264,14 +266,19 @@ function PaymentContent() {
   );
 }
 
-export default function PaymentPage() {
+// Main page component - get applicationId from URL params
+function PaymentPage({ params }: { params: { applicationId: string } }) {
+  const appId = params?.applicationId;
+  
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
       </div>
     }>
-      <PaymentContent />
+      <PaymentContent appId={appId} />
     </Suspense>
   );
 }
+
+export default PaymentPage;
