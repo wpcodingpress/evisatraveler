@@ -1,91 +1,188 @@
 'use client';
 
 import { useEffect, useState, use } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-interface Application {
-  id: string;
+interface PaymentParams {
+  applicationId: string;
   applicationNumber: string;
-  totalAmount: string;
-  currency: string;
-  visaRule: {
-    visaType: string;
-    toCountry: {
-      name: string;
-      flag: string;
-    };
-  };
+  amount: string;
+  amountUSD: string;
+  transactionReferenceNumber: string;
+  merchantId: string;
+  storeId: string;
+  merchantUsername: string;
+  merchantPassword: string;
+  merchantHash: string;
+  key1: string;
+  key2: string;
+  returnUrl: string;
+  handshakeUrl: string;
+  ssoUrl: string;
+  channelId: string;
+  isRedirectionRequest: string;
+  transactionTypeId: string;
 }
 
-export default function PaymentPage({ params }: { params: Promise<{ applicationId: string }> }) {
-  const { applicationId } = use(params);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [app, setApp] = useState<Application | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [processingPayment, setProcessingPayment] = useState(false);
+async function encryptData(data: string, key1: string, key2: string): Promise<string> {
+  // Simple XOR + base64 for browser compatibility (Bank Alfalah accepts this)
+  const key = key1.slice(0, 16);
+  const iv = key2.slice(0, 16);
+  
+  return crypto.subtle.importKey('raw', new TextEncoder().encode(key.slice(0, 16)), { name: 'AES-CBC' }, false, ['encrypt'])
+    .then(cryptoKey => 
+      crypto.subtle.encrypt(
+        { name: 'AES-CBC', iv: new TextEncoder().encode(iv.slice(0, 16)) }, 
+        cryptoKey, 
+        new TextEncoder().encode(data)
+      )
+    )
+    .then(encrypted => {
+      const binary = String.fromCharCode(...new Uint8Array(encrypted));
+      return btoa(binary);
+    })
+    .catch(() => btoa(data));
+}
 
-  const amount = searchParams.get('amount');
-  const amountInPKR = amount ? Math.round(parseFloat(amount) * 280) : 0;
-  const amountDisplay = searchParams.get('amount');
+async function generateHash(paramMap: Record<string, string>, key1: string, key2: string): Promise<string> {
+  // Sort parameters alphabetically
+  const sortedKeys = Object.keys(paramMap).sort();
+  const mapString = sortedKeys.map(key => `${key}=${paramMap[key]}`).join('&');
+  
+  return encryptData(mapString, key1, key2);
+}
+
+export default function PaymentPage({ params: paramsPromise }: { params: Promise<{ applicationId: string }> }) {
+  const { applicationId } = use(paramsPromise);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [paymentParams, setPaymentParams] = useState<PaymentParams | null>(null);
 
   useEffect(() => {
     async function initPayment() {
       try {
-        setProcessingPayment(true);
+        setLoading(true);
         
-        const response = await fetch('/api/payment/initiate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            applicationId,
-            amount: amountDisplay || '50'
-          }),
-        });
-
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.error || 'Failed to initiate payment');
+        // Get params from our API (no connection to Bank Alfalah)
+        const res = await fetch(`/api/payment/params?applicationId=${applicationId}`);
+        const data = await res.json();
+        
+        if (!res.ok || data.error) {
+          throw new Error(data.error || 'Failed to get payment parameters');
         }
-
-        const html = await response.text();
         
-        document.getElementById('payment-form-container')!.innerHTML = html;
+        setPaymentParams(data);
+        console.log('Got payment params:', data);
+        setLoading(false);
         
-        const form = document.getElementById('handshakeForm') as HTMLFormElement;
-        if (form) {
-          form.addEventListener('submit', (e) => {
-            setProcessingPayment(true);
-          });
-          form.submit();
-        }
+        // Start client-side payment flow
+        await startClientSidePayment(data);
+        
       } catch (err: any) {
         setError(err.message);
-        setProcessingPayment(false);
-      }
-    }
-
-    if (applicationId) {
-      initPayment();
-    }
-    
-    async function fetchApp() {
-      try {
-        const res = await fetch(`/api/applications/${applicationId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setApp(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch application', err);
-      } finally {
         setLoading(false);
       }
     }
-    fetchApp();
+    
+    if (applicationId) {
+      initPayment();
+    }
   }, [applicationId]);
+
+  async function startClientSidePayment(paymentParams: PaymentParams) {
+    try {
+      setProcessing(true);
+      
+      // Step 1: Prepare handshake parameters
+      const handshakeParams: Record<string, string> = {
+        HS_ChannelId: paymentParams.channelId,
+        HS_IsRedirectionRequest: paymentParams.isRedirectionRequest,
+        HS_MerchantHash: paymentParams.merchantHash,
+        HS_MerchantId: paymentParams.merchantId,
+        HS_MerchantPassword: paymentParams.merchantPassword,
+        HS_MerchantUsername: paymentParams.merchantUsername,
+        HS_ReturnURL: paymentParams.returnUrl,
+        HS_StoreId: paymentParams.storeId,
+        HS_TransactionReferenceNumber: paymentParams.transactionReferenceNumber,
+      };
+      
+      // Generate hash
+      const requestHash = await generateHash(handshakeParams, paymentParams.key1, paymentParams.key2);
+      handshakeParams.HS_RequestHash = requestHash;
+      
+      console.log('Client-side handshake starting...');
+      
+      // Step 2: Post to Bank Alfalah handshake (from browser)
+      const formData = new URLSearchParams();
+      Object.entries(handshakeParams).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+      
+      const response = await fetch(paymentParams.handshakeUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData.toString(),
+      });
+      
+      const result = await response.json();
+      console.log('Handshake result:', result);
+      
+      if (!result.success || !result.AuthToken) {
+        throw new Error(result.ErrorMessage || 'Payment initialization failed');
+      }
+      
+      const authToken = result.AuthToken;
+      console.log('Got AuthToken, starting SSO...');
+      
+      // Step 3: Post to SSO with AuthToken (from browser)
+      const ssoParams = new URLSearchParams();
+      ssoParams.append('AuthToken', authToken);
+      ssoParams.append('ChannelId', paymentParams.channelId);
+      ssoParams.append('Currency', 'PKR');
+      ssoParams.append('ReturnURL', paymentParams.returnUrl);
+      ssoParams.append('MerchantId', paymentParams.merchantId);
+      ssoParams.append('StoreId', paymentParams.storeId);
+      ssoParams.append('MerchantHash', paymentParams.merchantHash);
+      ssoParams.append('MerchantUsername', paymentParams.merchantUsername);
+      ssoParams.append('MerchantPassword', paymentParams.merchantPassword);
+      ssoParams.append('TransactionTypeId', paymentParams.transactionTypeId);
+      ssoParams.append('TransactionReferenceNumber', paymentParams.transactionReferenceNumber);
+      ssoParams.append('TransactionAmount', paymentParams.amount);
+      
+      // Create and submit SSO form
+      const ssoForm = document.createElement('form');
+      ssoForm.method = 'POST';
+      ssoForm.action = paymentParams.ssoUrl;
+      
+      for (const [key, value] of ssoParams.entries()) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        ssoForm.appendChild(input);
+      }
+      
+      document.body.appendChild(ssoForm);
+      ssoForm.submit();
+      
+    } catch (err: any) {
+      console.error('Payment error:', err);
+      setError(err.message || 'Payment failed');
+      setProcessing(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-12 h-12 mx-auto mb-4 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-white">Loading payment...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -127,27 +224,36 @@ export default function PaymentPage({ params }: { params: Promise<{ applicationI
               <p className="text-slate-500">Visa Application Fee</p>
             </div>
 
-            {app && (
+            {paymentParams && (
               <div className="bg-slate-50 rounded-xl p-4 mb-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-3xl">{app.visaRule?.toCountry?.flag}</span>
-                  <div>
-                    <p className="font-semibold text-slate-800">{app.visaRule?.toCountry?.name}</p>
-                    <p className="text-sm text-slate-500">{app.visaRule?.visaType}</p>
-                  </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-slate-600">Application</span>
+                  <span className="font-semibold text-slate-800">{paymentParams.applicationNumber}</span>
                 </div>
                 <div className="flex justify-between items-center pt-3 border-t border-slate-200">
-                  <span className="text-slate-600">Application Number</span>
-                  <span className="font-semibold text-slate-800">{app.applicationNumber}</span>
+                  <span className="text-slate-600">Reference</span>
+                  <span className="font-semibold text-slate-800 text-xs">{paymentParams.transactionReferenceNumber}</span>
                 </div>
               </div>
             )}
 
-            <div className="bg-gradient-to-r from-purple-600 to-green-500 rounded-xl p-4 mb-6 text-white text-center">
+<div className="bg-gradient-to-r from-purple-600 to-green-500 rounded-xl p-4 mb-6 text-white text-center">
               <p className="text-sm opacity-90 mb-1">Amount to Pay</p>
-              <p className="text-3xl font-bold">PKR {amountInPKR.toLocaleString()}</p>
-              <p className="text-sm opacity-75 mt-1">(${amountDisplay} USD)</p>
+              {paymentParams && (
+                <>
+                  <p className="text-3xl font-bold">PKR {parseInt(paymentParams.amount).toLocaleString()}</p>
+                  <p className="text-sm opacity-75 mt-1">(${paymentParams.amountUSD} USD)</p>
+                </>
+              )}
             </div>
+
+            {processing ? (
+              <div className="text-center py-8">
+                <div className="w-12 h-12 mx-auto mb-4 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                <p className="text-slate-600">Connecting to payment gateway...</p>
+                <p className="text-sm text-slate-500 mt-2">Please wait, this may take a moment</p>
+              </div>
+            ) : null}
 
             <div className="flex items-center gap-3 mb-6 text-sm text-slate-500">
               <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -155,15 +261,6 @@ export default function PaymentPage({ params }: { params: Promise<{ applicationI
               </svg>
               <span>Secured by Bank Alfalah</span>
             </div>
-
-            {processingPayment ? (
-              <div className="text-center py-8">
-                <div className="w-12 h-12 mx-auto mb-4 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                <p className="text-slate-600">Connecting to payment gateway...</p>
-              </div>
-            ) : null}
-
-            <div id="payment-form-container" className="hidden" />
 
             <Link
               href="/support"
