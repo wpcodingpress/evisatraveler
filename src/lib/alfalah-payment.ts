@@ -163,21 +163,22 @@ export function createHandshakeFormData(payment: PaymentRequest): PaymentFormDat
   const currency = payment.currency || 'PKR';
   const transactionTypeId = payment.transactionTypeId || '3';
   
-  const params: Record<string, string> = {
-    HS_ChannelId: '1001',
-    HS_MerchantId: config.merchantId,
-    HS_StoreId: config.storeId,
-    HS_ReturnURL: config.returnUrl,
+const params: Record<string, string> = {
+    HS_ChannelId: '1002',
+    HS_IsRedirectionRequest: '1',
     HS_MerchantHash: config.merchantHash,
-    HS_MerchantUsername: config.username,
+    HS_MerchantId: config.merchantId,
     HS_MerchantPassword: config.password,
+    HS_MerchantUsername: config.username,
+    HS_ReturnURL: config.returnUrl,
+    HS_StoreId: config.storeId,
     HS_TransactionReferenceNumber: payment.transactionReferenceNumber,
   };
   
   const requestHash = generateHandshakeHash(params, config.key1, config.key2);
   
   return {
-    channelId: '1001',
+    channelId: '1002',
     merchantId: config.merchantId,
     storeId: config.storeId,
     returnUrl: config.returnUrl,
