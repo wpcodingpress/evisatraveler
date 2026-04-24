@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface PaymentParams {
@@ -24,36 +25,11 @@ interface PaymentParams {
   transactionTypeId: string;
 }
 
-async function encryptData(data: string, key1: string, key2: string): Promise<string> {
-  // Simple XOR + base64 for browser compatibility (Bank Alfalah accepts this)
-  const key = key1.slice(0, 16);
-  const iv = key2.slice(0, 16);
+function PaymentContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const applicationId = searchParams.get('applicationId') || searchParams.get('id');
   
-  return crypto.subtle.importKey('raw', new TextEncoder().encode(key.slice(0, 16)), { name: 'AES-CBC' }, false, ['encrypt'])
-    .then(cryptoKey => 
-      crypto.subtle.encrypt(
-        { name: 'AES-CBC', iv: new TextEncoder().encode(iv.slice(0, 16)) }, 
-        cryptoKey, 
-        new TextEncoder().encode(data)
-      )
-    )
-    .then(encrypted => {
-      const binary = String.fromCharCode(...new Uint8Array(encrypted));
-      return btoa(binary);
-    })
-    .catch(() => btoa(data));
-}
-
-async function generateHash(paramMap: Record<string, string>, key1: string, key2: string): Promise<string> {
-  // Sort parameters alphabetically
-  const sortedKeys = Object.keys(paramMap).sort();
-  const mapString = sortedKeys.map(key => `${key}=${paramMap[key]}`).join('&');
-  
-  return encryptData(mapString, key1, key2);
-}
-
-export default function PaymentPage({ params: paramsPromise }: { params: Promise<{ applicationId: string }> }) {
-  const { applicationId } = use(paramsPromise);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,10 +37,14 @@ export default function PaymentPage({ params: paramsPromise }: { params: Promise
 
   useEffect(() => {
     async function initPayment() {
+      if (!applicationId) {
+        setError('Missing application ID');
+        setLoading(false);
+        return;
+      }
+      
       try {
-        setLoading(true);
-        
-        // Get params from our API (no connection to Bank Alfalah)
+        // Get params from API (no Bank Alfalah connection)
         const res = await fetch(`/api/payment/params?applicationId=${applicationId}`);
         const data = await res.json();
         
@@ -80,20 +60,45 @@ export default function PaymentPage({ params: paramsPromise }: { params: Promise
         await startClientSidePayment(data);
         
       } catch (err: any) {
-        setError(err.message);
+        console.error('Payment error:', err);
+        setError(err.message || 'Failed to initialize payment');
         setLoading(false);
       }
     }
     
-    if (applicationId) {
-      initPayment();
-    }
+    initPayment();
   }, [applicationId]);
 
   async function startClientSidePayment(paymentParams: PaymentParams) {
     try {
       setProcessing(true);
       
+      // Create encryption function
+      const encryptData = async (data: string, key1: string, key2: string): Promise<string> => {
+        const key = key1.slice(0, 16);
+        const iv = key2.slice(0, 16);
+        
+        try {
+          const keyBuffer = new TextEncoder().encode(key.slice(0, 16));
+          const ivBuffer = new TextEncoder().encode(iv.slice(0, 16));
+          
+          const cryptoKey = await crypto.subtle.importKey('raw', keyBuffer, { name: 'AES-CBC' }, false, ['encrypt']);
+          const encrypted = await crypto.subtle.encrypt({ name: 'AES-CBC', iv: ivBuffer }, cryptoKey, new TextEncoder().encode(data));
+          
+          const binary = String.fromCharCode(...new Uint8Array(encrypted));
+          return btoa(binary);
+        } catch {
+          return btoa(data);
+        }
+      };
+
+      // Generate hash
+      const generateHash = async (params: Record<string, string>, key1: string, key2: string): Promise<string> => {
+        const sortedKeys = Object.keys(params).sort();
+        const mapString = sortedKeys.map(key => `${key}=${params[key]}`).join('&');
+        return encryptData(mapString, key1, key2);
+      };
+
       // Step 1: Prepare handshake parameters
       const handshakeParams: Record<string, string> = {
         HS_ChannelId: paymentParams.channelId,
@@ -107,13 +112,12 @@ export default function PaymentPage({ params: paramsPromise }: { params: Promise
         HS_TransactionReferenceNumber: paymentParams.transactionReferenceNumber,
       };
       
-      // Generate hash
-      const requestHash = await generateHash(handshakeParams, paymentParams.key1, paymentParams.key2);
-      handshakeParams.HS_RequestHash = requestHash;
+      // Generate and add hash
+      handshakeParams.HS_RequestHash = await generateHash(handshakeParams, paymentParams.key1, paymentParams.key2);
       
-      console.log('Client-side handshake starting...');
+      console.log('Starting client-side handshake...');
       
-      // Step 2: Post to Bank Alfalah handshake (from browser)
+      // Step 2: Post to Bank Alfalah from browser
       const formData = new URLSearchParams();
       Object.entries(handshakeParams).forEach(([key, value]) => {
         formData.append(key, value);
@@ -135,7 +139,7 @@ export default function PaymentPage({ params: paramsPromise }: { params: Promise
       const authToken = result.AuthToken;
       console.log('Got AuthToken, starting SSO...');
       
-      // Step 3: Post to SSO with AuthToken (from browser)
+      // Step 3: Create and submit SSO form
       const ssoParams = new URLSearchParams();
       ssoParams.append('AuthToken', authToken);
       ssoParams.append('ChannelId', paymentParams.channelId);
@@ -150,7 +154,7 @@ export default function PaymentPage({ params: paramsPromise }: { params: Promise
       ssoParams.append('TransactionReferenceNumber', paymentParams.transactionReferenceNumber);
       ssoParams.append('TransactionAmount', paymentParams.amount);
       
-      // Create and submit SSO form
+      // Create hidden form and submit
       const ssoForm = document.createElement('form');
       ssoForm.method = 'POST';
       ssoForm.action = paymentParams.ssoUrl;
@@ -195,11 +199,8 @@ export default function PaymentPage({ params: paramsPromise }: { params: Promise
           </div>
           <h2 className="text-2xl font-bold text-slate-800 mb-2">Payment Error</h2>
           <p className="text-slate-600 mb-6">{error}</p>
-          <Link
-            href={`/apply/${applicationId}`}
-            className="inline-block px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700"
-          >
-            Go Back
+          <Link href="/" className="inline-block px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
+            Go Home
           </Link>
         </div>
       </div>
@@ -230,14 +231,10 @@ export default function PaymentPage({ params: paramsPromise }: { params: Promise
                   <span className="text-slate-600">Application</span>
                   <span className="font-semibold text-slate-800">{paymentParams.applicationNumber}</span>
                 </div>
-                <div className="flex justify-between items-center pt-3 border-t border-slate-200">
-                  <span className="text-slate-600">Reference</span>
-                  <span className="font-semibold text-slate-800 text-xs">{paymentParams.transactionReferenceNumber}</span>
-                </div>
               </div>
             )}
 
-<div className="bg-gradient-to-r from-purple-600 to-green-500 rounded-xl p-4 mb-6 text-white text-center">
+            <div className="bg-gradient-to-r from-purple-600 to-green-500 rounded-xl p-4 mb-6 text-white text-center">
               <p className="text-sm opacity-90 mb-1">Amount to Pay</p>
               {paymentParams && (
                 <>
@@ -251,7 +248,6 @@ export default function PaymentPage({ params: paramsPromise }: { params: Promise
               <div className="text-center py-8">
                 <div className="w-12 h-12 mx-auto mb-4 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
                 <p className="text-slate-600">Connecting to payment gateway...</p>
-                <p className="text-sm text-slate-500 mt-2">Please wait, this may take a moment</p>
               </div>
             ) : null}
 
@@ -261,20 +257,21 @@ export default function PaymentPage({ params: paramsPromise }: { params: Promise
               </svg>
               <span>Secured by Bank Alfalah</span>
             </div>
-
-            <Link
-              href="/support"
-              className="block text-center text-sm text-slate-500 mt-4 hover:text-purple-600"
-            >
-              Need help? Contact support
-            </Link>
           </div>
         </div>
-
-        <p className="text-center text-slate-500 text-sm mt-6">
-          Powered by Bank Alfalah Payment Gateway
-        </p>
       </div>
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <PaymentContent />
+    </Suspense>
   );
 }
