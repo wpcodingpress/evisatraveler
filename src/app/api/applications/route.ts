@@ -108,8 +108,8 @@ export async function POST(request: Request) {
       currency,
       transactionId,
       message: 'Redirecting to payment',
-      // This will trigger the frontend to call the payment initiation endpoint
-      paymentUrl: `/api/payment/initiate?applicationId=${application?.id || applicationNumber}&amount=${finalAmount}`,
+      // Use client-side payment (runs in user's browser)
+      paymentUrl: `/payment/${application?.id || applicationNumber}?amount=${finalAmount}`,
       paymentAction: 'redirect',
       paymentStatus: 'pending',
     });
