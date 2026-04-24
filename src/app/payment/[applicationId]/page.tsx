@@ -7,43 +7,6 @@ interface PaymentParams {
   amount: string;
   amountUSD: string;
   transactionReferenceNumber: string;
-  merchantId: string;
-  storeId: string;
-  merchantUsername: string;
-  merchantPassword: string;
-  merchantHash: string;
-  key1: string;
-  key2: string;
-  returnUrl: string;
-  handshakeUrl: string;
-  ssoUrl: string;
-  channelId: string;
-  channelIdApi: string;
-}
-
-/**
- * Bank Alfalah Payment Page
- * 
- * Implementation per official documentation:
- * 1. POST to /HS/HS/HS (handshake) - get AuthToken
- * 2. POST to /SSO/SSO/SSO (SSO) - get payment page
- * 3. Redirect to payment page
- */
-
-async function encryptHash(data: string, key1: string, key2: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const key = encoder.encode(key1.slice(0, 16));
-  const iv = encoder.encode(key2.slice(0, 16));
-  
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw', key, { name: 'AES-CBC' }, false, ['encrypt']
-  );
-  
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-CBC', iv }, cryptoKey, encoder.encode(data)
-  );
-  
-  return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
 }
 
 function PaymentPage({ params: pageParams }: { params: { applicationId: string } }) {
@@ -52,8 +15,6 @@ function PaymentPage({ params: pageParams }: { params: { applicationId: string }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [params, setParams] = useState<PaymentParams | null>(null);
-  const [stage, setStage] = useState<'init' | 'handshake' | 'sso' | 'done'>('init');
-  const [authToken, setAuthToken] = useState<string | null>(null);
 
   // Step 1: Load payment params from API
   useEffect(() => {
@@ -83,7 +44,6 @@ function PaymentPage({ params: pageParams }: { params: { applicationId: string }
           setError(data.error);
         } else {
           setParams(data);
-          setStage('handshake');
         }
         setLoading(false);
       })
@@ -94,152 +54,62 @@ function PaymentPage({ params: pageParams }: { params: { applicationId: string }
       });
   }, [appId]);
 
-  // Step 2: Handshake - POST to /HS/HS/HS to get AuthToken
+  // Step 2: Call /api/payment/initiate to get Bank Alfalah payment page HTML
   useEffect(() => {
-    if (!params || stage !== 'handshake' || !params.handshakeUrl) return;
+    if (!params || !appId) return;
     
     (async () => {
       try {
-        const p = params;
+        const amount = parseInt(params.amount || '0') / 280; // Convert PKR to USD
         
-        // Build map string with ALL parameters, sorted alphabetically
-        // Use ChannelId for Page Redirection (Alfa Wallet, Card, Account)
-        const mapString = [
-          `HS_ChannelId=${p.channelId}`,
-          `HS_IsRedirectionRequest=1`,
-          `HS_MerchantHash=${p.merchantHash}`,
-          `HS_MerchantId=${p.merchantId}`,
-          `HS_MerchantPassword=${p.merchantPassword}`,
-          `HS_MerchantUsername=${p.merchantUsername}`,
-          `HS_ReturnURL=${p.returnUrl}`,
-          `HS_StoreId=${p.storeId}`,
-          `HS_TransactionReferenceNumber=${p.transactionReferenceNumber}`,
-        ].sort().join('&');
+        console.log('Calling /api/payment/initiate...');
         
-        console.log('Map string:', mapString);
-        
-        // Encrypt to create RequestHash
-        const requestHash = await encryptHash(mapString, p.key1, p.key2);
-        console.log('Request hash:', requestHash);
-        
-        // Create form data with ChannelId=1001 (Page Redirection)
-        const formData = new URLSearchParams();
-        formData.append('HS_ChannelId', '1001');
-        formData.append('HS_MerchantId', p.merchantId);
-        formData.append('HS_StoreId', p.storeId);
-        formData.append('HS_ReturnURL', p.returnUrl);
-        formData.append('HS_MerchantHash', p.merchantHash);
-        formData.append('HS_MerchantUsername', p.merchantUsername);
-        formData.append('HS_MerchantPassword', p.merchantPassword);
-        formData.append('HS_TransactionReferenceNumber', p.transactionReferenceNumber);
-        formData.append('HS_RequestHash', requestHash);
-        formData.append('HS_IsRedirectionRequest', '1');
-        
-        // POST to handshake URL (official: payments.bankalfalah.com/HS/HS/HS)
-        const response = await fetch(p.handshakeUrl, {
+        const response = await fetch('/api/payment/initiate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: formData.toString(),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            applicationId: appId,
+            amount: amount,
+          }),
         });
-        
-        const responseText = await response.text();
-        console.log('Handshake response:', responseText);
-        
-        // Parse AuthToken from JSON response
-        try {
-          const json = JSON.parse(responseText);
-          if (json.success === 'true' || json.success === true) {
-            setAuthToken(json.AuthToken || json.authToken);
-            setStage('sso');
-          } else {
-            throw new Error(json.ErrorMessage || json.errorMessage || 'Handshake failed');
-          }
-        } catch (e) {
-          // Try regex for token
-          const match = responseText.match(/AuthToken["\s]*[:=]["\s]*(["'])([\w+/=-]+)\1/);
-          if (match) {
-            setAuthToken(match[2]);
-            setStage('sso');
-          } else {
-            throw new Error(responseText.substring(0, 100));
-          }
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('Initiate API error:', text);
+          throw new Error(`Initiate failed: ${response.status}`);
         }
+
+        const contentType = response.headers.get('content-type');
+        
+        // If JSON response (error or redirect)
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          if (data.url) {
+            // Redirect to return URL
+            window.location.href = data.url;
+            return;
+          }
+          throw new Error(data.error || 'Initiate failed');
+        }
+
+        // HTML response - payment page HTML from Bank Alfalah
+        const html = await response.text();
+        console.log('Received payment page HTML, length:', html.length);
+        
+        if (html.length < 100) {
+          throw new Error('Received empty or invalid HTML response');
+        }
+
+        // Write HTML to document to show Bank Alfalah payment page
+        document.open();
+        document.write(html);
+        document.close();
       } catch (err: any) {
-        console.error('Handshake error:', err);
+        console.error('Payment initiate error:', err);
         setError(err.message || 'Failed to connect to payment gateway');
       }
     })();
-  }, [params, stage]);
-
-  // Step 3: SSO - POST to /SSO/SSO/SSO with AuthToken
-  useEffect(() => {
-    if (stage !== 'sso' || !authToken || !params) return;
-    
-    (async () => {
-      try {
-        const p = params;
-        
-        // Build SSO map string with HS_ prefix, sorted alphabetically
-        const ssoMapString = [
-          `HS_AuthToken=${authToken}`,
-          `HS_ChannelId=${p.channelId}`,
-          `HS_Currency=PKR`,
-          `HS_MerchantHash=${p.merchantHash}`,
-          `HS_MerchantId=${p.merchantId}`,
-          `HS_MerchantPassword=${p.merchantPassword}`,
-          `HS_MerchantUsername=${p.merchantUsername}`,
-          `HS_ReturnURL=${p.returnUrl}`,
-          `HS_StoreId=${p.storeId}`,
-          `HS_TransactionAmount=${p.amount}`,
-          `HS_TransactionReferenceNumber=${p.transactionReferenceNumber}`,
-          `HS_TransactionTypeId=3`,
-        ].sort().join('&');
-        
-        console.log('SSO Map string:', ssoMapString);
-        
-        // Encrypt SSO request hash
-        const ssoRequestHash = await encryptHash(ssoMapString, p.key1, p.key2);
-        
-        // Create SSO form data with HS_ prefix
-        const ssoFormData = new URLSearchParams();
-        ssoFormData.append('HS_AuthToken', authToken);
-        ssoFormData.append('HS_ChannelId', p.channelId);
-        ssoFormData.append('HS_Currency', 'PKR');
-        ssoFormData.append('HS_ReturnURL', p.returnUrl);
-        ssoFormData.append('HS_MerchantId', p.merchantId);
-        ssoFormData.append('HS_StoreId', p.storeId);
-        ssoFormData.append('HS_MerchantHash', p.merchantHash);
-        ssoFormData.append('HS_MerchantUsername', p.merchantUsername);
-        ssoFormData.append('HS_MerchantPassword', p.merchantPassword);
-        ssoFormData.append('HS_TransactionTypeId', '3');
-        ssoFormData.append('HS_TransactionReferenceNumber', p.transactionReferenceNumber);
-        ssoFormData.append('HS_TransactionAmount', p.amount);
-        ssoFormData.append('HS_RequestHash', ssoRequestHash);
-        
-        // POST to SSO URL (official: payments.bankalfalah.com/SSO/SSO/SSO)
-        // According to docs, this returns the payment page HTML
-        const ssoResponse = await fetch(p.ssoUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: ssoFormData.toString(),
-        });
-        
-        const ssoText = await ssoResponse.text();
-        console.log('SSO response length:', ssoText.length);
-        
-        // SSO response is HTML - replace current page with it
-        // This will show Bank Alfalah payment page
-        document.open();
-        document.write(ssoText);
-        document.close();
-        
-        setStage('done');
-      } catch (err: any) {
-        console.error('SSO error:', err);
-        setError(err.message || 'Failed to redirect to payment');
-      }
-    })();
-  }, [stage, authToken, params]);
+  }, [params, appId]);
 
   // Loading state
   if (loading) {
@@ -262,7 +132,7 @@ function PaymentPage({ params: pageParams }: { params: { applicationId: string }
     );
   }
 
-  // Main payment UI
+  // Main payment UI (shown briefly before redirect)
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -286,12 +156,7 @@ function PaymentPage({ params: pageParams }: { params: { applicationId: string }
         
         <div style={styles.status}>
           <div style={styles.spinner}></div>
-          <p>
-            {stage === 'init' && 'Loading...'}
-            {stage === 'handshake' && 'Connecting to Bank Alfalah...'}
-            {stage === 'sso' && 'Redirecting to payment...'}
-            {stage === 'done' && 'Opening payment page...'}
-          </p>
+          <p>Connecting to Bank Alfalah...</p>
         </div>
       </div>
     </div>
