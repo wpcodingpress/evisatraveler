@@ -36,6 +36,7 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData.toString(),
+      signal: AbortSignal.timeout(30000),
     });
 
     const text = await response.text();
@@ -57,7 +58,17 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
     };
   } catch (error: any) {
     console.error('Handshake error:', error);
-    return { success: false, error: error.message };
+    
+    // Check for specific error types
+    if (error.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' || error.code === 'ETIMEDOUT') {
+      return { 
+        success: false, 
+        error: 'Unable to connect to payment gateway. Please try again later or contact support.' + 
+               ' (Network timeout - your server may have connectivity issues with the payment provider)' 
+      };
+    }
+    
+    return { success: false, error: error.message || 'Failed to connect to payment gateway' };
   }
 }
 
