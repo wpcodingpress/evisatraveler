@@ -76,13 +76,13 @@ function PaymentContent({ appId }: { appId: string }) {
   async function startClientSidePayment(paymentParams: PaymentParams) {
     try {
       setProcessing(true);
+      console.log('Starting client-side payment flow...');
       
       // Encryption function
       const encryptData = async (data: string, key1: string, key2: string): Promise<string> => {
-        const key = key1.slice(0, 16);
-        const iv = key2.slice(0, 16);
-        
         try {
+          const key = key1.slice(0, 16);
+          const iv = key2.slice(0, 16);
           const keyBuffer = new TextEncoder().encode(key.slice(0, 16));
           const ivBuffer = new TextEncoder().encode(iv.slice(0, 16));
           
@@ -91,12 +91,12 @@ function PaymentContent({ appId }: { appId: string }) {
           
           const binary = String.fromCharCode(...new Uint8Array(encrypted));
           return btoa(binary);
-        } catch {
+        } catch (e) {
+          console.error('Encryption error:', e);
           return btoa(data);
         }
       };
 
-      // Generate hash
       const generateHash = async (params: Record<string, string>, key1: string, key2: string): Promise<string> => {
         const sortedKeys = Object.keys(params).sort();
         const mapString = sortedKeys.map(key => `${key}=${params[key]}`).join('&');
@@ -118,21 +118,53 @@ function PaymentContent({ appId }: { appId: string }) {
       
       handshakeParams.HS_RequestHash = await generateHash(handshakeParams, paymentParams.key1, paymentParams.key2);
       
-      console.log('Starting client-side handshake...');
+      console.log('Submitting handshake to Bank Alfalah...');
       
-      // Post to Bank Alfalah
+      // Post to Bank Alfalah - use no-cors mode to handle errors differently
       const formData = new URLSearchParams();
       Object.entries(handshakeParams).forEach(([key, value]) => {
         formData.append(key, value);
       });
       
-      const response = await fetch(paymentParams.handshakeUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData.toString(),
-      });
+      let result;
+      try {
+        const response = await fetch(paymentParams.handshakeUrl, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+          },
+          body: formData.toString(),
+        });
+        
+        const text = await response.text();
+        console.log('Handshake response text:', text);
+        
+        try {
+          result = JSON.parse(text);
+        } catch {
+          // If can't parse JSON but got response, might be redirect html
+          if (text.includes('AuthToken')) {
+            // Try to extract AuthToken from HTML response
+            const match = text.match(/AuthToken["']?\s*[:=]\s*["']([^"']+)["']/);
+            if (match) {
+              result = { success: true, AuthToken: match[1] };
+            }
+          }
+          if (!result) {
+            // Use redirect fallback since we got a response
+            await redirectToPaymentForm(paymentParams, handshakeParams);
+            return;
+          }
+        }
+      } catch (fetchErr: any) {
+        console.error('Fetch error (expected if CORS issue):', fetchErr.message);
+        // Use redirect fallback
+        await redirectToPaymentForm(paymentParams, handshakeParams);
+        return;
+      }
       
-      const result = await response.json();
       console.log('Handshake result:', result);
       
       if (!result.success || !result.AuthToken) {
@@ -140,9 +172,9 @@ function PaymentContent({ appId }: { appId: string }) {
       }
       
       const authToken = result.AuthToken;
-      console.log('Got AuthToken, starting SSO...');
+      console.log('Got AuthToken, creating SSO form...');
       
-      // Create and submit SSO form
+      // Now submit to SSO with AuthToken
       const ssoParams = new URLSearchParams();
       ssoParams.append('AuthToken', authToken);
       ssoParams.append('ChannelId', paymentParams.channelId);
@@ -157,9 +189,11 @@ function PaymentContent({ appId }: { appId: string }) {
       ssoParams.append('TransactionReferenceNumber', paymentParams.transactionReferenceNumber);
       ssoParams.append('TransactionAmount', paymentParams.amount);
       
+      // Create form and submit
       const ssoForm = document.createElement('form');
       ssoForm.method = 'POST';
       ssoForm.action = paymentParams.ssoUrl;
+      ssoForm.target = '_self';
       
       for (const [key, value] of ssoParams.entries()) {
         const input = document.createElement('input');
@@ -170,13 +204,37 @@ function PaymentContent({ appId }: { appId: string }) {
       }
       
       document.body.appendChild(ssoForm);
+      console.log('Submitting SSO form...');
       ssoForm.submit();
       
     } catch (err: any) {
       console.error('Payment error:', err);
-      setError(err.message || 'Payment failed');
+      setError(err.message || 'Please try again. If problem persists, contact support.');
       setProcessing(false);
     }
+  }
+  
+  // Fallback: redirect directly via form - works even if fetch fails
+  async function redirectToPaymentForm(paymentParams: PaymentParams, handshakeParams: Record<string, string>) {
+    console.log('Using redirect form fallback - submitting directly to Bank Alfalah...');
+    setProcessing(false);
+    
+    // Create handover form to Bank Alfalah
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = paymentParams.handshakeUrl;
+    form.target = '_blank'; // Open in new tab to avoid CORS issues
+    
+    for (const [key, value] of Object.entries(handshakeParams)) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
   }
 
   if (loading) {
