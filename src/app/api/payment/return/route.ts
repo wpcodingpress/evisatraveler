@@ -12,22 +12,23 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { checkTransactionStatus } from '@/lib/alfalah-payment';
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const path = request.nextUrl.pathname;
-    
-    console.log('Payment return URL:', request.nextUrl.href);
-    console.log('Payment return path:', path);
-    
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://evisatraveler.com';
     
     let transactionStatus = searchParams.get('TS') || searchParams.get('transactionStatus');
     let responseCode = searchParams.get('RC') || searchParams.get('responseCode');
     let responseDescription = searchParams.get('RD') || searchParams.get('responseDescription');
-    let orderId = searchParams.get('O') || searchParams.get('orderId') || searchParams.get('transactionId');
+    let orderId = searchParams.get('O') || searchParams.get('orderId') || searchParams.get('transactionId') || searchParams.get('txn');
+    
+    console.log('Payment return URL:', request.nextUrl.href);
+    
+    if (!orderId) {
+      console.error('No order ID in payment return');
+      return NextResponse.redirect(new URL(`${siteUrl}/payment/failed?error=no_order`, siteUrl));
+    }
     
     console.log('Parsed payment response:', {
       transactionStatus,
@@ -35,11 +36,6 @@ export async function GET(request: NextRequest) {
       responseDescription,
       orderId,
     });
-    
-    if (!orderId) {
-      console.error('No order ID in payment return');
-      return NextResponse.redirect(new URL(`${siteUrl}/payment/failed?error=no_order`, siteUrl));
-    }
     
     const application = await prisma.application.findFirst({
       where: {
