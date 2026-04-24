@@ -64,19 +64,32 @@ function PaymentPage({ params: pageParams }: { params: { applicationId: string }
     }
     
     fetch(`/api/payment/params?applicationId=${appId}`)
-      .then(res => res.json())
-       .then(data => {
-           if (data.error) {
-             setError(data.error);
-           } else {
-             setParams(data);
-             setStage('handshake');
-           }
-           setLoading(false);
-         })
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          console.error('API error response:', text.substring(0, 200));
+          throw new Error(`API returned ${res.status}`);
+        }
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await res.text();
+          console.error('Non-JSON response:', text.substring(0, 200));
+          throw new Error('API returned non-JSON response');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data.error) {
+          setError(data.error);
+        } else {
+          setParams(data);
+          setStage('handshake');
+        }
+        setLoading(false);
+      })
       .catch(err => {
         console.error('Load error:', err);
-        setError('Failed to load payment');
+        setError('Failed to load payment: ' + err.message);
         setLoading(false);
       });
   }, [appId]);
