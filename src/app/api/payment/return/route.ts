@@ -18,12 +18,31 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://evisatraveler.com';
     
+    // Bank Alfalah handshake response parameters
+    let success = searchParams.get('success');
+    let authToken = searchParams.get('AuthToken') || searchParams.get('authToken');
+    let errorMessage = searchParams.get('ErrorMessage') || searchParams.get('errorMessage');
+    
+    // Payment completion parameters
     let transactionStatus = searchParams.get('TS') || searchParams.get('transactionStatus');
     let responseCode = searchParams.get('RC') || searchParams.get('responseCode');
     let responseDescription = searchParams.get('RD') || searchParams.get('responseDescription');
     let orderId = searchParams.get('O') || searchParams.get('orderId') || searchParams.get('transactionId') || searchParams.get('txn');
     
     console.log('Payment return URL:', request.nextUrl.href);
+    console.log('All params:', { success, authToken, errorMessage, transactionStatus, responseCode, orderId });
+    
+    // Handle handshake failure
+    if (success === 'false' || errorMessage) {
+      console.error('Handshake failed:', errorMessage);
+      return NextResponse.redirect(new URL(`${siteUrl}/payment/failed?error=handshake_failed&reason=${encodeURIComponent(errorMessage || 'Payment gateway error')}`, siteUrl));
+    }
+    
+    // Handle handshake success with AuthToken (but no payment yet)
+    if (!orderId && authToken) {
+      console.log('Handshake successful, AuthToken received. Waiting for payment completion...');
+      return NextResponse.redirect(new URL(`${siteUrl}/payment/pending?token=${authToken.substring(0, 20)}`, siteUrl));
+    }
     
     if (!orderId) {
       console.error('No order ID in payment return');

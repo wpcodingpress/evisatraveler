@@ -51,7 +51,7 @@ interface PaymentFormData {
   merchantUsername: string;
   merchantPassword: string;
   transactionReferenceNumber: string;
-  requestHash: string;
+  requestHash?: string;
   isRedirectionRequest?: string;
   authToken?: string;
   currency?: string;
@@ -413,7 +413,7 @@ export function createSSOFormHtml(formData: PaymentFormData): string {
     <div class="spinner"></div>
     <h2>Redirecting to Secure Payment</h2>
     <p>You will be redirected to enter your payment details...</p>
-    <form id="ssoForm" method="POST" action="${gatewayUrl}">
+<form id="ssoForm" method="POST" action="${gatewayUrl}">
       <input type="hidden" name="AuthToken" value="${formData.authToken}">
       <input type="hidden" name="ChannelId" value="${formData.channelId}">
       <input type="hidden" name="Currency" value="${formData.currency}">
@@ -423,10 +423,9 @@ export function createSSOFormHtml(formData: PaymentFormData): string {
       <input type="hidden" name="MerchantHash" value="${formData.merchantHash}">
       <input type="hidden" name="MerchantUsername" value="${formData.merchantUsername}">
       <input type="hidden" name="MerchantPassword" value="${formData.merchantPassword}">
-      <input type="hidden" name="TransactionTypeId" value="${formData.transactionTypeId}">
+      <input type="hidden" name="TransactionTypeId" value="${formData.transactionTypeId || '3'}">
       <input type="hidden" name="TransactionReferenceNumber" value="${formData.transactionReferenceNumber}">
       <input type="hidden" name="TransactionAmount" value="${formData.transactionAmount}">
-      <input type="hidden" name="RequestHash" value="${formData.requestHash}">
     </form>
     <div class="secure">
       <svg fill="currentColor" viewBox="0 0 20 20">
