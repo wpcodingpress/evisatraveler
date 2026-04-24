@@ -10,11 +10,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createHandshakeFormData, createHandshakeFormHtml, createSSOFormHtml, convertUsdToPkr, generateTransactionRef } from '@/lib/alfalah-payment';
+import { createHandshakeFormData, createSSOFormData, createSSOFormHtml, convertUsdToPkr, generateTransactionRef, generateHandshakeHash } from '@/lib/alfalah-payment';
 import { prisma } from '@/lib/prisma';
 
 async function doHandshake(config: any): Promise<{ success: boolean; authToken?: string; returnUrl?: string; error?: string }> {
-  const params = {
+  const params: Record<string, string> = {
     HS_ChannelId: '1002',
     HS_IsRedirectionRequest: '1',
     HS_MerchantHash: config.merchantHash,
@@ -26,10 +26,14 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
     HS_TransactionReferenceNumber: config.transactionRef,
   };
 
+  // Generate RequestHash using the proper function
+  const requestHash = generateHandshakeHash(params, config.key1, config.key2);
+
   const formData = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     formData.append(key, value);
   });
+  formData.append('HS_RequestHash', requestHash);
 
   try {
     const response = await fetch('https://payments.bankalfalah.com/HS/HS/HS', {
@@ -59,7 +63,6 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
   } catch (error: any) {
     console.error('Handshake error:', error);
     
-    // Check for specific error types
     if (error.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' || error.code === 'ETIMEDOUT') {
       return { 
         success: false, 
@@ -138,39 +141,15 @@ export async function POST(request: NextRequest) {
     const authToken = handshakeResult.authToken!;
     console.log('Handshake successful, AuthToken:', authToken.substring(0, 30) + '...');
 
-    // Now create SSO form data
-    const ssoParams = {
-      AuthToken: authToken,
-      ChannelId: '1002',
-      Currency: 'PKR',
-      ReturnURL: config.returnUrl,
-      MerchantId: config.merchantId,
-      StoreId: config.storeId,
-      MerchantHash: config.merchantHash,
-      MerchantUsername: config.username,
-      MerchantPassword: config.password,
-      TransactionTypeId: '3',
-      TransactionReferenceNumber: transactionRef,
-      TransactionAmount: config.amount.toString(),
+    // Create SSO form data with proper hash generation
+    const paymentRequest = {
+      transactionReferenceNumber: transactionRef,
+      amount: config.amount,
+      currency: 'PKR',
+      transactionTypeId: '3',
     };
 
-    const ssoFormData = {
-      authToken: ssoParams.AuthToken,
-      channelId: ssoParams.ChannelId,
-      currency: ssoParams.Currency,
-      returnUrl: ssoParams.ReturnURL,
-      merchantId: ssoParams.MerchantId,
-      storeId: ssoParams.StoreId,
-      merchantHash: ssoParams.MerchantHash,
-      merchantUsername: ssoParams.MerchantUsername,
-      merchantPassword: ssoParams.MerchantPassword,
-      transactionTypeId: ssoParams.TransactionTypeId,
-      transactionReferenceNumber: ssoParams.TransactionReferenceNumber,
-      transactionAmount: ssoParams.TransactionAmount,
-    };
-
-    console.log('Creating SSO form with params:', JSON.stringify(ssoParams));
-
+    const ssoFormData = createSSOFormData(paymentRequest, authToken);
     const html = createSSOFormHtml(ssoFormData);
 
     return new NextResponse(html, {
@@ -254,21 +233,15 @@ export async function GET(request: NextRequest) {
 
     const authToken = handshakeResult.authToken!;
 
-    const ssoFormData = {
-      authToken: authToken,
-      channelId: '1002',
-      currency: 'PKR',
-      returnUrl: config.returnUrl,
-      merchantId: config.merchantId,
-      storeId: config.storeId,
-      merchantHash: config.merchantHash,
-      merchantUsername: config.username,
-      merchantPassword: config.password,
-      transactionTypeId: '3',
+    // Create SSO form data with proper hash generation
+    const paymentRequest = {
       transactionReferenceNumber: transactionRef,
-      transactionAmount: config.amount.toString(),
+      amount: config.amount,
+      currency: 'PKR',
+      transactionTypeId: '3',
     };
 
+    const ssoFormData = createSSOFormData(paymentRequest, authToken);
     const html = createSSOFormHtml(ssoFormData);
 
     return new NextResponse(html, {

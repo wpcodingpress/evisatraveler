@@ -201,18 +201,18 @@ export function createSSOFormData(payment: PaymentRequest, authToken: string): P
   const amountStr = payment.amount.toFixed(2);
   
   const params: Record<string, string> = {
-    ChannelId: '1001',
-    MerchantId: config.merchantId,
-    StoreId: config.storeId,
-    ReturnURL: config.returnUrl,
-    MerchantHash: config.merchantHash,
-    MerchantUsername: config.username,
-    MerchantPassword: config.password,
-    TransactionTypeId: transactionTypeId,
-    TransactionReferenceNumber: payment.transactionReferenceNumber,
-    TransactionAmount: amountStr,
-    AuthToken: authToken,
-    Currency: currency,
+    HS_AuthToken: authToken,
+    HS_ChannelId: '1001',
+    HS_Currency: currency,
+    HS_MerchantHash: config.merchantHash,
+    HS_MerchantId: config.merchantId,
+    HS_MerchantPassword: config.password,
+    HS_MerchantUsername: config.username,
+    HS_ReturnURL: config.returnUrl,
+    HS_StoreId: config.storeId,
+    HS_TransactionAmount: amountStr,
+    HS_TransactionReferenceNumber: payment.transactionReferenceNumber,
+    HS_TransactionTypeId: transactionTypeId,
   };
   
   const mapString = generateMapString(params);
@@ -414,19 +414,20 @@ export function createSSOFormHtml(formData: PaymentFormData): string {
     <h2>Redirecting to Secure Payment</h2>
     <p>You will be redirected to enter your payment details...</p>
 <form id="ssoForm" method="POST" action="${gatewayUrl}">
-      <input type="hidden" name="AuthToken" value="${formData.authToken}">
-      <input type="hidden" name="ChannelId" value="${formData.channelId}">
-      <input type="hidden" name="Currency" value="${formData.currency}">
-      <input type="hidden" name="ReturnURL" value="${formData.returnUrl}">
-      <input type="hidden" name="MerchantId" value="${formData.merchantId}">
-      <input type="hidden" name="StoreId" value="${formData.storeId}">
-      <input type="hidden" name="MerchantHash" value="${formData.merchantHash}">
-      <input type="hidden" name="MerchantUsername" value="${formData.merchantUsername}">
-      <input type="hidden" name="MerchantPassword" value="${formData.merchantPassword}">
-      <input type="hidden" name="TransactionTypeId" value="${formData.transactionTypeId || '3'}">
-      <input type="hidden" name="TransactionReferenceNumber" value="${formData.transactionReferenceNumber}">
-      <input type="hidden" name="TransactionAmount" value="${formData.transactionAmount}">
-    </form>
+       <input type="hidden" name="HS_AuthToken" value="${formData.authToken}">
+       <input type="hidden" name="HS_ChannelId" value="${formData.channelId}">
+       <input type="hidden" name="HS_Currency" value="${formData.currency}">
+       <input type="hidden" name="HS_ReturnURL" value="${formData.returnUrl}">
+       <input type="hidden" name="HS_MerchantId" value="${formData.merchantId}">
+       <input type="hidden" name="HS_StoreId" value="${formData.storeId}">
+       <input type="hidden" name="HS_MerchantHash" value="${formData.merchantHash}">
+       <input type="hidden" name="HS_MerchantUsername" value="${formData.merchantUsername}">
+       <input type="hidden" name="HS_MerchantPassword" value="${formData.merchantPassword}">
+       <input type="hidden" name="HS_TransactionTypeId" value="${formData.transactionTypeId || '3'}">
+       <input type="hidden" name="HS_TransactionReferenceNumber" value="${formData.transactionReferenceNumber}">
+       <input type="hidden" name="HS_TransactionAmount" value="${formData.transactionAmount}">
+       <input type="hidden" name="HS_RequestHash" value="${formData.requestHash}">
+     </form>
     <div class="secure">
       <svg fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
