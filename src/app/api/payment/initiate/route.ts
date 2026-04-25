@@ -133,64 +133,122 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
 
   const requestHash = generateHandshakeHash(params, config.key1, config.key2);
 
+  // Build form data properly
   const formData = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     formData.append(key, value);
   });
   formData.append('HS_RequestHash', requestHash);
 
+  console.log('Handshake request payload:', formData.toString());
+
   try {
     const response = await fetch('https://payments.bankalfalah.com/HS/HS/HS', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json, text/html, */*',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Origin': 'https://evisatraveler.com',
+        'Referer': 'https://evisatraveler.com/',
+      },
       body: formData.toString(),
+      redirect: 'manual',
       signal: AbortSignal.timeout(30000),
     });
 
     const text = await response.text();
-    console.log('Handshake response:', text.substring(0, 200));
+    const status = response.status;
+    const contentType = response.headers.get('content-type') || '';
+    
+    console.log('Handshake response status:', status);
+    console.log('Handshake response content-type:', contentType);
+    console.log('Handshake response:', text.substring(0, 500));
 
+    // Check for redirect with token in URL
+    if (status === 302 || status === 301) {
+      const location = response.headers.get('location');
+      console.log('Redirect location:', location);
+      
+      if (location) {
+        const url = new URL(location, 'https://payments.bankalfalah.com');
+        const token = url.searchParams.get('AuthToken') || 
+                      url.searchParams.get('authToken') ||
+                      url.searchParams.get('token');
+        if (token) {
+          console.log('Found auth token in redirect URL');
+          return { success: true, authToken: token };
+        }
+      }
+    }
+
+    // Check for token in cookies
+    const setCookie = response.headers.get('set-cookie') || '';
+    const tokenMatch = setCookie.match(/AuthToken=([^;]+)/) || 
+                       setCookie.match(/authToken=([^;]+)/) ||
+                       setCookie.match(/token=([^;]+)/);
+    if (tokenMatch) {
+      console.log('Found auth token in cookie');
+      return { success: true, authToken: tokenMatch[1] };
+    }
+
+    // Try JSON parsing
     try {
       const data = JSON.parse(text);
-      console.log('Parsed handshake data:', data);
+      console.log('Parsed handshake data:', JSON.stringify(data));
       
       const authToken = data.AuthToken || data.authToken || data.ResponseAuthToken;
       
       if (authToken) {
-        return {
-          success: true,
-          authToken: authToken,
-        };
+        return { success: true, authToken: authToken };
       }
       
-      const responseCode = data.ResponseCode || data.responseCode || data.ResponseStatus;
-      if (responseCode === '00' || responseCode === '000' || responseCode === 'Success') {
-        return {
-          success: true,
-          authToken: data.AuthToken || data.authToken,
-        };
+      const responseCode = data.ResponseCode || data.responseCode || data.ResponseStatus || data.status;
+      if (responseCode === '00' || responseCode === '000' || responseCode === 'Success' || responseCode === 0) {
+        return { success: true, authToken: data.AuthToken || data.authToken };
       }
       
       return {
         success: false,
-        error: data.ResponseMessage || data.ErrorMessage || data.errorMessage || 'Invalid Request',
+        error: data.ResponseMessage || data.ErrorMessage || data.errorMessage || data.Message || 'Invalid Request',
       };
     } catch {
-      // Try multiple regex patterns for various response formats
+      // Try regex patterns for token extraction
       const patterns = [
-        /"AuthToken"\s*[:=]\s*(["'])([\w+/=-]+)\1/,
-        /AuthToken["\s]*[:=]["\s]*(["'])([\w+/=-]+)\1/,
-        /authToken["\s]*[:=]["\s]*(["'])([\w+/=-]+)\1/,
-        /ResponseAuthToken["\s]*[:=]["\s]*(["'])([\w+/=-]+)\1/,
+        /"AuthToken"\s*:\s*"?([\w+/=-]+)"?/,
+        /AuthToken\s*[:=]\s*([\w+/=-]+)/,
+        /authToken\s*[:=]\s*([\w+/=-]+)/,
+        /ResponseAuthToken\s*[:=]\s*([\w+/=-]+)/,
+        /token["\s]*[:=]\s*"?([\w+/=-]+)"?/,
       ];
       
       for (const pattern of patterns) {
         const match = text.match(pattern);
         if (match) {
-          return { success: true, authToken: match[2] };
+          console.log('Found auth token via regex');
+          return { success: true, authToken: match[1] };
         }
       }
-      return { success: false, error: text.substring(0, 100) };
+      
+      // Extract error from HTML
+      let errorMsg = 'Unknown error from payment gateway';
+      
+      const errorPatterns = [
+        /ErrorMessage[^>]*>([^<]+)</,
+        /<span[^>]*class=["']error["'][^>]*>([^<]+)</,
+        /<div[^>]*class=["'][^"']*error[^"'][^>]*>([^<]+)</,
+        /<title>([^<]*Error[^<]*)<\/title>/i,
+      ];
+      
+      for (const pattern of errorPatterns) {
+        const match = text.match(pattern);
+        if (match) {
+          errorMsg = match[1].trim().substring(0, 200);
+          break;
+        }
+      }
+      
+      return { success: false, error: errorMsg };
     }
   } catch (error: any) {
     console.error('Handshake error:', error);
