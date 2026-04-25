@@ -204,6 +204,7 @@ export function createSSOFormData(payment: PaymentRequest, authToken: string): P
     HS_AuthToken: authToken,
     HS_ChannelId: '1001',
     HS_Currency: currency,
+    HS_IsRedirectionRequest: '1',
     HS_MerchantHash: config.merchantHash,
     HS_MerchantId: config.merchantId,
     HS_MerchantPassword: config.password,
@@ -411,12 +412,13 @@ export function createSSOFormHtml(formData: PaymentFormData): string {
 <body>
   <div class="container">
     <div class="spinner"></div>
-    <h2>Redirecting to Secure Payment</h2>
+<h2>Redirecting to Secure Payment</h2>
     <p>You will be redirected to enter your payment details...</p>
 <form id="ssoForm" method="POST" action="${gatewayUrl}">
        <input type="hidden" name="HS_AuthToken" value="${formData.authToken}">
        <input type="hidden" name="HS_ChannelId" value="${formData.channelId}">
        <input type="hidden" name="HS_Currency" value="${formData.currency}">
+       <input type="hidden" name="HS_IsRedirectionRequest" value="1">
        <input type="hidden" name="HS_ReturnURL" value="${formData.returnUrl}">
        <input type="hidden" name="HS_MerchantId" value="${formData.merchantId}">
        <input type="hidden" name="HS_StoreId" value="${formData.storeId}">
