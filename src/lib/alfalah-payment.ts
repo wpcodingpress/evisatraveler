@@ -415,20 +415,20 @@ export function createSSOFormHtml(formData: PaymentFormData): string {
 <h2>Redirecting to Secure Payment</h2>
     <p>You will be redirected to enter your payment details...</p>
 <form id="ssoForm" method="POST" action="${gatewayUrl}">
-       <input type="hidden" name="HS_AuthToken" value="${formData.authToken}">
-       <input type="hidden" name="HS_ChannelId" value="${formData.channelId}">
-       <input type="hidden" name="HS_Currency" value="${formData.currency}">
-       <input type="hidden" name="HS_IsRedirectionRequest" value="1">
-       <input type="hidden" name="HS_ReturnURL" value="${formData.returnUrl}">
-       <input type="hidden" name="HS_MerchantId" value="${formData.merchantId}">
-       <input type="hidden" name="HS_StoreId" value="${formData.storeId}">
-       <input type="hidden" name="HS_MerchantHash" value="${formData.merchantHash}">
-       <input type="hidden" name="HS_MerchantUsername" value="${formData.merchantUsername}">
-       <input type="hidden" name="HS_MerchantPassword" value="${formData.merchantPassword}">
-       <input type="hidden" name="HS_TransactionTypeId" value="${formData.transactionTypeId || '3'}">
-       <input type="hidden" name="HS_TransactionReferenceNumber" value="${formData.transactionReferenceNumber}">
-       <input type="hidden" name="HS_TransactionAmount" value="${formData.transactionAmount}">
-       <input type="hidden" name="HS_RequestHash" value="${formData.requestHash}">
+       <input type="hidden" name="AuthToken" value="${formData.authToken}">
+       <input type="hidden" name="RequestHash" value="">
+       <input type="hidden" name="ChannelId" value="${formData.channelId}">
+       <input type="hidden" name="Currency" value="${formData.currency}">
+       <input type="hidden" name="IsBIN" value="0">
+       <input type="hidden" name="ReturnURL" value="${formData.returnUrl}">
+       <input type="hidden" name="MerchantId" value="${formData.merchantId}">
+       <input type="hidden" name="StoreId" value="${formData.storeId}">
+       <input type="hidden" name="MerchantHash" value="${formData.merchantHash}">
+       <input type="hidden" name="MerchantUsername" value="${formData.merchantUsername}">
+       <input type="hidden" name="MerchantPassword" value="${formData.merchantPassword}">
+       <input type="hidden" name="TransactionTypeId" value="${formData.transactionTypeId || '3'}">
+       <input type="hidden" name="TransactionReferenceNumber" value="${formData.transactionReferenceNumber}">
+       <input type="hidden" name="TransactionAmount" value="${formData.transactionAmount}">
      </form>
     <div class="secure">
       <svg fill="currentColor" viewBox="0 0 20 20">
