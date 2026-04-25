@@ -15,18 +15,18 @@ interface Country {
 }
 
 const floatingElements = [
-  { icon: 'airplane', name: 'airplane1', position: 'top-[10%] left-[5%]', size: 'w-16 h-16', delay: '0s', duration: '6s' },
-  { icon: 'globe', name: 'globe1', position: 'top-[20%] right-[25%]', size: 'w-20 h-20', delay: '1s', duration: '7s' },
-  { icon: 'passport', name: 'passport1', position: 'top-[35%] left-[10%]', size: 'w-14 h-14', delay: '2s', duration: '8s' },
-  { icon: 'airplane', name: 'airplane2', position: 'bottom-[25%] right-[30%]', size: 'w-16 h-16', delay: '3s', duration: '6.5s' },
-  { icon: 'palm', name: 'beach1', position: 'bottom-[15%] left-[15%]', size: 'w-20 h-20', delay: '1.5s', duration: '7.5s' },
-  { icon: 'suitcase', name: 'briefcase1', position: 'top-[15%] right-[15%]', size: 'w-14 h-14', delay: '2.5s', duration: '8.5s' },
-  { icon: 'plane2', name: 'beach2', position: 'bottom-[30%] right-[15%]', size: 'w-18 h-18', delay: '0.5s', duration: '7.2s' },
-  { icon: 'document', name: 'visa1', position: 'middle-[30%] left-[8%]', size: 'w-12 h-12', delay: '4s', duration: '9s' },
+  { icon: 'airplane', name: 'airplane1', position: 'top-[8%] left-[3%]', size: 'w-24 h-24', delay: '0s', duration: '6s' },
+  { icon: 'globe', name: 'globe1', position: 'top-[15%] right-[20%]', size: 'w-28 h-28', delay: '1s', duration: '7s' },
+  { icon: 'passport', name: 'passport1', position: 'top-[40%] left-[8%]', size: 'w-20 h-20', delay: '2s', duration: '8s' },
+  { icon: 'airplane', name: 'airplane2', position: 'bottom-[20%] right-[25%]', size: 'w-24 h-24', delay: '3s', duration: '6.5s' },
+  { icon: 'palm', name: 'beach1', position: 'bottom-[10%] left-[12%]', size: 'w-28 h-28', delay: '1.5s', duration: '7.5s' },
+  { icon: 'suitcase', name: 'briefcase1', position: 'top-[12%] right-[12%]', size: 'w-20 h-20', delay: '2.5s', duration: '8.5s' },
+  { icon: 'plane2', name: 'beach2', position: 'bottom-[25%] right-[10%]', size: 'w-26 h-26', delay: '0.5s', duration: '7.2s' },
+  { icon: 'document', name: 'visa1', position: 'middle-[35%] left-[5%]', size: 'w-18 h-18', delay: '4s', duration: '9s' },
 ];
 
 function SVGIcon({ type, className }: { type: string; className: string }) {
-  const iconClasses = `${className} text-transparent bg-clip-text bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500`;
+  const iconClasses = `${className} text-violet-600`;
   
   switch(type) {
     case 'airplane':
@@ -79,10 +79,11 @@ function SVGIcon({ type, className }: { type: string; className: string }) {
 function FloatingElement({ icon, position, size, delay, duration }: { icon: string; position: string; size: string; delay: string; duration: string }) {
   return (
     <div 
-      className={`absolute ${position} ${size} opacity-50 z-[1] hidden lg:block`}
+      className={`absolute ${position} ${size} z-[2] lg:block`}
       style={{ 
         animation: `float ${duration} ease-in-out infinite`,
-        animationDelay: delay
+        animationDelay: delay,
+        filter: 'drop-shadow(0 4px 8px rgba(139, 92, 246, 0.3))'
       }}
     >
       <SVGIcon type={icon} className="w-full h-full" />
@@ -120,21 +121,22 @@ function HeroSection({ countries }: { countries: Country[] }) {
 
       <div className="absolute inset-0 overflow-hidden">
         <div 
-          className="absolute -right-[10%] -top-[10%] w-[70%] h-[120%] z-[0]"
+          className="absolute -right-[5%] -top-[5%] w-[65%] h-[110%] z-[0]"
           style={{ transform: `translateY(${parallaxOffset * 0.2}px)` }}
         >
           <div className="relative w-full h-full">
             <img 
               src="https://images.unsplash.com/photo-1488085061387-141e44f8b76d?w=1200&h=1600&fit=crop&q=80" 
               alt="Travel couple exploring world" 
-              className="w-full h-full object-cover opacity-60"
+              className="w-full h-full object-cover"
+              style={{ opacity: 0.9 }}
             />
-            <div className="absolute inset-0 bg-gradient-to-l from-white/70 via-white/30 to-white/80" />
+            <div className="absolute inset-0 bg-gradient-to-l from-white/90 via-white/50 to-white/90" />
           </div>
         </div>
         
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-200/20 rounded-full blur-[120px] z-[0]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-200/20 rounded-full blur-[100px] z-[0]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-300/30 rounded-full blur-[120px] z-[0]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-300/30 rounded-full blur-[100px] z-[0]" />
       </div>
 
       {floatingElements.map((elem) => (
