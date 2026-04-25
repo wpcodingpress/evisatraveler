@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Alfalah Payment Test</title>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+</head>
+<body>
+    <h2>Bank Alfalah Payment Test (Official Integration)</h2>
+    
+    <h3>Step 1: Handshake Result</h3>
+    <div id="handshakeResult" style="background: #f0f0f0; padding: 10px; margin: 10px 0;"></div>
+    
+    <h3>Step 2: SSO Form (Auto-submits to Bank Alfalah)</h3>
+    <form action="https://payments.bankalfalah.com/SSO/SSO/SSO" id="PageRedirectionForm" method="post" novalidate="novalidate">                                                                
+        <input id="AuthToken" name="AuthToken" type="hidden" value="">                                                                                                                              
+        <input id="RequestHash" name="RequestHash" type="hidden" value="">                                                                                                                            
+        <input id="ChannelId" name="ChannelId" type="hidden" value="1001">                                                                                                                            
+        <input id="Currency" name="Currency" type="hidden" value="PKR">                                                                                                                               
+        <input id="IsBIN" name="IsBIN" type="hidden" value="0">                                                                                     
+        <input id="ReturnURL" name="ReturnURL" type="hidden" value="https://evisatraveler.com/">                                                                            
+        <input id="MerchantId" name="MerchantId" type="hidden" value="233660">                                                                                                                           
+        <input id="StoreId" name="StoreId" type="hidden" value="524469">                                                                                                                     
+        <input id="MerchantHash" name="MerchantHash" type="hidden" value="OUU362MB1upc67ZO/pNWYAfQ8A/8LuYyWpNuGSXiBtFvFzk4yqF7CA==">                                  
+        <input id="MerchantUsername" name="MerchantUsername" type="hidden" value="fykoqu">                                                                                                            
+        <input id="MerchantPassword" name="MerchantPassword" type="hidden" value="P4SmutaC6YVvFzk4yqF7CA==">                                                                                          
+        <input id="TransactionTypeId" name="TransactionTypeId" type="hidden" value="3">                                                                                                                              
+        <input id="TransactionReferenceNumber" name="TransactionReferenceNumber" type="hidden" value="TEST123456">                                  
+        <input id="TransactionAmount" name="TransactionAmount" type="hidden" value="1000">                                                             
+    </form>
+    
+    <div id="formData" style="background: #e8f4e8; padding: 10px; margin: 10px 0; font-family: monospace;"></div>
+    
+    <button type="button" id="testHandshake" class="btn btn-custon-four btn-danger">Test Handshake First</button>
+    <br><br>
+    <button type="button" id="submitForm" class="btn btn-custon-four btn-danger" disabled>Submit to Bank Alfalah</button>
+    
+    <script>
+    $(function () {
+        $("#testHandshake").click(function (e) {
+            e.preventDefault();
+            submitRequest("HandshakeForm");
+            
+            var mapString = "HS_ChannelId=1001&HS_IsRedirectionRequest=1&HS_MerchantId=233660&HS_StoreId=524469&HS_ReturnURL=https://evisatraveler.com/&HS_MerchantHash=OUU362MB1upc67ZO/pNWYAfQ8A/8LuYyWpNuGSXiBtFvFzk4yqF7CA==&HS_MerchantUsername=fykoqu&HS_MerchantPassword=P4SmutaC6YVvFzk4yqF7CA==&HS_TransactionReferenceNumber=TEST123456";
+            
+            var hashRequest = CryptoJS.AES.encrypt(
+                CryptoJS.enc.Utf8.parse(mapString),
+                CryptoJS.enc.Utf8.parse("FWBhnJmJWXuUee2J"),
+                {
+                    keySize: 128 / 8,
+                    iv: CryptoJS.enc.Utf8.parse("3200254418025343"),
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                }
+            );
+            
+            var myData = {
+                HS_MerchantId: "233660",
+                HS_StoreId: "524469",
+                HS_MerchantHash: "OUU362MB1upc67ZO/pNWYAfQ8A/8LuYyWpNuGSXiBtFvFzk4yqF7CA==",
+                HS_MerchantUsername: "fykoqu",
+                HS_MerchantPassword: "P4SmutaC6YVvFzk4yqF7CA==",
+                HS_IsRedirectionRequest: "1",
+                HS_ReturnURL: "https://evisatraveler.com/",
+                HS_RequestHash: hashRequest.toString(),
+                HS_ChannelId: "1001",
+                HS_TransactionReferenceNumber: "TEST123456",
+            };
+            
+            $("#handshakeResult").text("Sending handshake request...");
+            
+            $.ajax({
+                type: 'POST',
+                url: 'https://payments.bankalfalah.com/HS/HS/HS',
+                contentType: "application/x-www-form-urlencoded",
+                data: myData,
+                dataType: "json",
+                success: function (r) {
+                    if (r != '') {
+                        $("#handshakeResult").text(JSON.stringify(r));
+                        if (r.success == "true") {
+                            $("#AuthToken").val(r.AuthToken);
+                            $("#ReturnURL").val(r.ReturnURL);
+                            alert('Success: Handshake Successful');
+                            $("#submitForm").prop("disabled", false);
+                        } else {
+                            alert('Error: ' + JSON.stringify(r));
+                        }
+                    }
+                },
+                error: function (error) {
+                    $("#handshakeResult").text('Error: ' + JSON.stringify(error));
+                    alert('Error: An error occurred');
+                }
+            });
+        });
+        
+        $("#submitForm").click(function (e) {
+            e.preventDefault();
+            $("#formData").text("AuthToken: " + $("#AuthToken").val());
+            document.getElementById("PageRedirectionForm").submit();
+        });
+    });
+    
+    function submitRequest(formName) {
+        var mapString = '', hashName = 'RequestHash';
+        if (formName == "HandshakeForm") {
+            hashName = 'HS_' + hashName;
+        }
+        
+        $("#" + formName + " :input").each(function () {
+            if ($(this).attr('id') != '') {
+                mapString += $(this).attr('id') + '=' + $(this).val() + '&';
+            }
+        });
+        
+        console.log("Map String:", mapString);
+    }
+    </script>
+</body>
+</html>
