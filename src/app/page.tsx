@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { EnhancedSearchForm } from '@/components/home/enhanced-search-form';
 import Link from 'next/link';
 import { getCountryFlagEmoji } from '@/lib/utils';
@@ -14,20 +14,117 @@ interface Country {
   flag?: string;
 }
 
-function HeroSection({ countries }: { countries: Country[] }) {
+const floatingElements = [
+  { icon: '✈️', name: 'airplane1', position: 'top-[15%] left-[8%]', size: 'text-2xl', delay: '0s', duration: '6s' },
+  { icon: '🌍', name: 'globe1', position: 'top-[25%] left-[15%]', size: 'text-xl', delay: '1s', duration: '7s' },
+  { icon: '🛂', name: 'passport1', position: 'top-[40%] left-[5%]', size: 'text-lg', delay: '2s', duration: '8s' },
+  { icon: '✈️', name: 'airplane2', position: 'bottom-[20%] left-[12%]', size: 'text-2xl', delay: '3s', duration: '6.5s' },
+  { icon: '🌴', name: 'beach1', position: 'bottom-[30%] left-[8%]', size: 'text-xl', delay: '1.5s', duration: '7.5s' },
+  { icon: '💼', name: 'briefcase1', position: 'top-[10%] left-[20%]', size: 'text-lg', delay: '2.5s', duration: '8.5s' },
+  { icon: '🏖️', name: 'beach2', position: 'bottom-[15%] left-[18%]', size: 'text-xl', delay: '0.5s', duration: '7.2s' },
+  { icon: '📋', name: 'visa1', position: 'middle-[35%] left-[3%]', size: 'text-lg', delay: '4s', duration: '9s' },
+];
+
+function FloatingElement({ icon, position, size, delay, duration }: { icon: string; position: string; size: string; delay: string; duration: string }) {
   return (
-    <section className="relative min-h-[90vh] lg:min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-violet-50 via-white to-white">
+    <div 
+      className={`absolute ${position} ${size} opacity-60 z-10`}
+      style={{ 
+        animation: `float ${duration} ease-in-out infinite`,
+        animationDelay: delay
+      }}
+    >
+      <div className="filter drop-shadow-lg">
+        {icon}
+      </div>
+    </div>
+  );
+}
+
+function HeroSection({ countries }: { countries: Country[] }) {
+  const [scrollY, setScrollY] = useState(0);
+  const heroRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (heroRef.current) {
+        const rect = heroRef.current.getBoundingClientRect();
+        if (rect.top <= 0 && rect.bottom >= 0) {
+          setScrollY(window.scrollY);
+        }
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const parallaxOffset = scrollY * 0.3;
+
+  return (
+    <section ref={heroRef} className="relative min-h-[90vh] lg:min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-violet-50 via-white to-white">
       <div className="absolute inset-0">
         <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-200/30 rounded-full blur-[120px] animate-pulse" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-200/20 rounded-full blur-[100px] animate-pulse delay-1000" />
         <div className="absolute top-[30%] right-[20%] w-[300px] h-[300px] bg-fuchsia-200/20 rounded-full blur-[80px] animate-pulse delay-500" />
-        <div className="absolute inset-0 opacity-[0.03]" style={{ 
-          backgroundImage: `linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)`,
-          backgroundSize: '60px 60px'
-        }} />
       </div>
 
-      <div className="relative z-10 container-custom py-12 lg:py-16">
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        @keyframes floatAlt {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-15px) rotate(-3deg); }
+        }
+        @keyframes airplane {
+          0% { transform: translateX(0) translateY(0) rotate(0deg); }
+          25% { transform: translateX(10px) translateY(-15px) rotate(5deg); }
+          50% { transform: translateX(20px) translateY(-5px) rotate(0deg); }
+          75% { transform: translateX(10px) translateY(-20px) rotate(-5deg); }
+          100% { transform: translateX(0) translateY(0) rotate(0deg); }
+        }
+      `}</style>
+
+      {floatingElements.map((elem) => (
+        <FloatingElement 
+          key={elem.name}
+          icon={elem.icon}
+          position={elem.position}
+          size={elem.size}
+          delay={elem.delay}
+          duration={elem.duration}
+        />
+      ))}
+
+      <div 
+        className="absolute right-0 top-0 w-1/2 h-full hidden lg:block z-0"
+        style={{ transform: `translateY(${parallaxOffset * 0.5}px)` }}
+      >
+        <div className="relative w-full h-full">
+          <div className="absolute inset-0 bg-gradient-to-l from-violet-100/50 to-transparent" />
+          <img 
+            src="https://images.unsplash.com/photo-1488085061387-141e44f8b76d?w=800&h=1200&fit=crop&q=80" 
+            alt="Travel couple exploring world" 
+            className="w-full h-full object-cover object-center opacity-80"
+          />
+          <div className="absolute inset-0 bg-gradient-to-l from-violet-100/30 to-transparent" />
+        </div>
+      </div>
+
+      <div className="lg:absolute lg:right-0 lg:top-0 lg:w-1/2 lg:h-full lg:flex lg:items-center lg:justify-center z-0 hidden">
+        <div className="relative w-full h-full">
+          <div className="absolute inset-0 bg-gradient-to-l from-violet-50/90 via-white/50 to-transparent" />
+          <img 
+            src="https://images.unsplash.com/photo-1539635278303-d4002c5e6f9f?w=800&h=1000&fit=crop&q=80" 
+            alt="Happy travelers with luggage" 
+            className="w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-l from-violet-100/40 to-transparent" />
+        </div>
+      </div>
+
+      <div className="relative z-10 container-custom py-12 lg:py-16 lg:pr-[50%]">
         <div className="text-center max-w-4xl mx-auto mb-8 lg:mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 backdrop-blur-sm border border-violet-200 text-violet-700 text-sm font-medium mb-6 animate-fade-in">
             <span className="relative flex h-2 w-2">
@@ -77,7 +174,7 @@ function HeroSection({ countries }: { countries: Country[] }) {
         </div>
       </div>
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce z-20">
         <div className="w-6 h-10 rounded-full border-2 border-violet-300 flex items-start justify-center p-2">
           <div className="w-1 h-2 bg-violet-400 rounded-full animate-pulse" />
         </div>
