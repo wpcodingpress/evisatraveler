@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
 
 async function doHandshake(config: any): Promise<{ success: boolean; authToken?: string; error?: string }> {
   const params: Record<string, string> = {
-    HS_ChannelId: '1002',
+    HS_ChannelId: '1001',
     HS_IsRedirectionRequest: '1',
     HS_MerchantHash: config.merchantHash,
     HS_MerchantId: config.merchantId,
