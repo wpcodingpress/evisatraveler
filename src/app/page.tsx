@@ -16,11 +16,11 @@ interface Country {
 
 function HeroSection({ countries }: { countries: Country[] }) {
   return (
-    <section className="relative min-h-[90vh] lg:min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-violet-950">
+    <section className="relative min-h-[90vh] lg:min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-violet-50 via-white to-white">
       <div className="absolute inset-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-600/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/15 rounded-full blur-[100px] animate-pulse delay-1000" />
-        <div className="absolute top-[30%] right-[20%] w-[300px] h-[300px] bg-fuchsia-600/10 rounded-full blur-[80px] animate-pulse delay-500" />
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-200/30 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-200/20 rounded-full blur-[100px] animate-pulse delay-1000" />
+        <div className="absolute top-[30%] right-[20%] w-[300px] h-[300px] bg-fuchsia-200/20 rounded-full blur-[80px] animate-pulse delay-500" />
         <div className="absolute inset-0 opacity-[0.03]" style={{ 
           backgroundImage: `linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)`,
           backgroundSize: '60px 60px'
@@ -29,28 +29,28 @@ function HeroSection({ countries }: { countries: Country[] }) {
 
       <div className="relative z-10 container-custom py-12 lg:py-16">
         <div className="text-center max-w-4xl mx-auto mb-8 lg:mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium mb-6 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 backdrop-blur-sm border border-violet-200 text-violet-700 text-sm font-medium mb-6 animate-fade-in">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-500 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-600" />
             </span>
             Trusted by 100,000+ Travelers Worldwide
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 lg:mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 mb-4 lg:mb-6 leading-tight">
             Get Your{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600">
               Visa Approved
             </span>{' '}
             in Record Time
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto mb-8 leading-relaxed px-4">
+          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed px-4">
             Apply for tourist, business, or transit visa online. 
-            <span className="text-violet-400 font-semibold"> Fast approval in 24-72 hours</span> with 99.9% success rate.
+            <span className="text-violet-600 font-semibold"> Fast approval in 24-72 hours</span> with 99.9% success rate.
           </p>
 
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl text-white font-bold text-lg shadow-lg shadow-orange-500/25 mb-8">
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl text-white font-bold text-lg shadow-lg shadow-violet-500/25 mb-8">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -69,8 +69,8 @@ function HeroSection({ countries }: { countries: Country[] }) {
             { label: '24/7 Support', icon: '💬' },
             { label: 'Fast Processing', icon: '⚡' },
           ].map((item) => (
-            <div key={item.label} className="flex items-center gap-2 text-slate-300 text-sm font-medium">
-              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-white/10 text-sm">{item.icon}</span>
+            <div key={item.label} className="flex items-center gap-2 text-slate-700 text-sm font-medium">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-violet-100 text-sm">{item.icon}</span>
               {item.label}
             </div>
           ))}
@@ -78,8 +78,8 @@ function HeroSection({ countries }: { countries: Country[] }) {
       </div>
 
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
-          <div className="w-1 h-2 bg-white/50 rounded-full animate-pulse" />
+        <div className="w-6 h-10 rounded-full border-2 border-violet-300 flex items-start justify-center p-2">
+          <div className="w-1 h-2 bg-violet-400 rounded-full animate-pulse" />
         </div>
       </div>
     </section>
