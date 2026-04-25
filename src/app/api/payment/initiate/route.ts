@@ -152,21 +152,43 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
 
     try {
       const data = JSON.parse(text);
-      if (data.success === 'true' || data.success === true) {
+      console.log('Parsed handshake data:', data);
+      
+      const authToken = data.AuthToken || data.authToken || data.ResponseAuthToken;
+      
+      if (authToken) {
+        return {
+          success: true,
+          authToken: authToken,
+        };
+      }
+      
+      const responseCode = data.ResponseCode || data.responseCode || data.ResponseStatus;
+      if (responseCode === '00' || responseCode === '000' || responseCode === 'Success') {
         return {
           success: true,
           authToken: data.AuthToken || data.authToken,
         };
       }
+      
       return {
         success: false,
-        error: data.ErrorMessage || data.errorMessage || 'Invalid Request',
+        error: data.ResponseMessage || data.ErrorMessage || data.errorMessage || 'Invalid Request',
       };
     } catch {
-      // Try regex for token
-      const match = text.match(/AuthToken["\s]*[:=]["\s]*(["'])([\w+/=-]+)\1/);
-      if (match) {
-        return { success: true, authToken: match[2] };
+      // Try multiple regex patterns for various response formats
+      const patterns = [
+        /"AuthToken"\s*[:=]\s*(["'])([\w+/=-]+)\1/,
+        /AuthToken["\s]*[:=]["\s]*(["'])([\w+/=-]+)\1/,
+        /authToken["\s]*[:=]["\s]*(["'])([\w+/=-]+)\1/,
+        /ResponseAuthToken["\s]*[:=]["\s]*(["'])([\w+/=-]+)\1/,
+      ];
+      
+      for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match) {
+          return { success: true, authToken: match[2] };
+        }
       }
       return { success: false, error: text.substring(0, 100) };
     }
