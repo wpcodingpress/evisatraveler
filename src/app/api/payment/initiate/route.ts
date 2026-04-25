@@ -143,6 +143,7 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
   console.log('Handshake request payload:', formData.toString());
 
   try {
+    // First request - handshake
     const response = await fetch('https://payments.bankalfalah.com/HS/HS/HS', {
       method: 'POST',
       headers: {
@@ -153,7 +154,7 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
         'Referer': 'https://evisatraveler.com/',
       },
       body: formData.toString(),
-      redirect: 'manual',
+      redirect: 'follow',
       signal: AbortSignal.timeout(30000),
     });
 
@@ -165,7 +166,17 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
     console.log('Handshake response content-type:', contentType);
     console.log('Handshake response:', text.substring(0, 500));
 
-    // Check for redirect with token in URL
+    // If redirect followed and we got a response
+    if (status === 200 && contentType.includes('text/html')) {
+      // Look for AuthToken in the response
+      const tokenMatch = text.match(/AuthToken["\s]*[:=]["\s]*([\w+/=-]+)/i);
+      if (tokenMatch) {
+        console.log('Found auth token in response body');
+        return { success: true, authToken: tokenMatch[1] };
+      }
+    }
+
+    // Check for redirect with token in URL (when redirect: 'manual')
     if (status === 302 || status === 301) {
       const location = response.headers.get('location');
       console.log('Redirect location:', location);
