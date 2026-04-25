@@ -15,28 +15,77 @@ interface Country {
 }
 
 const floatingElements = [
-  { icon: '✈️', name: 'airplane1', position: 'top-[15%] left-[8%]', size: 'text-2xl', delay: '0s', duration: '6s' },
-  { icon: '🌍', name: 'globe1', position: 'top-[25%] left-[15%]', size: 'text-xl', delay: '1s', duration: '7s' },
-  { icon: '🛂', name: 'passport1', position: 'top-[40%] left-[5%]', size: 'text-lg', delay: '2s', duration: '8s' },
-  { icon: '✈️', name: 'airplane2', position: 'bottom-[20%] left-[12%]', size: 'text-2xl', delay: '3s', duration: '6.5s' },
-  { icon: '🌴', name: 'beach1', position: 'bottom-[30%] left-[8%]', size: 'text-xl', delay: '1.5s', duration: '7.5s' },
-  { icon: '💼', name: 'briefcase1', position: 'top-[10%] left-[20%]', size: 'text-lg', delay: '2.5s', duration: '8.5s' },
-  { icon: '🏖️', name: 'beach2', position: 'bottom-[15%] left-[18%]', size: 'text-xl', delay: '0.5s', duration: '7.2s' },
-  { icon: '📋', name: 'visa1', position: 'middle-[35%] left-[3%]', size: 'text-lg', delay: '4s', duration: '9s' },
+  { icon: 'airplane', name: 'airplane1', position: 'top-[10%] left-[5%]', size: 'w-16 h-16', delay: '0s', duration: '6s' },
+  { icon: 'globe', name: 'globe1', position: 'top-[20%] right-[25%]', size: 'w-20 h-20', delay: '1s', duration: '7s' },
+  { icon: 'passport', name: 'passport1', position: 'top-[35%] left-[10%]', size: 'w-14 h-14', delay: '2s', duration: '8s' },
+  { icon: 'airplane', name: 'airplane2', position: 'bottom-[25%] right-[30%]', size: 'w-16 h-16', delay: '3s', duration: '6.5s' },
+  { icon: 'palm', name: 'beach1', position: 'bottom-[15%] left-[15%]', size: 'w-20 h-20', delay: '1.5s', duration: '7.5s' },
+  { icon: 'suitcase', name: 'briefcase1', position: 'top-[15%] right-[15%]', size: 'w-14 h-14', delay: '2.5s', duration: '8.5s' },
+  { icon: 'plane2', name: 'beach2', position: 'bottom-[30%] right-[15%]', size: 'w-18 h-18', delay: '0.5s', duration: '7.2s' },
+  { icon: 'document', name: 'visa1', position: 'middle-[30%] left-[8%]', size: 'w-12 h-12', delay: '4s', duration: '9s' },
 ];
+
+function SVGIcon({ type, className }: { type: string; className: string }) {
+  const iconClasses = `${className} text-transparent bg-clip-text bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500`;
+  
+  switch(type) {
+    case 'airplane':
+      return (
+        <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+        </svg>
+      );
+    case 'plane2':
+      return (
+        <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2.5 19h19l-.7-2.7c-.1-.3-.4-.5-.7-.6l-1.4-.3-.8-1.6c-.2-.4-.7-.6-1.1-.4l-1.4.6-1.2-.4-.8-.6c-.3-.2-.4-.6-.3-.9l.5-1.4-2.7-2.7c-.3-.3-.3-.7 0-1l1.1-1.1c.3-.3.7-.3 1 0l2.7 2.7 1.4-.5c.4-.2.8 0 .9.3l.6.8.4 1.2-.6 1.4c-.1.4.1.9.4 1.1l1.6.8.3 1.4c.1.3.3.6.6.7L21.4 21l-1.4-.7c-.3-.1-.6-.4-.7-.7l-.3-1.4-.8-1.6c-.2-.4-.7-.6-1.1-.4l-1.4.6-1.2-.4-.8-.6c-.3-.2-.4-.6-.3-.9l.5-1.4-2.7-2.7c-.3-.3-.3-.7 0-1l1.1-1.1c.3-.3.7-.3 1 0l2.7 2.7 1.4-.5c.4-.2.8 0 .9.3l.6.8.4 1.2-.6 1.4c-.1.4.1.9.4 1.1l1.6.8.3 1.4c.1.3.3.6.6.7l.7 2.7v.5z"/>
+        </svg>
+      );
+    case 'globe':
+      return (
+        <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+        </svg>
+      );
+    case 'passport':
+      return (
+        <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 2c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v20c0 1.1-.9 2-2 2H8c-1.1 0-2-.9-2-2V2zm6 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm0-6c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/>
+        </svg>
+      );
+    case 'palm':
+      return (
+        <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M13 3c-1.1 0-2 .9-2 2v2h2V5h2v2h2V5c0-1.1-.9-2-2-2h-2zm-5 4c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2H8zm5 10c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+        </svg>
+      );
+    case 'suitcase':
+      return (
+        <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17 6h-2V3c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v3H7c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm8 16H7V8h10v11zm2-11V3h-4v3h4v2z"/>
+        </svg>
+      );
+    case 'document':
+      return (
+        <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
 
 function FloatingElement({ icon, position, size, delay, duration }: { icon: string; position: string; size: string; delay: string; duration: string }) {
   return (
     <div 
-      className={`absolute ${position} ${size} opacity-60 z-10`}
+      className={`absolute ${position} ${size} opacity-50 z-[1] hidden lg:block`}
       style={{ 
         animation: `float ${duration} ease-in-out infinite`,
         animationDelay: delay
       }}
     >
-      <div className="filter drop-shadow-lg">
-        {icon}
-      </div>
+      <SVGIcon type={icon} className="w-full h-full" />
     </div>
   );
 }
@@ -62,29 +111,31 @@ function HeroSection({ countries }: { countries: Country[] }) {
 
   return (
     <section ref={heroRef} className="relative min-h-[90vh] lg:min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-violet-50 via-white to-white">
-      <div className="absolute inset-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-200/30 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-200/20 rounded-full blur-[100px] animate-pulse delay-1000" />
-        <div className="absolute top-[30%] right-[20%] w-[300px] h-[300px] bg-fuchsia-200/20 rounded-full blur-[80px] animate-pulse delay-500" />
-      </div>
-
       <style jsx>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(5deg); }
-        }
-        @keyframes floatAlt {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-15px) rotate(-3deg); }
-        }
-        @keyframes airplane {
-          0% { transform: translateX(0) translateY(0) rotate(0deg); }
-          25% { transform: translateX(10px) translateY(-15px) rotate(5deg); }
-          50% { transform: translateX(20px) translateY(-5px) rotate(0deg); }
-          75% { transform: translateX(10px) translateY(-20px) rotate(-5deg); }
-          100% { transform: translateX(0) translateY(0) rotate(0deg); }
+          50% { transform: translateY(-25px) rotate(5deg); }
         }
       `}</style>
+
+      <div className="absolute inset-0 overflow-hidden">
+        <div 
+          className="absolute -right-[10%] -top-[10%] w-[70%] h-[120%] z-[0]"
+          style={{ transform: `translateY(${parallaxOffset * 0.2}px)` }}
+        >
+          <div className="relative w-full h-full">
+            <img 
+              src="https://images.unsplash.com/photo-1488085061387-141e44f8b76d?w=1200&h=1600&fit=crop&q=80" 
+              alt="Travel couple exploring world" 
+              className="w-full h-full object-cover opacity-60"
+            />
+            <div className="absolute inset-0 bg-gradient-to-l from-white/70 via-white/30 to-white/80" />
+          </div>
+        </div>
+        
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-200/20 rounded-full blur-[120px] z-[0]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-200/20 rounded-full blur-[100px] z-[0]" />
+      </div>
 
       {floatingElements.map((elem) => (
         <FloatingElement 
@@ -97,34 +148,7 @@ function HeroSection({ countries }: { countries: Country[] }) {
         />
       ))}
 
-      <div 
-        className="absolute right-0 top-0 w-1/2 h-full hidden lg:block z-0"
-        style={{ transform: `translateY(${parallaxOffset * 0.5}px)` }}
-      >
-        <div className="relative w-full h-full">
-          <div className="absolute inset-0 bg-gradient-to-l from-violet-100/50 to-transparent" />
-          <img 
-            src="https://images.unsplash.com/photo-1488085061387-141e44f8b76d?w=800&h=1200&fit=crop&q=80" 
-            alt="Travel couple exploring world" 
-            className="w-full h-full object-cover object-center opacity-80"
-          />
-          <div className="absolute inset-0 bg-gradient-to-l from-violet-100/30 to-transparent" />
-        </div>
-      </div>
-
-      <div className="lg:absolute lg:right-0 lg:top-0 lg:w-1/2 lg:h-full lg:flex lg:items-center lg:justify-center z-0 hidden">
-        <div className="relative w-full h-full">
-          <div className="absolute inset-0 bg-gradient-to-l from-violet-50/90 via-white/50 to-transparent" />
-          <img 
-            src="https://images.unsplash.com/photo-1539635278303-d4002c5e6f9f?w=800&h=1000&fit=crop&q=80" 
-            alt="Happy travelers with luggage" 
-            className="w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-l from-violet-100/40 to-transparent" />
-        </div>
-      </div>
-
-      <div className="relative z-10 container-custom py-12 lg:py-16 lg:pr-[50%]">
+      <div className="relative z-10 container-custom py-12 lg:py-16">
         <div className="text-center max-w-4xl mx-auto mb-8 lg:mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 backdrop-blur-sm border border-violet-200 text-violet-700 text-sm font-medium mb-6 animate-fade-in">
             <span className="relative flex h-2 w-2">
