@@ -137,13 +137,51 @@ export function verifyResponseSignature(
 }
 
 /**
- * Generate map string for hash calculation
- * Format: key1=value1&key2=value2&...
+ * Generate Handshake map string in specific order matching Bank Alfalah spec
  */
-function generateMapString(params: Record<string, string>): string {
-  return Object.entries(params)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${key}=${value}`)
+export function generateHandshakeMapString(params: Record<string, string>): string {
+  const order = [
+    'HS_ChannelId',
+    'HS_IsRedirectionRequest',
+    'HS_MerchantId',
+    'HS_StoreId',
+    'HS_ReturnURL',
+    'HS_MerchantHash',
+    'HS_MerchantUsername',
+    'HS_MerchantPassword',
+    'HS_TransactionReferenceNumber'
+  ];
+  
+  return order
+    .filter(key => params[key] !== undefined)
+    .map(key => `${key}=${params[key]}`)
+    .join('&');
+}
+
+/**
+ * Generate SSO map string in specific order matching Bank Alfalah spec
+ */
+export function generateSSOMapString(params: Record<string, string>): string {
+  const order = [
+    'AuthToken',
+    'RequestHash',
+    'ChannelId',
+    'Currency',
+    'IsBIN',
+    'ReturnURL',
+    'MerchantId',
+    'StoreId',
+    'MerchantHash',
+    'MerchantUsername',
+    'MerchantPassword',
+    'TransactionTypeId',
+    'TransactionReferenceNumber',
+    'TransactionAmount'
+  ];
+  
+  return order
+    .filter(key => params[key] !== undefined)
+    .map(key => `${key}=${params[key]}`)
     .join('&');
 }
 
@@ -151,7 +189,7 @@ function generateMapString(params: Record<string, string>): string {
  * Generate Handshake Request Hash
  */
 export function generateHandshakeHash(params: Record<string, string>, key1: string, key2: string): string {
-  const mapString = generateMapString(params);
+  const mapString = generateHandshakeMapString(params);
   return encryptRequestHash(mapString, key1, key2);
 }
 
@@ -164,59 +202,18 @@ export function createHandshakeFormData(payment: PaymentRequest): PaymentFormDat
   const transactionTypeId = payment.transactionTypeId || '3';
   
 const params: Record<string, string> = {
-    HS_ChannelId: '1002',
-    HS_IsRedirectionRequest: '1',
-    HS_MerchantHash: config.merchantHash,
-    HS_MerchantId: config.merchantId,
-    HS_MerchantPassword: config.password,
-    HS_MerchantUsername: config.username,
-    HS_ReturnURL: config.returnUrl,
-    HS_StoreId: config.storeId,
-    HS_TransactionReferenceNumber: payment.transactionReferenceNumber,
-  };
-  
-  const requestHash = generateHandshakeHash(params, config.key1, config.key2);
-  
-  return {
-    channelId: '1002',
-    merchantId: config.merchantId,
-    storeId: config.storeId,
-    returnUrl: config.returnUrl,
-    merchantHash: config.merchantHash,
-    merchantUsername: config.username,
-    merchantPassword: config.password,
-    transactionReferenceNumber: payment.transactionReferenceNumber,
-    requestHash,
-    isRedirectionRequest: '1',
-  };
-}
-
-/**
- * Create SSO form data (after receiving AuthToken)
- */
-export function createSSOFormData(payment: PaymentRequest, authToken: string): PaymentFormData {
-  const config = getConfig();
-  const currency = payment.currency || 'PKR';
-  const transactionTypeId = payment.transactionTypeId || '3';
-  const amountStr = payment.amount.toFixed(2);
-  
-  const params: Record<string, string> = {
-    HS_AuthToken: authToken,
     HS_ChannelId: '1001',
-    HS_Currency: currency,
     HS_IsRedirectionRequest: '1',
-    HS_MerchantHash: config.merchantHash,
     HS_MerchantId: config.merchantId,
-    HS_MerchantPassword: config.password,
-    HS_MerchantUsername: config.username,
-    HS_ReturnURL: config.returnUrl,
     HS_StoreId: config.storeId,
-    HS_TransactionAmount: amountStr,
+    HS_ReturnURL: config.returnUrl,
+    HS_MerchantHash: config.merchantHash,
+    HS_MerchantUsername: config.username,
+    HS_MerchantPassword: config.password,
     HS_TransactionReferenceNumber: payment.transactionReferenceNumber,
-    HS_TransactionTypeId: transactionTypeId,
   };
   
-  const mapString = generateMapString(params);
+const mapString = generateHandshakeMapString(params);
   const requestHash = encryptRequestHash(mapString, config.key1, config.key2);
   
   return {
@@ -229,12 +226,6 @@ export function createSSOFormData(payment: PaymentRequest, authToken: string): P
     merchantPassword: config.password,
     transactionReferenceNumber: payment.transactionReferenceNumber,
     requestHash,
-    authToken,
-    currency,
-    transactionTypeId,
-    transactionAmount: amountStr,
-    ipnUrl: config.ipnUrl,
-    isRedirectionRequest: '1',
   };
 }
 
@@ -243,6 +234,35 @@ export function createSSOFormData(payment: PaymentRequest, authToken: string): P
  */
 export function convertUsdToPkr(usdAmount: number): number {
   return Math.round(usdAmount * 280);
+}
+
+/**
+ * Create SSO form data (after receiving AuthToken)
+ * RequestHash is EMPTY for SSO per Bank Alfalah official spec
+ */
+export function createSSOFormData(payment: PaymentRequest, authToken: string): PaymentFormData {
+  const config = getConfig();
+  const currency = payment.currency || 'PKR';
+  const transactionTypeId = payment.transactionTypeId || '3';
+  const amountStr = payment.amount.toFixed(2);
+  
+  return {
+    channelId: '1001',
+    merchantId: config.merchantId,
+    storeId: config.storeId,
+    returnUrl: config.returnUrl,
+    merchantHash: config.merchantHash,
+    merchantUsername: config.username,
+    merchantPassword: config.password,
+    transactionReferenceNumber: payment.transactionReferenceNumber,
+    requestHash: '',
+    authToken,
+    currency,
+    transactionTypeId,
+    transactionAmount: amountStr,
+    ipnUrl: config.ipnUrl,
+    isRedirectionRequest: '1',
+  };
 }
 
 /**
