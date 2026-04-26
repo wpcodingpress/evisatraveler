@@ -127,7 +127,7 @@ function HeroSection({ countries }: { countries: Country[] }) {
 
       <div className="absolute inset-0 overflow-hidden">
         <div 
-          className="absolute right-0 bottom-0 w-[25%] h-[65%] z-[1]"
+          className="absolute right-0 bottom-0 w-[30%] h-[65%] z-[1] md:w-[25%] md:h-[65%]"
           style={{ transform: `translateY(${parallaxOffset * 0.2}px)` }}
         >
           <img 
@@ -135,6 +135,15 @@ function HeroSection({ countries }: { countries: Country[] }) {
             alt="Travel illustration" 
             className="w-full h-full object-contain"
             style={{ opacity: 0.85 }}
+          />
+        </div>
+        
+        <div className="absolute top-[5%] left-1/2 -translate-x-1/2 w-[80%] h-auto z-[1] md:hidden">
+          <img 
+            src="/illustration.png" 
+            alt="Travel illustration" 
+            className="w-full h-full object-contain"
+            style={{ opacity: 0.4 }}
           />
         </div>
         
