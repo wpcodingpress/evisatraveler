@@ -512,10 +512,12 @@ export default function HomePage() {
         .then(r => r.json())
         .then(data => data.countries || [])
         .catch(() => []),
-      fetch('/api/popular-destinations')
+fetch('/api/visa/destinations')
         .then(r => r.json())
-        .then(data => data.destinations || [])
-        .catch(() => [])
+        .then(data => {
+          const processed = Array.isArray(data) ? data : (data.destinations || []);
+          setDestinations(processed);
+        })
     ]).then(([countriesData, destinationsData]) => {
       setCountries(countriesData);
       setDestinations(destinationsData);
