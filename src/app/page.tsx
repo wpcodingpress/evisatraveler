@@ -5,8 +5,6 @@ import { EnhancedSearchForm } from '@/components/home/enhanced-search-form';
 import Link from 'next/link';
 import { getCountryFlagEmoji } from '@/lib/utils';
 
-export const dynamic = 'force-dynamic';
-
 interface Country {
   id: string;
   name: string;
