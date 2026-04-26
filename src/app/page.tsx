@@ -121,7 +121,7 @@ function HeroSection({ countries }: { countries: Country[] }) {
 
       <div className="absolute inset-0 overflow-hidden">
         <div 
-          className="absolute right-0 bottom-0 w-[40%] h-[75%] z-[1]"
+          className="absolute right-0 bottom-0 w-[35%] h-[70%] z-[1]"
           style={{ transform: `translateY(${parallaxOffset * 0.2}px)` }}
         >
           <img 
@@ -147,9 +147,9 @@ function HeroSection({ countries }: { countries: Country[] }) {
         />
       ))}
 
-      <div className="relative z-10 container-custom py-12 lg:py-16">
-        <div className="text-center max-w-4xl mx-auto mb-8 lg:mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 backdrop-blur-sm border border-violet-200 text-violet-700 text-sm font-medium mb-6 animate-fade-in">
+      <div className="relative z-10 container-custom py-8 lg:py-12">
+        <div className="text-center max-w-4xl mx-auto mb-6 lg:mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 backdrop-blur-sm border border-violet-200 text-violet-700 text-sm font-medium mb-4 animate-fade-in">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-500 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-600" />
@@ -157,7 +157,7 @@ function HeroSection({ countries }: { countries: Country[] }) {
             Trusted by 100,000+ Travelers Worldwide
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 mb-4 lg:mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 mb-3 lg:mb-4 leading-tight">
             Get Your{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600">
               Visa Approved
@@ -165,12 +165,12 @@ function HeroSection({ countries }: { countries: Country[] }) {
             in Record Time
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed px-4">
+          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-6 leading-relaxed px-4">
             Apply for tourist, business, or transit visa online. 
             <span className="text-violet-600 font-semibold"> Fast approval in 24-72 hours</span> with 99.9% success rate.
           </p>
 
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl text-white font-bold text-lg shadow-lg shadow-violet-500/25 mb-8">
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl text-white font-bold text-lg shadow-lg shadow-violet-500/25 mb-6">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -182,7 +182,7 @@ function HeroSection({ countries }: { countries: Country[] }) {
           <EnhancedSearchForm countries={countries} />
         </div>
 
-        <div className="flex flex-wrap justify-center gap-4 lg:gap-8 mt-8 lg:mt-10">
+        <div className="flex flex-wrap justify-center gap-4 lg:gap-8 mt-6 lg:mt-8">
           {[
             { label: '99.9% Approval', icon: '✓' },
             { label: 'Secure & Encrypted', icon: '🔒' },
