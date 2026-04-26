@@ -205,49 +205,70 @@ export default function TrackPage() {
       </div>
 
       {/* PromoBranding Section */}
-      <section className="py-16 lg:py-20 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      <section className="py-20 lg:py-32 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-violet-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-fuchsia-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-fuchsia-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 right-1/3 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl" />
         </div>
         
         <div className="container-custom relative z-10">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
               Why Choose{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-400 to-emerald-400">
                 eVisa Traveler
               </span>
             </h2>
-            <p className="text-slate-300 max-w-xl mx-auto">
-              Fast, secure, and reliable visa services
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+              Experience the future of visa applications
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-6xl mx-auto">
             {[
-              { title: 'Apply in Minutes', desc: 'Quick 5-minute application' },
-              { title: 'Zero Errors', desc: 'Smart validation' },
-              { title: 'Instant Updates', desc: 'Real-time notifications' },
-              { title: 'PDF Delivered', desc: 'Visa sent to email' },
+              { num: '01', title: 'Apply in Minutes', desc: 'Complete your entire visa application in just 5 minutes from anywhere' },
+              { num: '02', title: 'Zero Errors', desc: 'Our smart validation ensures your application is error-free' },
+              { num: '03', title: 'Instant Updates', desc: 'Get real-time notifications on your visa status via SMS & email' },
+              { num: '04', title: 'PDF Delivered', desc: 'Your approved visa PDF sent directly to your inbox' },
             ].map((feature, i) => (
-              <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5">
-                <h3 className="text-lg font-bold text-white mb-1">{feature.title}</h3>
+              <div key={i} className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 lg:p-8 hover:bg-white/10 hover:border-violet-500/30 transition-all duration-500">
+                <div className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent opacity-50 mb-4">
+                  {feature.num}
+                </div>
+                <div className="w-14 h-14 mb-5 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 flex items-center justify-center">
+                  {i === 0 && <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>}
+                  {i === 1 && <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                  {i === 2 && <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17l5 5-5 5m0-5l-5 5-5-5m5 0V7" /></svg>}
+                  {i === 3 && <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-violet-300 transition-colors">{feature.title}</h3>
                 <p className="text-slate-400 text-sm">{feature.desc}</p>
               </div>
             ))}
+          </div>
+
+          <div className="mt-12 flex justify-center">
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-white font-medium">98% Success Rate</span>
+              </div>
+              <div className="w-px h-5 bg-white/20" />
+              <div className="text-slate-300">Trusted by 50,000+ Travelers</div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600">
+      <section className="py-8 lg:py-10 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600">
         <div className="container-custom text-center">
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-3">Ready to Apply for Your Visa?</h2>
-          <p className="text-white/80 mb-5">Start your application today and get approved in 24-72 hours</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/visa" className="px-6 py-3 bg-white text-violet-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">Apply Now</Link>
-            <Link href="/" className="px-6 py-3 bg-white/20 text-white font-semibold rounded-xl hover:bg-white/30 transition-colors">Explore Countries</Link>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">Ready to Get Your Visa?</h2>
+          <p className="text-white/80 max-w-xl mx-auto mb-6">Apply now and get approved in 24-72 hours. Fast, simple, and secure.</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/visa" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-600 font-bold rounded-xl hover:bg-slate-50 transition-colors shadow-lg">Apply Now<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></Link>
+            <Link href="/track" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-colors border border-white/30">Track Application</Link>
           </div>
         </div>
       </section>

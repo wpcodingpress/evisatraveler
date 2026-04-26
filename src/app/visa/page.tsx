@@ -392,7 +392,7 @@ export default function VisaPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 lg:py-16 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600">
+      <section className="py-8 lg:py-10 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600">
         <div className="container-custom text-center">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">
             Ready to Get Your Visa?
