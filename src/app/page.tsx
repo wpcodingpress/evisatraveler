@@ -505,19 +505,15 @@ export default function HomePage() {
   const [destinations, setDestinations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+useEffect(() => {
     setLoading(true);
     Promise.all([
       fetch('/api/countries')
         .then(r => r.json())
-        .then(data => data.countries || [])
-        .catch(() => []),
-fetch('/api/visa/destinations')
+        .then(data => data.countries || []),
+      fetch('/api/visa/destinations')
         .then(r => r.json())
-        .then(data => {
-          const processed = Array.isArray(data) ? data : (data.destinations || []);
-          setDestinations(processed);
-        })
+        .then(data => Array.isArray(data) ? data : (data.destinations || []))
     ]).then(([countriesData, destinationsData]) => {
       setCountries(countriesData);
       setDestinations(destinationsData);
