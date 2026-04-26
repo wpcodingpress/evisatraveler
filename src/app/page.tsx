@@ -359,11 +359,11 @@ function PopularDestinations({ destinations }: { destinations: any[] }) {
   );
 }
 
-function VisaTypes() {
-  const visaTypes = [
-    { title: 'Tourist Visa', desc: 'For leisure travel and vacation', price: 'From $49', color: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-50', icon: '🏖️' },
-    { title: 'Business Visa', desc: 'For business meetings and work', price: 'From $99', color: 'from-violet-500 to-purple-500', bg: 'bg-violet-50', icon: '💼' },
-    { title: 'Transit Visa', desc: 'For connecting flights', price: 'From $29', color: 'from-amber-500 to-orange-500', bg: 'bg-amber-50', icon: '✈️' },
+function TouristVisa() {
+  const features = [
+    { icon: '⚡', title: '24-72 Hours Processing', desc: 'Fast approval guaranteed' },
+    { icon: '📋', title: 'Simple Documentation', desc: 'Just passport & photo required' },
+    { icon: '💰', title: 'Affordable Pricing', desc: 'Best rates starting from ₨9,800' },
   ];
 
   return (
@@ -374,45 +374,47 @@ function VisaTypes() {
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
-            Choose Your Visa Type
+            Tourist Visa
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
-            What Type of{' '}
+            Apply for Your{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">
-              Visa Do You Need?
-            </span>
+              Tourist Visa
+            </span>{' '}
+            Online
           </h2>
           <p className="text-slate-600 mt-2 max-w-xl mx-auto">
-            Select the visa category that best fits your travel purpose
+            Fast, simple, and secure tourist visa applications for Pakistan travelers
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-          {visaTypes.map((visa) => (
-            <Link
-              key={visa.title}
-              href="/visa"
-              className="group bg-white rounded-2xl p-6 lg:p-8 shadow-lg border border-slate-200 hover:shadow-2xl hover:border-violet-300 transition-all duration-300"
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-4xl mx-auto">
+          {features.map((feature, index) => (
+            <div
+              key={index}
+              className="group bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-6 lg:p-8 border border-violet-200 hover:shadow-xl hover:shadow-violet-500/20 transition-all duration-300"
             >
-              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${visa.color} flex items-center justify-center text-3xl mb-5 group-hover:scale-110 transition-transform`}>
-                {visa.icon}
+              <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">
+                {feature.icon}
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-violet-600 transition-colors">
-                {visa.title}
+              <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-violet-600 transition-colors">
+                {feature.title}
               </h3>
-              <p className="text-slate-600 text-sm mb-4">{visa.desc}</p>
-              <div className="flex items-center justify-between">
-                <span className={`text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r ${visa.color}`}>
-                  {visa.price}
-                </span>
-                <span className="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-violet-600 flex items-center justify-center transition-colors">
-                  <svg className="w-5 h-5 text-slate-600 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
-            </Link>
+              <p className="text-slate-600 text-sm">{feature.desc}</p>
+            </div>
           ))}
+        </div>
+
+        <div className="text-center mt-10">
+          <Link
+            href="/visa"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-2xl hover:shadow-purple-500/40 hover:scale-105"
+          >
+            Apply Tourist Visa Now
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
         </div>
       </div>
     </section>
@@ -524,8 +526,8 @@ useEffect(() => {
     <main>
       <HeroSection countries={countries} />
       <StatsBar />
-      <PopularDestinations destinations={destinations} />
-      <VisaTypes />
+<PopularDestinations destinations={destinations} />
+      <TouristVisa />
       <HowItWorks />
       <CTASection />
     </main>
