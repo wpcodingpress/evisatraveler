@@ -330,35 +330,32 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
           <div className="mt-6">
             <button
               type="button"
-              disabled={!fromCountry || !toCountry}
+              disabled={true}
               onClick={handleSearch}
-              className={`relative w-full h-14 rounded-xl font-bold overflow-hidden group transition-all duration-300 flex items-center justify-center gap-3 ${
+              className={`relative w-full h-14 rounded-xl font-bold overflow-hidden transition-all duration-300 flex items-center justify-center gap-3 ${
                 !fromCountry || !toCountry 
-                  ? 'bg-gradient-to-r from-violet-50 to-purple-50 border-2 border-violet-200 text-violet-600 hover:border-violet-300 hover:shadow-xl hover:shadow-violet-200/40 cursor-pointer' 
-                  : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:via-purple-500 hover:to-fuchsia-500 shadow-lg hover:shadow-2xl hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98] text-white'
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:via-purple-500 hover:to-fuchsia-500 shadow-lg hover:shadow-2xl hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98] text-white cursor-pointer'
               }`}
             >
               {!fromCountry || !toCountry ? (
-                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-violet-100 via-purple-100 to-fuchsia-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              ) : (
-                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-              )}
-              <span className="relative flex items-center gap-2">
-                {!fromCountry || !toCountry ? (
-                  <svg className="w-5 h-5 relative" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
-                ) : (
-                  <svg className="w-5 h-5 relative" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                )}
-                <span className="text-lg tracking-wide">Apply Now</span>
-              </span>
-              {!fromCountry || !toCountry ? (
-                <span className="absolute top-1 right-2 w-2 h-2 bg-violet-400 rounded-full animate-pulse" />
+                  <span className="text-lg tracking-wide">Select Countries to Continue</span>
+                </span>
               ) : (
-                <span className="absolute top-0 right-0 w-3 h-3 bg-green-400 rounded-full animate-ping" />
+                <>
+                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                  <span className="flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                    <span className="text-lg tracking-wide">Apply Now</span>
+                  </span>
+                  <span className="absolute top-0 right-0 w-3 h-3 bg-green-400 rounded-full animate-ping" />
+                </>
               )}
             </button>
           </div>
