@@ -330,7 +330,7 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
           <div className="mt-6">
             <button
               type="button"
-              disabled={true}
+              disabled={!fromCountry || !toCountry}
               onClick={handleSearch}
               className={`relative w-full h-14 rounded-xl font-bold overflow-hidden transition-all duration-300 flex items-center justify-center gap-3 ${
                 !fromCountry || !toCountry 
