@@ -703,8 +703,8 @@ export function Footer() {
             <div className="space-y-4">
               <div className="flex flex-wrap gap-3 items-center">
                 {/* Visa */}
-                <div className="bg-white rounded-lg px-3 py-1.5 flex items-center justify-center h-10">
-                  <svg viewBox="0 0 50 30" className="h-7 w-auto" fill="none">
+                <div className="flex items-center justify-center">
+                  <svg viewBox="0 0 50 30" className="h-8 w-auto" fill="none">
                     <rect width="50" height="30" rx="3" fill="#1A1F71"/>
                     <path d="M19 21H17L18.75 11H21.25L19.5 21Z" fill="white"/>
                     <path d="M28 11.5C27.5 11.3 26.75 11.1 25.75 11.1C23.25 11.1 21.5 12.4 21.5 14.2C21.5 15.6 22.75 16.3 23.75 16.8C24.75 17.3 25.25 17.6 25.25 18C25.25 18.7 24.5 19 23.75 19C22.75 19 22.25 18.9 21.25 18.4L21 18.2L20.75 20.3C21.5 20.6 22.75 20.9 24 20.9C26.75 20.9 28.5 19.5 28.5 17.5C28.5 16.3 27.75 15.4 26.25 14.7C25.25 14.2 24.5 13.9 24.5 13.3C24.5 12.8 25 12.4 25.75 12.4C26.5 12.4 27 12.5 27.5 12.7L27.75 12.85L28 11.5Z" fill="white"/>
@@ -714,8 +714,8 @@ export function Footer() {
                   </svg>
                 </div>
                 {/* Mastercard */}
-                <div className="bg-white rounded-lg px-3 py-1.5 flex items-center justify-center h-10">
-                  <svg viewBox="0 0 50 30" className="h-7 w-auto" fill="none">
+                <div className="flex items-center justify-center">
+                  <svg viewBox="0 0 50 30" className="h-8 w-auto" fill="none">
                     <rect width="50" height="30" rx="3" fill="#000000"/>
                     <circle cx="19.5" cy="15" r="7.5" fill="#EB001B"/>
                     <circle cx="30.5" cy="15" r="7.5" fill="#F79E1B"/>
@@ -723,15 +723,15 @@ export function Footer() {
                   </svg>
                 </div>
                 {/* PayPal */}
-                <div className="bg-white rounded-lg px-3 py-1.5 flex items-center justify-center h-10">
-                  <svg viewBox="0 0 50 30" className="h-6 w-auto" fill="none">
+                <div className="flex items-center justify-center">
+                  <svg viewBox="0 0 50 30" className="h-7 w-auto" fill="none">
                     <rect width="50" height="30" rx="3" fill="#003087"/>
                     <text x="25" y="19" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold" fontFamily="Arial">PayPal</text>
                   </svg>
                 </div>
                 {/* American Express */}
-                <div className="bg-white rounded-lg px-3 py-1.5 flex items-center justify-center h-10">
-                  <svg viewBox="0 0 50 30" className="h-6 w-auto" fill="none">
+                <div className="flex items-center justify-center">
+                  <svg viewBox="0 0 50 30" className="h-7 w-auto" fill="none">
                     <rect width="50" height="30" rx="3" fill="#2E77BC"/>
                     <text x="25" y="20" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold" fontFamily="Arial">AMEX</text>
                   </svg>
