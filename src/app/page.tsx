@@ -540,6 +540,77 @@ function HowItWorks() {
 <span className="text-emerald-600 font-bold">99.9% Approval Rate</span> • Visa in 24-72 Hours
             </span>
           </div>
+</div>
+      </div>
+    </section>
+  );
+}
+
+function FAQSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  
+  const faqs = [
+    { q: 'How long does visa processing take?', a: 'Processing times vary by destination. Most tourist visas are processed within 3-5 business days.' },
+    { q: 'What documents do I need?', a: 'Typically, you\'ll need a valid passport, recent passport-sized photo, and travel itinerary.' },
+    { q: 'Is my information secure?', a: 'Yes! We use 256-bit SSL encryption to protect your personal data. Your information is never shared with third parties.' },
+    { q: 'Can I get a refund if my visa is denied?', a: 'Our refund policy varies by case. If the denial is due to our processing error, we offer a full refund. Contact our support team for specific situations.' },
+    { q: 'How will I receive my visa?', a: 'Approved visas are sent to your email as a PDF document. You can print it or save it digitally on your phone.' },
+  ];
+
+  return (
+    <section className="py-16 lg:py-20 bg-slate-50">
+      <div className="container-custom">
+        <div className="text-center mb-10 lg:mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-violet-100 text-violet-700 rounded-full text-sm font-medium mb-4">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3 3 0 011 7h-1a1 1 0 01-1 1 1 1 0 11-2 0H7a1 1 0 01-1-1 1 1 0 011-1h1a1 1 0 001-1 1 1 0 011-1h.18A4 4 0 0010 4a4 4 0 000 4h1a1 1 0 001-1 1 1 0 011-1h1a3 3 0 010 6zm-4.5-2h3a1 1 0 011 1v1a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+            FAQ
+          </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
+            Frequently Asked{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">
+              Questions
+            </span>
+          </h2>
+          <p className="text-slate-600 mt-2 max-w-xl mx-auto">
+            Quick answers to common questions
+          </p>
+        </div>
+
+        <div className="max-w-3xl mx-auto">
+          <div className="space-y-4">
+            {faqs.map((faq, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">
+                <button
+                  onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                  className="w-full flex items-center justify-between p-5 lg:p-6 text-left hover:bg-slate-50 transition-colors"
+                >
+                  <span className="font-semibold text-slate-900 pr-4">{faq.q}</span>
+                  <svg className={`w-5 h-5 text-violet-600 flex-shrink-0 transition-transform duration-300 ${openIndex === i ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div className={`overflow-hidden transition-all duration-300 ${openIndex === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className="px-5 lg:px-6 pb-5 lg:pb-6">
+                    <p className="text-slate-600">{faq.a}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link
+              href="/faq"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/30 transition-all hover:scale-105"
+            >
+              View All FAQs
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </div>
         </div>
       </div>
     </section>
@@ -607,6 +678,7 @@ useEffect(() => {
 <PopularDestinations destinations={destinations} />
       <TouristVisa />
       <HowItWorks />
+      <FAQSection />
       <CTASection />
     </main>
   );
