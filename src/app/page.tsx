@@ -423,16 +423,56 @@ function TouristVisa() {
 
 function HowItWorks() {
   const steps = [
-    { num: '01', title: 'Choose Destination', desc: 'Select your destination country and visa type', icon: '🔍' },
-    { num: '02', title: 'Fill Application', desc: 'Complete the online form with required details', icon: '📝' },
-    { num: '03', title: 'Upload Documents', desc: 'Upload your passport and supporting documents', icon: '📤' },
-    { num: '04', title: 'Get Approved', desc: 'Receive your e-visa via email in 24-72 hours', icon: '✅' },
+    { 
+      num: '01', 
+      title: 'Select Country', 
+      desc: 'Choose your destination',
+      icon: (
+        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.845M4 10h10M4 10h10a2 2 0 012 2v3.845M4 10v6a2 2 0 002 2h10a2 2 0 002-2v-6M4 10V7a2 2 0 012-2h10a2 2 0 012 2v3" />
+        </svg>
+      ),
+      color: 'from-blue-500 to-cyan-500'
+    },
+    { 
+      num: '02', 
+      title: 'Fill Form', 
+      desc: 'Enter your details',
+      icon: (
+        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-3.765-1.918A2 2 0 017.276 9H6a2 2 0 00-2 2v2a2 2 0 002 2h2m0 5a2 2 0 01-2 2h6a2 2 0 01-2-2v-2m0-5V6a2 2 0 012-2h2a2 2 0 012 2v3" />
+        </svg>
+      ),
+      color: 'from-violet-500 to-purple-500'
+    },
+    { 
+      num: '03', 
+      title: 'Pay Fee', 
+      desc: 'Secure payment',
+      icon: (
+        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      ),
+      color: 'from-emerald-500 to-teal-500'
+    },
+    { 
+      num: '04', 
+      title: 'Get Visa', 
+      desc: 'Visa sent to email',
+      icon: (
+        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      ),
+      color: 'from-amber-500 to-orange-500'
+    },
   ];
 
   return (
-    <section className="py-16 lg:py-20 bg-slate-50">
+    <section className="py-16 lg:py-20 bg-gradient-to-br from-slate-50 via-white to-violet-50">
       <div className="container-custom">
-        <div className="text-center mb-10 lg:mb-12">
+        <div className="text-center mb-10 lg:mb-14">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-violet-100 text-violet-700 rounded-full text-sm font-medium mb-4">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l3-3a1 1 0 00-1.414-1.414L9 9.586 7.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -446,22 +486,60 @@ function HowItWorks() {
             </span>
           </h2>
           <p className="text-slate-600 mt-2 max-w-xl mx-auto">
-            Get your visa in four simple steps
+            Get your tourist visa in 4 easy steps
           </p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          {steps.map((step, i) => (
-            <div key={step.num} className="relative bg-white rounded-2xl p-5 lg:p-6 shadow-sm border border-slate-200">
-              {i < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-1/2 -right-3 w-6 h-0.5 bg-gradient-to-r from-violet-300 to-purple-300 -translate-y-1/2" />
-              )}
-              <div className="text-4xl lg:text-5xl font-bold text-violet-200 mb-3">{step.num}</div>
-              <div className="text-3xl mb-3">{step.icon}</div>
-              <h3 className="font-bold text-slate-900 mb-1">{step.title}</h3>
-              <p className="text-sm text-slate-600">{step.desc}</p>
+        <div className="relative max-w-5xl mx-auto">
+          {/* Connecting Line - Desktop */}
+          <div className="hidden lg:block absolute top-20 left-20 right-20 h-1 bg-gradient-to-r from-violet-200 via-purple-200 to-violet-200 rounded-full" />
+          
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-2">
+            {steps.map((step, i) => (
+              <div key={step.num} className="relative group">
+                {/* Card */}
+                <div className="relative bg-white rounded-2xl p-5 lg:p-6 shadow-lg border border-slate-200 hover:shadow-2xl hover:shadow-violet-500/20 transition-all duration-300 hover:-translate-y-2 h-full">
+                  {/* Number Badge */}
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 bg-gradient-to-r from-violet-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                    {step.num}
+                  </div>
+                  
+                  {/* Icon Circle */}
+                  <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center text-white shadow-lg mt-2 group-hover:scale-110 transition-transform duration-300`}>
+                    {step.icon}
+                  </div>
+                  
+                  <div className="text-center">
+                    <h3 className="font-bold text-slate-900 mb-1 text-lg">{step.title}</h3>
+                    <p className="text-sm text-slate-600">{step.desc}</p>
+                  </div>
+                </div>
+                
+                {/* Arrow for mobile */}
+                {i % 2 === 0 && (
+                  <div className="lg:hidden absolute -right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center">
+                    <svg className="w-4 h-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Processing Time Badge */}
+        <div className="mt-10 flex justify-center">
+          <div className="inline-flex items-center gap-3 px-6 py-3 bg-white rounded-full shadow-lg border border-violet-200">
+            <div className="flex -space-x-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center text-white text-xs border-2 border-white">✓</div>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500 flex items-center justify-center text-white text-xs border-2 border-white">✓</div>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-violet-400 to-purple-500 flex items-center justify-center text-white text-xs border-2 border-white">✓</div>
             </div>
-          ))}
+            <span className="text-slate-700 font-medium text-sm">
+<span className="text-emerald-600 font-bold">99.9% Approval Rate</span> • Visa in 24-72 Hours
+            </span>
+          </div>
         </div>
       </div>
     </section>
