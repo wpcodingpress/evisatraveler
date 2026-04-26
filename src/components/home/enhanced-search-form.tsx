@@ -332,19 +332,32 @@ export function EnhancedSearchForm({ countries }: SearchFormProps) {
               type="button"
               disabled={!fromCountry || !toCountry}
               onClick={handleSearch}
-              className={`relative w-full h-14 rounded-xl font-bold text-white overflow-hidden group ${!fromCountry || !toCountry ? 'bg-slate-300 cursor-not-allowed' : ''} ${!fromCountry || !toCountry ? '' : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:via-purple-500 hover:to-fuchsia-500'} transition-all shadow-lg hover:shadow-2xl hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3`}
+              className={`relative w-full h-14 rounded-xl font-bold overflow-hidden group transition-all duration-300 flex items-center justify-center gap-3 ${
+                !fromCountry || !toCountry 
+                  ? 'bg-gradient-to-r from-violet-100 to-purple-100 border-2 border-violet-300 text-violet-400 cursor-pointer hover:border-violet-400 hover:shadow-lg hover:shadow-violet-200/50' 
+                  : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:via-purple-500 hover:to-fuchsia-500 shadow-lg hover:shadow-2xl hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98] text-white'
+              }`}
             >
-              {!fromCountry || !toCountry ? null : (
-                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-              )}
-              <span className="relative flex items-center gap-2">
-                <svg className="w-5 h-5 relative" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-                <span className="text-lg tracking-wide">Apply Now</span>
-              </span>
-              {!fromCountry || !toCountry ? null : (
-                <span className="absolute top-0 right-0 w-3 h-3 bg-green-400 rounded-full animate-ping" />
+              {!fromCountry || !toCountry ? (
+                <>
+                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-violet-200 via-purple-200 to-fuchsia-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <span className="absolute top-0 right-0 w-2 h-2 bg-violet-400 rounded-full animate-pulse" />
+                  <svg className="w-5 h-5 relative" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span className="text-lg tracking-wide">Select Nationality First</span>
+                </>
+              ) : (
+                <>
+                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                  <span className="relative flex items-center gap-2">
+                    <svg className="w-5 h-5 relative" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                    <span className="text-lg tracking-wide">Apply Now</span>
+                  </span>
+                  <span className="absolute top-0 right-0 w-3 h-3 bg-green-400 rounded-full animate-ping" />
+                </>
               )}
             </button>
           </div>
