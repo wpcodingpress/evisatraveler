@@ -567,19 +567,19 @@ export function Footer() {
   return (
     <footer className="bg-slate-950 text-white">
       <div className="container-custom py-12 lg:py-16">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10 lg:gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           
           {/* Brand */}
-          <div className="col-span-2 lg:col-span-2">
-            <Link href="/" className="group flex items-center gap-3 mb-6">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <Link href="/" className="group flex items-center gap-3 mb-5">
               <div className="relative">
                 <svg
-                  width="44"
-                  height="44"
+                  width="40"
+                  height="40"
                   viewBox="0 0 48 48"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3"
+                  className="transition-transform duration-500 group-hover:scale-110"
                 >
                   <defs>
                     <linearGradient id="logoGradientFooter" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -616,21 +616,20 @@ export function Footer() {
                   <circle cx="24" cy="24" r="3" fill="white" />
                 </svg>
               </div>
-              <span className="text-xl font-bold">eVisaTraveler</span>
+              <span className="text-lg font-bold">eVisaTraveler</span>
             </Link>
-            <p className="text-sm text-slate-400 mb-6 max-w-sm leading-relaxed">
-              Your trusted partner for fast and secure visa applications worldwide. Serving travelers since 2020.
+            <p className="text-sm text-slate-400 mb-6 max-w-xs leading-relaxed">
+              Your trusted partner for fast and secure visa applications worldwide.
             </p>
-            {/* Contact Info */}
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <a href="mailto:sheikhshoaibahmed81@gmail.com" className="flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors">
-                <svg className="w-5 h-5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-violet-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                sheikhshoaibahmed81@gmail.com
+                <span className="truncate">sheikhshoaibahmed81@gmail.com</span>
               </a>
               <a href="tel:+923009685072" className="flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors">
-                <svg className="w-5 h-5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-violet-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 016.112 6.112l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 8V5z" />
                 </svg>
                 +92 300 968 5072
@@ -638,48 +637,37 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Visa Services */}
+          {/* Explore */}
           <div>
-            <h4 className="font-semibold mb-5 text-violet-400">Visa Services</h4>
-            <ul className="space-y-3.5 text-sm text-slate-400">
-              <li><a href="/visa" className="hover:text-white transition-colors">Tourist Visa</a></li>
-              <li><a href="/visa" className="hover:text-white transition-colors">Business Visa</a></li>
-              <li><a href="/visa" className="hover:text-white transition-colors">Transit Visa</a></li>
-              <li><a href="/visa" className="hover:text-white transition-colors">Student Visa</a></li>
-            </ul>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-semibold mb-5 text-violet-400">Quick Links</h4>
-            <ul className="space-y-3.5 text-sm text-slate-400">
-              <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
-              <li><a href="/faq" className="hover:text-white transition-colors">FAQ</a></li>
-              <li><a href="/contact" className="hover:text-white transition-colors">Contact Us</a></li>
-              <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+            <h4 className="font-semibold mb-4 text-white">Explore</h4>
+            <ul className="space-y-3 text-sm">
+              <li><Link href="/visa" className="text-slate-400 hover:text-white transition-colors">All Destinations</Link></li>
+              <li><Link href="/track" className="text-slate-400 hover:text-white transition-colors">Track Application</Link></li>
+              <li><Link href="/about" className="text-slate-400 hover:text-white transition-colors">About Us</Link></li>
+              <li><Link href="/faq" className="text-slate-400 hover:text-white transition-colors">FAQ</Link></li>
             </ul>
           </div>
 
           {/* Support */}
           <div>
-            <h4 className="font-semibold mb-5 text-violet-400">Support</h4>
-            <ul className="space-y-3.5 text-sm text-slate-400">
-              <li><a href="/support" className="hover:text-white transition-colors">Help Center</a></li>
-              <li><a href="/track" className="hover:text-white transition-colors">Track Application</a></li>
-              <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
-              <li><a href="/cookies" className="hover:text-white transition-colors">Cookie Policy</a></li>
+            <h4 className="font-semibold mb-4 text-white">Support</h4>
+            <ul className="space-y-3 text-sm">
+              <li><Link href="/support" className="text-slate-400 hover:text-white transition-colors">Help Center</Link></li>
+              <li><Link href="/contact" className="text-slate-400 hover:text-white transition-colors">Contact Us</Link></li>
+              <li><Link href="/login" className="text-slate-400 hover:text-white transition-colors">Sign In</Link></li>
+              <li><Link href="/register" className="text-slate-400 hover:text-white transition-colors">Create Account</Link></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-slate-800 mt-14 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="border-t border-slate-800/60 mt-12 pt-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-slate-500">&copy; 2026 eVisaTraveler. All rights reserved.</p>
-            <div className="flex items-center gap-6 text-sm text-slate-500">
-              <a href="/terms" className="hover:text-white transition-colors">Terms of Service</a>
-              <a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="/cookies" className="hover:text-white transition-colors">Cookie Policy</a>
+            <div className="flex items-center gap-5 text-sm">
+              <Link href="/terms" className="text-slate-500 hover:text-white transition-colors">Terms</Link>
+              <Link href="/privacy" className="text-slate-500 hover:text-white transition-colors">Privacy</Link>
+              <Link href="/cookies" className="text-slate-500 hover:text-white transition-colors">Cookies</Link>
             </div>
           </div>
         </div>
