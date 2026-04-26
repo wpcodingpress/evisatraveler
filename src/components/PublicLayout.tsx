@@ -30,10 +30,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   const isAdmin = pathname?.startsWith('/admin');
   const isDashboard = pathname?.startsWith('/dashboard') && !pathname?.startsWith('/dashboard/admin');
 
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
   if (isAdmin || isDashboard) {
     return <>{children}</>;
   }
@@ -41,7 +37,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <Header />
-      <MobileMenuRoot user={user} />
+      {mounted && <MobileMenuRoot user={user} />}
       {children}
       <Footer />
     </>
