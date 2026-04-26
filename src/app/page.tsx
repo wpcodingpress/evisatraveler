@@ -625,42 +625,13 @@ const promoFeatures = [
 ];
 
 function PromoBranding() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const [visibleItems, setVisibleItems] = useState<number[]>([]);
-  
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-    
-    const handleScroll = () => {
-      const cards = section.querySelectorAll('.promo-card');
-      const newVisible: number[] = [];
-      
-      cards.forEach((card, index) => {
-        const rect = card.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        // When card is 50% visible in viewport
-        if (rect.top < windowHeight * 0.85 && rect.bottom > 0) {
-          newVisible.push(index);
-        }
-      });
-      
-      setVisibleItems(newVisible);
-    };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Check initial state
-    
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  
   return (
-    <section ref={sectionRef} className="py-20 lg:py-32 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <section className="py-20 lg:py-32 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-fuchsia-500/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 right-1/3 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-fuchsia-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 right-1/3 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl animate-pulse delay-500" />
       </div>
       
       <div className="container-custom relative z-10">
@@ -680,53 +651,9 @@ function PromoBranding() {
           {promoFeatures.map((feature, i) => (
             <div 
               key={i} 
-              className="promo-card group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 lg:p-8 hover:bg-white/10 hover:border-violet-500/30 transition-all duration-500"
-              style={{
-                opacity: visibleItems.includes(i) ? 1 : 0.1,
-                transform: visibleItems.includes(i) ? 'none' : 'translateY(60px)',
-                transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
-              }}
+              className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 lg:p-8 hover:bg-white/10 hover:border-violet-500/30 transition-all duration-500 animate-fade-in-up"
+              style={{ animationDelay: `${i * 150}ms` }}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-violet-600/0 to-violet-600/0 group-hover:from-violet-600/5 group-hover:to-transparent rounded-2xl transition-all duration-500" />
-              
-              <div className="relative">
-                <div className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent opacity-50 mb-4">
-                  {feature.num}
-                </div>
-                
-                <div className="w-14 h-14 mb-5 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 flex items-center justify-center">
-                  {i === 0 && (
-                    <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  )}
-                  {i === 1 && (
-                    <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  )}
-                  {i === 2 && (
-                    <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17l5 5-5 5m0-5l-5 5-5-5m5 0V7" />
-                    </svg>
-                  )}
-                  {i === 3 && (
-                    <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  )}
-                </div>
-                
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-violet-300 transition-colors">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-400 text-sm">
-                  {feature.desc}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
               <div className="absolute inset-0 bg-gradient-to-b from-violet-600/0 to-violet-600/0 group-hover:from-violet-600/5 group-hover:to-transparent rounded-2xl transition-all duration-500" />
               
               <div className="relative">
