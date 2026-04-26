@@ -625,54 +625,8 @@ const promoFeatures = [
 ];
 
 function PromoBranding() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    const loadGSAP = async () => {
-      const gsapModule = await import('gsap');
-      const gsapCore = gsapModule.default || gsapModule;
-      
-      try {
-        const { ScrollTrigger } = await import('gsap/ScrollTrigger');
-        gsapCore.registerPlugin(ScrollTrigger);
-        
-        const section = sectionRef.current;
-        if (!section) return;
-        
-        const elements = section.querySelectorAll('.promo-item');
-        
-        gsapCore.set(elements, { opacity: 0, y: 60 });
-        
-        gsapCore.to(elements, {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          stagger: 0.2,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 70%',
-            toggleActions: 'play none none reverse',
-          },
-        });
-      } catch (e) {
-        // GSAP not available
-        const section = sectionRef.current;
-        if (section) {
-          const elements = section.querySelectorAll('.promo-item');
-          elements.forEach((el: any) => {
-            el.style.opacity = '1';
-            el.style.transform = 'none';
-          });
-        }
-      }
-    };
-    
-    loadGSAP();
-  }, []);
-  
   return (
-    <section ref={sectionRef} className="py-20 lg:py-32 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <section className="py-20 lg:py-32 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl animate-pulse" />
@@ -682,13 +636,13 @@ function PromoBranding() {
       
       <div className="container-custom relative z-10">
         <div className="text-center mb-12 lg:mb-16">
-          <h2 className="promo-title text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
             Why Choose{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-400 to-emerald-400">
               eVisa Traveler
             </span>
           </h2>
-          <p className="promo-desc text-lg text-slate-300 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             Experience the future of visa applications
           </p>
         </div>
@@ -697,7 +651,8 @@ function PromoBranding() {
           {promoFeatures.map((feature, i) => (
             <div 
               key={i} 
-              className="promo-item group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 lg:p-8 hover:bg-white/10 hover:border-violet-500/30 transition-all duration-500"
+              className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 lg:p-8 hover:bg-white/10 hover:border-violet-500/30 transition-all duration-500 animate-fade-in-up"
+              style={{ animationDelay: `${i * 150}ms` }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-violet-600/0 to-violet-600/0 group-hover:from-violet-600/5 group-hover:to-transparent rounded-2xl transition-all duration-500" />
               
@@ -752,6 +707,23 @@ function PromoBranding() {
           </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.6s ease-out forwards;
+          opacity: 0;
+        }
+      `}</style>
     </section>
   );
 }
