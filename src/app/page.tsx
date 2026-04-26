@@ -273,10 +273,15 @@ function PopularDestinations({ destinations }: { destinations: any[] }) {
           <p className="text-slate-600 mt-2 max-w-xl mx-auto">
             Discover our most sought-after visa destinations with fastest processing times
           </p>
-        </div>
+</div>
 
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {destinations.length > 0 ? destinations.slice(0, 10).map((destination: any, index: number) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {destinations.length > 0 ? (
+            [...destinations].sort((a, b) => {
+              if (a.name === 'Pakistan') return -1;
+              if (b.name === 'Pakistan') return 1;
+              return 0;
+            }).slice(0, 8).map((destination: any, index: number) => (
             <Link
               key={destination.id}
               href={`/visa-search?to=${destination.code}`}
