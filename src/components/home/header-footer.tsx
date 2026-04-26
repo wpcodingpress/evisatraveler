@@ -566,7 +566,7 @@ export function Header() {
 export function Footer() {
   return (
     <footer className="bg-slate-950 text-white">
-      <div className="container-custom py-16 lg:py-20">
+      <div className="container-custom py-12 lg:py-16">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10 lg:gap-12">
           
           {/* Brand */}

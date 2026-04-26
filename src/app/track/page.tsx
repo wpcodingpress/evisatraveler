@@ -205,7 +205,7 @@ export default function TrackPage() {
       </div>
 
       {/* PromoBranding Section */}
-      <section className="py-20 lg:py-32 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      <section className="py-20 lg:py-32 pb-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl" />
           <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-fuchsia-500/20 rounded-full blur-3xl" />
@@ -263,12 +263,12 @@ export default function TrackPage() {
 
       {/* CTA Section */}
       <section className="py-0 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600">
-        <div className="container-custom text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">Ready to Get Your Visa?</h2>
-          <p className="text-white/80 max-w-xl mx-auto mb-6">Apply now and get approved in 24-72 hours. Fast, simple, and secure.</p>
+        <div className="container-custom py-16 lg:py-20 text-center">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6">Ready to Get Your Visa?</h2>
+          <p className="text-white/80 max-w-xl mx-auto mb-8">Apply now and get approved in 24-72 hours. Fast, simple, and secure.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/visa" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-violet-600 font-bold rounded-xl hover:bg-slate-50 transition-colors shadow-lg">Apply Now<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></Link>
-            <Link href="/track" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-colors border border-white/30">Track Application</Link>
+            <Link href="/track" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/20 text-white font-bold rounded-xl hover:bg-white/30 transition-colors">Track Application</Link>
           </div>
         </div>
       </section>
