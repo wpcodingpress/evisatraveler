@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { EnhancedSearchForm } from '@/components/home/enhanced-search-form';
 import Link from 'next/link';
 import { getCountryFlagEmoji } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface Country {
   id: string;
@@ -247,10 +248,7 @@ function StatsBar() {
 
 
 function PopularDestinations({ destinations }: { destinations: any[] }) {
-  const formatPrice = (price: number) => {
-    if (price === 0) return 'Free';
-    return `From $${price}`;
-  };
+  const { formatPrice, selectedCurrency } = useCurrency();
 
   return (
     <section className="py-16 lg:py-20 bg-slate-50">
@@ -321,10 +319,10 @@ function PopularDestinations({ destinations }: { destinations: any[] }) {
                     </span>
                   </div>
 
-                  <div className="flex items-end justify-between">
+<div className="flex items-end justify-between">
                     <div>
                       <p className="text-slate-500 text-xs">Starting from</p>
-                      <p className="text-2xl font-bold text-slate-900">{formatPrice(destination.price)}</p>
+                      <p className="text-2xl font-bold text-slate-900">{destination.price === 0 ? 'Free' : formatPrice(destination.price)}</p>
                     </div>
                     <span className="px-4 py-2.5 bg-violet-600 text-white font-semibold rounded-lg flex items-center gap-2 group-hover:bg-violet-700 transition-all duration-300">
                       Apply
@@ -358,10 +356,11 @@ function PopularDestinations({ destinations }: { destinations: any[] }) {
 }
 
 function TouristVisa() {
+  const { formatPrice } = useCurrency();
   const features = [
     { icon: '⚡', title: '24-72 Hours Processing', desc: 'Fast approval guaranteed' },
     { icon: '📋', title: 'Simple Documentation', desc: 'Just passport & photo required' },
-    { icon: '💰', title: 'Affordable Pricing', desc: 'Best rates starting from ₨9,800' },
+    { icon: '💰', title: 'Affordable Pricing', desc: `Best rates starting from ${formatPrice(35)}` },
   ];
 
   return (
