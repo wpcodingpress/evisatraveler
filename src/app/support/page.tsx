@@ -52,7 +52,7 @@ export default function SupportPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 mb-16">
-            <div className="relative bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-8 text-white overflow-hidden">
+            <a href="mailto:sheikhshoaibahmed81@gmail.com" className="relative bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-8 text-white overflow-hidden group block">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
               <div className="relative">
@@ -69,25 +69,31 @@ export default function SupportPage() {
                 </div>
                 <p className="text-sm text-violet-200">We respond within 24 hours</p>
               </div>
-            </div>
+            </a>
 
-            <div className="relative bg-gradient-to-br from-purple-600 to-fuchsia-600 rounded-2xl p-8 text-white overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-              <div className="relative">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
-                    <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold">Call Us</h3>
-                    <p className="text-purple-200">+92 300 968 5072</p>
-                  </div>
+            <div className="grid grid-rows-2 gap-4">
+              <a href="tel:+923346881820" className="relative bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-5 text-white overflow-hidden group flex items-center">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 016.112 6.112l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
                 </div>
-                <p className="text-sm text-purple-200">Mon-Fri: 9AM - 6PM PKT</p>
-              </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-semibold">Call Us</h3>
+                  <p className="text-green-200 text-sm">+92 334 688 1820</p>
+                </div>
+              </a>
+              <a href="https://wa.me/923346881820" target="_blank" rel="noopener noreferrer" className="relative bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-5 text-white overflow-hidden group flex items-center">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.197-.01-1.679-.415-2.816-.991-.792-.4-.833-1.959-.821-2.196l-.01-.214A2.194 2.194 0 0011.172 5.6c-.301.149-.601.297-.899.476-.149.074-.299.174-.429.273a.66.66 0 00.589.326c.273.074.547.099.82.049.298-.05.783-.497.884-.97.099-.473.199-.967.199-1.296a.582.582 0 00-.196-.392c-.149-.1-.417-.123-.598-.05l-1.106.297A11.14 11.14 0 016.06 4.728 12.14 12.14 0 002.197 4.73a12.04 12.04 0 001.95 4.132c.497.596 1.49.746 1.867.773.596.048 1.016.06 1.448.023.573-.05 1.678-.446 2.275-1.17l.896-.598c.223-.198.298-.298.4-.492a.67.67 0 00.199-.574c-.025-.197-.272-.596-.398-.796l-.6-.3c-.173-.124-.347-.149-.495-.049-.124.074-.523.174-.796.298zM12 22c2.757 0 5-2.243 5-5 0-2.757-2.243-5-5-5-2.757 0-5 2.243-5 5 0 2.757 2.243 5 5 5z"/>
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-semibold">WhatsApp</h3>
+                  <p className="text-emerald-200 text-sm">+92 334 688 1820</p>
+                </div>
+              </a>
             </div>
           </div>
 

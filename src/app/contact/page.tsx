@@ -25,17 +25,19 @@ export default function ContactPage() {
         </svg>
       ),
       title: 'Email Us',
-      value: 'support@evisatraveler.com',
+      value: 'sheikhshoaibahmed81@gmail.com',
+      link: 'mailto:sheikhshoaibahmed81@gmail.com',
       gradient: 'from-purple-600 to-purple-700'
     },
     {
       icon: (
         <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 016.112 6.112l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
         </svg>
       ),
-      title: 'Call Us',
-      value: '+1 (888) 123-4567',
+      title: 'Call / WhatsApp',
+      value: '+92 334 688 1820',
+      link: 'tel:+923346881820',
       gradient: 'from-green-600 to-green-700'
     },
     {
@@ -46,8 +48,9 @@ export default function ContactPage() {
         </svg>
       ),
       title: 'Visit Us',
-      value: 'New York, NY 10001',
-      gradient: 'from-purple-600 to-green-500'
+      value: 'Office 26, 2nd floor, Mall-9, G-9 Markaz, Islamabad',
+      link: 'https://maps.google.com/?q=Office+26+2nd+floor+mall-9+G-9+markaz+Islamabad',
+      gradient: 'from-violet-600 to-fuchsia-600'
     }
   ];
 
@@ -64,7 +67,7 @@ export default function ContactPage() {
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             {contactMethods.map((method, index) => (
-              <div key={index} className={`relative bg-gradient-to-br ${method.gradient} rounded-2xl p-6 text-white overflow-hidden group`}>
+              <a key={index} href={method.link} target="_blank" rel="noopener noreferrer" className={`relative bg-gradient-to-br ${method.gradient} rounded-2xl p-6 text-white overflow-hidden group block`}>
                 <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
                 <div className="relative text-center">
                   <div className="w-14 h-14 mx-auto mb-4 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -73,7 +76,7 @@ export default function ContactPage() {
                   <h3 className="text-lg font-semibold mb-2">{method.title}</h3>
                   <p className="text-sm opacity-90">{method.value}</p>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
 
@@ -171,10 +174,10 @@ export default function ContactPage() {
             <h3 className="text-xl font-bold text-slate-900 mb-4">Business Hours</h3>
             <div className="flex flex-wrap justify-center gap-6 text-slate-600">
               <div className="bg-white rounded-xl px-6 py-3 border border-purple-100">
-                <span className="font-semibold">Monday - Friday:</span> 9:00 AM - 6:00 PM EST
+                <span className="font-semibold">Monday - Friday:</span> 9:00 AM - 6:00 PM PKT
               </div>
               <div className="bg-white rounded-xl px-6 py-3 border border-purple-100">
-                <span className="font-semibold">Saturday:</span> 10:00 AM - 4:00 PM EST
+                <span className="font-semibold">Saturday:</span> 10:00 AM - 4:00 PM PKT
               </div>
               <div className="bg-white rounded-xl px-6 py-3 border border-purple-100">
                 <span className="font-semibold">Sunday:</span> Closed

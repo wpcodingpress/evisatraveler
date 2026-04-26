@@ -566,21 +566,16 @@ export function Header() {
 export function Footer() {
   return (
     <footer className="bg-slate-950 text-white">
-      <div className="container-custom py-12 lg:py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
+      <div className="container-custom py-16 lg:py-20">
+        
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-10 lg:gap-12">
           
-          {/* Brand */}
-          <div className="sm:col-span-2 lg:col-span-1">
+          {/* Brand Column */}
+          <div className="lg:col-span-2 xl:col-span-2">
             <Link href="/" className="group flex items-center gap-3 mb-5">
               <div className="relative">
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 48 48"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="transition-transform duration-500 group-hover:scale-110"
-                >
+                <svg width="44" height="44" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-transform duration-500 group-hover:scale-110">
                   <defs>
                     <linearGradient id="logoGradientFooter" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#8b5cf6" />
@@ -588,86 +583,162 @@ export function Footer() {
                       <stop offset="100%" stopColor="#d946ef" />
                     </linearGradient>
                   </defs>
-                  
-                  <rect
-                    x="4"
-                    y="4"
-                    width="40"
-                    height="40"
-                    rx="10"
-                    fill="url(#logoGradientFooter)"
-                  />
-                  
-                  <path
-                    d="M16 30V18L24 14L32 18V30L24 34L16 30Z"
-                    fill="white"
-                    opacity="0.9"
-                  />
-                  
-                  <path
-                    d="M24 14V34"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    opacity="0.7"
-                  />
-                  
+                  <rect x="4" y="4" width="40" height="40" rx="10" fill="url(#logoGradientFooter)" />
+                  <path d="M16 30V18L24 14L32 18V30L24 34L16 30Z" fill="white" opacity="0.9" />
+                  <path d="M24 14V34" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.7" />
                   <circle cx="24" cy="24" r="3" fill="white" />
                 </svg>
               </div>
-              <span className="text-lg font-bold">eVisaTraveler</span>
+              <span className="text-xl font-bold">eVisaTraveler</span>
             </Link>
-            <p className="text-sm text-slate-400 mb-6 max-w-xs leading-relaxed">
-              Your trusted partner for fast and secure visa applications worldwide.
+            
+            <p className="text-sm text-slate-400 mb-6 max-w-sm leading-relaxed">
+              Your trusted partner for fast and secure visa applications worldwide. We make international travel easy with 99.9% approval rate.
             </p>
-            <div className="space-y-2.5">
-              <a href="mailto:sheikhshoaibahmed81@gmail.com" className="flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors">
-                <svg className="w-4 h-4 text-violet-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <span className="truncate">sheikhshoaibahmed81@gmail.com</span>
+
+            {/* Contact Info with Links */}
+            <div className="space-y-4">
+              {/* Address */}
+              <a href="https://maps.google.com/?q=Office+26+2nd+floor+mall-9+G-9+markaz+Islamabad" target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 text-sm text-slate-300 hover:text-white transition-colors group">
+                <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-500/30 transition-colors">
+                  <svg className="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-white mb-0.5">Visit Our Office</p>
+                  <p className="text-slate-400">Office 26, 2nd floor, Mall-9, G-9 Markaz, Islamabad</p>
+                </div>
               </a>
-              <a href="tel:+923009685072" className="flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors">
-                <svg className="w-4 h-4 text-violet-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 016.112 6.112l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 8V5z" />
-                </svg>
-                +92 300 968 5072
+
+              {/* Email */}
+              <a href="mailto:sheikhshoaibahmed81@gmail.com" className="flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors group">
+                <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-500/30 transition-colors">
+                  <svg className="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-white mb-0.5">Email Us</p>
+                  <p className="text-slate-400">sheikhshoaibahmed81@gmail.com</p>
+                </div>
+              </a>
+
+              {/* Phone - Call */}
+              <a href="tel:+923346881820" className="flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors group">
+                <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-500/30 transition-colors">
+                  <svg className="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 016.112 6.112l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 8V5z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-white mb-0.5">Call Us</p>
+                  <p className="text-slate-400">+92 334 688 1820</p>
+                </div>
+              </a>
+
+              {/* Phone - WhatsApp */}
+              <a href="https://wa.me/923346881820" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-slate-300 hover:text-white transition-colors group">
+                <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/30 transition-colors">
+                  <svg className="w-4 h-4 text-green-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.197-.01-1.679-.415-2.816-.991-.792-.4-.833-1.959-.821-2.196l-.01-.214A2.194 2.194 0 0011.172 5.6c-.301.149-.601.297-.899.476-.149.074-.299.174-.429.273a.66.66 0 00.589.326c.273.074.547.099.82.049.298-.05.783-.497.884-.97.099-.473.199-.967.199-1.296a.582.582 0 00-.196-.392c-.149-.1-.417-.123-.598-.05l-1.106.297A11.14 11.14 0 016.06 4.728 12.14 12.14 0 002.197 4.73a12.04 12.04 0 001.95 4.132c.497.596 1.49.746 1.867.773.596.048 1.016.06 1.448.023.573-.05 1.678-.446 2.275-1.17l.896-.598c.223-.198.298-.298.4-.492a.67.67 0 00.199-.574c-.025-.197-.272-.596-.398-.796l-.6-.3c-.173-.124-.347-.149-.495-.049-.124.074-.523.174-.796.298zM12 22c2.757 0 5-2.243 5-5 0-2.757-2.243-5-5-5-2.757 0-5 2.243-5 5 0 2.757 2.243 5 5 5z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-white mb-0.5">WhatsApp</p>
+                  <p className="text-slate-400">+92 334 688 1820</p>
+                </div>
               </a>
             </div>
           </div>
 
-          {/* Explore */}
+          {/* Quick Links */}
           <div>
-            <h4 className="font-semibold mb-4 text-white">Explore</h4>
-            <ul className="space-y-3 text-sm">
-              <li><Link href="/visa" className="text-slate-400 hover:text-white transition-colors">All Destinations</Link></li>
-              <li><Link href="/track" className="text-slate-400 hover:text-white transition-colors">Track Application</Link></li>
-              <li><Link href="/about" className="text-slate-400 hover:text-white transition-colors">About Us</Link></li>
-              <li><Link href="/faq" className="text-slate-400 hover:text-white transition-colors">FAQ</Link></li>
+            <h4 className="font-semibold mb-5 text-white text-base">Quick Links</h4>
+            <ul className="space-y-3.5 text-sm">
+              <li><Link href="/visa" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>All Destinations
+              </Link></li>
+              <li><Link href="/track" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>Track Application
+              </Link></li>
+              <li><Link href="/visa-search" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>Visa Search
+              </Link></li>
+              <li><Link href="/about" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>About Us
+              </Link></li>
+              <li><Link href="/faq" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>FAQ
+              </Link></li>
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Support Column */}
           <div>
-            <h4 className="font-semibold mb-4 text-white">Support</h4>
-            <ul className="space-y-3 text-sm">
-              <li><Link href="/support" className="text-slate-400 hover:text-white transition-colors">Help Center</Link></li>
-              <li><Link href="/contact" className="text-slate-400 hover:text-white transition-colors">Contact Us</Link></li>
-              <li><Link href="/login" className="text-slate-400 hover:text-white transition-colors">Sign In</Link></li>
-              <li><Link href="/register" className="text-slate-400 hover:text-white transition-colors">Create Account</Link></li>
+            <h4 className="font-semibold mb-5 text-white text-base">Support</h4>
+            <ul className="space-y-3.5 text-sm">
+              <li><Link href="/support" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>Help Center
+              </Link></li>
+              <li><Link href="/contact" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>Contact Us
+              </Link></li>
+              <li><Link href="/refund" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>Refund Policy
+              </Link></li>
+              <li><Link href="/login" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>Sign In
+              </Link></li>
+              <li><Link href="/register" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>Create Account
+              </Link></li>
             </ul>
+          </div>
+
+          {/* Payment Methods */}
+          <div className="xl:col-span-1">
+            <h4 className="font-semibold mb-5 text-white text-base">Payment Methods</h4>
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <div className="bg-white/10 rounded-lg px-3 py-2 text-xs font-medium text-slate-300">Visa</div>
+                <div className="bg-white/10 rounded-lg px-3 py-2 text-xs font-medium text-slate-300">Mastercard</div>
+                <div className="bg-white/10 rounded-lg px-3 py-2 text-xs font-medium text-slate-300">UnionPay</div>
+                <div className="bg-white/10 rounded-lg px-3 py-2 text-xs font-medium text-slate-300">Visa Electron</div>
+              </div>
+              <p className="text-xs text-slate-500">Secure payment with 256-bit SSL encryption</p>
+            </div>
+
+            {/* Social Media */}
+            <div className="mt-6">
+              <h4 className="font-semibold mb-4 text-white text-base">Follow Us</h4>
+              <div className="flex gap-3">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-violet-600 flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.77,7.46H14.5v-1.9c0-.9.6-1.1,1-1.1h3V.5h-4.33C10.24.5,9.5,3.44,9.5,5.32v2.15h-3v4h3v12h4v-12h3.85l.42-4Z"/></svg>
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-violet-600 flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12,2.16c3.2,0,3.58,0,4.85.07,1.17.07,1.76.28,2.14.49s1,.55,1.38.93c.38.38.7.89.93,1.38s.42,.97.49,2.14c.07,1.27.07,1.65.07,4.85s0,3.58-.07,4.85c-.07,1.17-.28,1.76-.49,2.14s-.55,1-.93,1.38c-.38.38-.89.7-1.38.93s-.97.42-2.14.49c-1.27.07-1.65.07-4.85.07s-3.58,0-4.85-.07c-1.17-.07-1.76-.28-2.14-.49s-1-.55-1.38-.93c-.38-.38-.7-.89-.93-1.38s-.42-.97-.49-2.14C2.16,15.22,2.16,14.84,2.16,12s0-3.58.07-4.85c.07-1.17.28-1.76.49-2.14s.55-1,.93-1.38c.38-.38.89-.7,1.38-.93s.97-.42,2.14-.49ZM12,0C8.74,0,8.33,0,7.05.07,5.78.14,4.89.35,4.15.6c-.77.25-1.44.58-2.1,1.24S.85,3.38.6,4.15c-.25.74-.46,1.63-.58,2.9-.07,1.28-.07,1.69-.07,4.96s0,3.68.07,4.96c.12,1.27.33,2.16.58,2.9s.58,1.44,1.24,2.1,1.44.58,2.1,1.24c.74.25,1.63.46,2.9.58,1.28.07,1.69.07,4.96.07s3.68,0,4.96-.07c1.27-.12,2.16-.33,2.9-.58s1.44-.58,2.1-1.24,1.24-1.44,1.24-2.1c.25-.74.46-1.63.58-2.9.07-1.28.07-1.69.07-4.96s0-3.68-.07-4.96c-.12-1.27-.33-2.16-.58-2.9s-.58-1.44-1.24-2.1-1.44-.58-2.1-1.24-1.44-.58-2.1-1.24c-.74-.25-1.63-.46-2.9-.58C15.96.35,15.07.14,13.8.07,12.52,0,12.1,0,8.74,0ZM12,5.84c-3.4,0-6.16,2.76-6.16,6.16s2.76,6.16,6.16,6.16,6.16-2.76,6.16-6.16S15.4,5.84,12,5.84ZM12,16c-2.21,0-4-1.79-4-4s1.79-4,4-4,4,1.79,4,4-1.79,4-4,4ZM18.35,4.15c.77,0,1.39.62,1.39,1.39s-.62,1.39-1.39,1.39-1.39-.62-1.39-1.39S17.58,4.15,18.35,4.15Z"/></svg>
+                </a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-violet-600 flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26h8.97l5.69-8.262h-7.32L15.32 3.25h3.308l-4.338 7.027 4.338 7.262h-7.32l-5.69-8.262h-3.308l7.227 8.26H2.75l5.69 8.262h4.924l5.69-8.262h3.308L18.244 2.25zM6.336 21.75c.59 0 1.07-.48 1.07-1.07s-.48-1.07-1.07-1.07-1.07.48-1.07 1.07.48 1.07 1.07 1.07zm4.294-1.07c.59 0 1.07-.48 1.07-1.07s-.48-1.07-1.07-1.07-1.07.48-1.07 1.07.48 1.07 1.07 1.07zm2.205-1.613c.59 0 1.07-.48 1.07-1.07s-.48-1.07-1.07-1.07-1.07.48-1.07 1.07.48 1.07 1.07 1.07zm1.613-2.205c.59 0 1.07-.48 1.07-1.071s-.48-1.07-1.07-1.07-1.07.48-1.07 1.07.48 1.07 1.07 1.071z"/></svg>
+                </a>
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-violet-600 flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.19a2.98 2.98 0 00-2.1-2.12A3.08 3.08 0 0019.54 3.9c-2.31 0-4.63 0-6.93 0a3.08 3.08 0 00-2.87 1.24 2.98 2.98 0 00-2.1 2.12c01.79 0 3.56 0 5.35 0a2.98 2.98 0 002.12 2.1 2.98 2.98 0 002.1-2.1c0-1.79 0-3.56 0-5.35a2.98 2.98 0 00-2.1-2.12A3.08 3.08 0 0012 1.65c-2.14 0-4.27 0-6.41 0a3.08 3.08 0 00-2.87 1.24 2.98 2.98 0 00-2.1 2.12c-1.79 0-3.56 0-5.35 0a2.98 2.98 0 00-2.12 2.1A3.08 3.08 0 00.01 12c0 2.14 0 4.27 0 6.41a3.08 3.08 0 001.24 2.87 2.98 2.98 0 002.12 2.1c-1.79 0-3.56 0-5.35 0a2.98 2.98 0 00-2.1 2.12A3.08 3.08 0 00.01 19.19c2.31 0 4.63 0 6.93 0a3.08 3.08 0 002.87-1.24 2.98 2.98 0 002.1-2.12c0-1.79 0-3.56 0-5.35a2.98 2.98 0 002.1-2.12 2.98 2.98 0 00-2.1-2.1c0-1.79 0-3.56 0-5.35a2.98 2.98 0 002.1-2.12A3.08 3.08 0 0012 23.19c2.14 0 4.27 0 6.41 0a3.08 3.08 0 002.87-1.24 2.98 2.98 0 002.1-2.12c0-1.79 0-3.56 0-5.35a2.98 2.98 0 002.12-2.1A3.08 3.08 0 0023.5 6.19zM9.55 15.57V8.43L15.83 12z"/></svg>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-slate-800/60 mt-12 pt-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="border-t border-slate-800/60 mt-14 pt-8">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
             <p className="text-sm text-slate-500">&copy; 2026 eVisaTraveler. All rights reserved.</p>
-            <div className="flex items-center gap-5 text-sm">
-              <Link href="/terms" className="text-slate-500 hover:text-white transition-colors">Terms</Link>
-              <Link href="/privacy" className="text-slate-500 hover:text-white transition-colors">Privacy</Link>
-              <Link href="/cookies" className="text-slate-500 hover:text-white transition-colors">Cookies</Link>
+            <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+              <Link href="/terms" className="text-slate-500 hover:text-white transition-colors">Terms of Service</Link>
+              <Link href="/privacy" className="text-slate-500 hover:text-white transition-colors">Privacy Policy</Link>
+              <Link href="/cookies" className="text-slate-500 hover:text-white transition-colors">Cookie Policy</Link>
             </div>
           </div>
         </div>
