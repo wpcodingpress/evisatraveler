@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function SupportPage() {
   const [formData, setFormData] = useState({
@@ -191,6 +192,54 @@ export default function SupportPage() {
           </div>
         </div>
       </div>
+
+      {/* PromoBranding Section */}
+      <section className="py-16 lg:py-20 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-violet-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-fuchsia-500/20 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="container-custom relative z-10">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
+              Why Choose{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-400 to-emerald-400">
+                eVisa Traveler
+              </span>
+            </h2>
+            <p className="text-slate-300 max-w-xl mx-auto">
+              Fast, secure, and reliable visa services
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            {[
+              { title: 'Apply in Minutes', desc: 'Quick 5-minute application' },
+              { title: 'Zero Errors', desc: 'Smart validation' },
+              { title: 'Instant Updates', desc: 'Real-time notifications' },
+              { title: 'PDF Delivered', desc: 'Visa sent to email' },
+            ].map((feature, i) => (
+              <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5">
+                <h3 className="text-lg font-bold text-white mb-1">{feature.title}</h3>
+                <p className="text-slate-400 text-sm">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-12 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600">
+        <div className="container-custom text-center">
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-3">Ready to Apply for Your Visa?</h2>
+          <p className="text-white/80 mb-5">Start your application today and get approved in 24-72 hours</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/visa" className="px-6 py-3 bg-white text-violet-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">Apply Now</Link>
+            <Link href="/" className="px-6 py-3 bg-white/20 text-white font-semibold rounded-xl hover:bg-white/30 transition-colors">Explore Countries</Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
