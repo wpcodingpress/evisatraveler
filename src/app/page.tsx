@@ -15,30 +15,24 @@ interface Country {
 }
 
 const floatingElements = [
-  { icon: 'airplane', name: 'airplane1', position: 'top-[10%] left-[5%]', size: 'w-14 h-14', delay: '0s', duration: '6s' },
-  { icon: 'globe', name: 'globe1', position: 'top-[18%] right-[25%]', size: 'w-16 h-16', delay: '1s', duration: '7s' },
-  { icon: 'passport', name: 'passport1', position: 'top-[35%] left-[8%]', size: 'w-12 h-12', delay: '2s', duration: '8s' },
-  { icon: 'airplane', name: 'airplane2', position: 'bottom-[22%] right-[28%]', size: 'w-14 h-14', delay: '3s', duration: '6.5s' },
-  { icon: 'palm', name: 'beach1', position: 'bottom-[12%] left-[12%]', size: 'w-16 h-16', delay: '1.5s', duration: '7.5s' },
-  { icon: 'suitcase', name: 'briefcase1', position: 'top-[12%] right-[15%]', size: 'w-12 h-12', delay: '2.5s', duration: '8.5s' },
-  { icon: 'plane2', name: 'beach2', position: 'bottom-[28%] right-[12%]', size: 'w-14 h-14', delay: '0.5s', duration: '7.2s' },
-  { icon: 'document', name: 'visa1', position: 'middle-[32%] left-[6%]', size: 'w-10 h-10', delay: '4s', duration: '9s' },
+  { icon: 'plane', name: 'plane1', position: 'top-[8%] left-[3%] sm:left-[5%]', size: 'w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14', delay: '0s', duration: '6s' },
+  { icon: 'globe', name: 'globe1', position: 'top-[15%] right-[20%] sm:right-[25%]', size: 'w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16', delay: '1s', duration: '7s' },
+  { icon: 'passport', name: 'passport1', position: 'top-[30%] left-[5%] sm:left-[8%]', size: 'w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12', delay: '2s', duration: '8s' },
+  { icon: 'check', name: 'check1', position: 'top-[25%] right-[10%] sm:right-[15%]', size: 'w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12', delay: '1.5s', duration: '6s' },
+  { icon: 'clock', name: 'clock1', position: 'bottom-[15%] left-[8%] sm:left-[12%]', size: 'w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12', delay: '0.5s', duration: '7s' },
+  { icon: 'shield', name: 'shield1', position: 'top-[20%] right-[8%]', size: 'w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12', delay: '2.5s', duration: '8s' },
+  { icon: 'map', name: 'map1', position: 'bottom-[25%] right-[15%] sm:right-[20%]', size: 'w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14', delay: '3s', duration: '7.5s' },
+  { icon: 'ticket', name: 'ticket1', position: 'bottom-[10%] left-[3%] sm:left-[5%]', size: 'w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12', delay: '4s', duration: '9s' },
 ];
 
 function SVGIcon({ type, className }: { type: string; className: string }) {
   const iconClasses = `${className} text-violet-600`;
   
   switch(type) {
-    case 'airplane':
+    case 'plane':
       return (
         <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
           <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-        </svg>
-      );
-    case 'plane2':
-      return (
-        <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
-          <path d="M2.5 19h19l-.7-2.7c-.1-.3-.4-.5-.7-.6l-1.4-.3-.8-1.6c-.2-.4-.7-.6-1.1-.4l-1.4.6-1.2-.4-.8-.6c-.3-.2-.4-.6-.3-.9l.5-1.4-2.7-2.7c-.3-.3-.3-.7 0-1l1.1-1.1c.3-.3.7-.3 1 0l2.7 2.7 1.4-.5c.4-.2.8 0 .9.3l.6.8.4 1.2-.6 1.4c-.1.4.1.9.4 1.1l1.6.8.3 1.4c.1.3.3.6.6.7L21.4 21l-1.4-.7c-.3-.1-.6-.4-.7-.7l-.3-1.4-.8-1.6c-.2-.4-.7-.6-1.1-.4l-1.4.6-1.2-.4-.8-.6c-.3-.2-.4-.6-.3-.9l.5-1.4-2.7-2.7c-.3-.3-.3-.7 0-1l1.1-1.1c.3-.3.7-.3 1 0l2.7 2.7 1.4-.5c.4-.2.8 0 .9.3l.6.8.4 1.2-.6 1.4c-.1.4.1.9.4 1.1l1.6.8.3 1.4c.1.3.3.6.6.7l.7 2.7v.5z"/>
         </svg>
       );
     case 'globe':
@@ -53,22 +47,34 @@ function SVGIcon({ type, className }: { type: string; className: string }) {
           <path d="M6 2c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v20c0 1.1-.9 2-2 2H8c-1.1 0-2-.9-2-2V2zm6 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm0-6c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/>
         </svg>
       );
-    case 'palm':
+    case 'check':
       return (
         <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
-          <path d="M13 3c-1.1 0-2 .9-2 2v2h2V5h2v2h2V5c0-1.1-.9-2-2-2h-2zm-5 4c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2H8zm5 10c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
         </svg>
       );
-    case 'suitcase':
+    case 'clock':
       return (
         <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
-          <path d="M17 6h-2V3c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v3H7c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm8 16H7V8h10v11zm2-11V3h-4v3h4v2z"/>
+          <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
         </svg>
       );
-    case 'document':
+    case 'shield':
       return (
         <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
-          <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+        </svg>
+      );
+    case 'map':
+      return (
+        <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+        </svg>
+      );
+    case 'ticket':
+      return (
+        <svg className={iconClasses} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-1.99.89-1.99 2v4c1.11 0 1.99.9 1.99 2s-.89 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-2-1.46c-1.19.69-2 1.99-2 3.46s.81 2.77 2 3.46V18H4v-2.54c1.19-.69 2-1.99 2-3.46 0-1.48-.8-2.77-1.99-3.46L4 6h16v2.54z"/>
         </svg>
       );
     default:
@@ -79,7 +85,7 @@ function SVGIcon({ type, className }: { type: string; className: string }) {
 function FloatingElement({ icon, position, size, delay, duration }: { icon: string; position: string; size: string; delay: string; duration: string }) {
   return (
     <div 
-      className={`absolute ${position} ${size} z-[2] lg:block`}
+      className={`absolute ${position} ${size} z-[2] hidden sm:block`}
       style={{ 
         animation: `float ${duration} ease-in-out infinite`,
         animationDelay: delay,
@@ -121,7 +127,7 @@ function HeroSection({ countries }: { countries: Country[] }) {
 
       <div className="absolute inset-0 overflow-hidden">
         <div 
-          className="absolute right-0 bottom-0 w-[35%] h-[70%] z-[1]"
+          className="absolute right-0 bottom-0 w-[30%] h-[70%] z-[1]"
           style={{ transform: `translateY(${parallaxOffset * 0.2}px)` }}
         >
           <img 
@@ -157,7 +163,7 @@ function HeroSection({ countries }: { countries: Country[] }) {
             Trusted by 100,000+ Travelers Worldwide
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 mb-3 lg:mb-4 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 mb-2 lg:mb-3 leading-tight">
             Get Your{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600">
               Visa Approved
@@ -165,12 +171,12 @@ function HeroSection({ countries }: { countries: Country[] }) {
             in Record Time
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-6 leading-relaxed px-4">
+          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-4 leading-relaxed px-4">
             Apply for tourist, business, or transit visa online. 
             <span className="text-violet-600 font-semibold"> Fast approval in 24-72 hours</span> with 99.9% success rate.
           </p>
 
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl text-white font-bold text-lg shadow-lg shadow-violet-500/25 mb-6">
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl text-white font-bold text-lg shadow-lg shadow-violet-500/25 mb-4">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -182,7 +188,7 @@ function HeroSection({ countries }: { countries: Country[] }) {
           <EnhancedSearchForm countries={countries} />
         </div>
 
-        <div className="flex flex-wrap justify-center gap-4 lg:gap-8 mt-6 lg:mt-8">
+        <div className="flex flex-wrap justify-center gap-4 lg:gap-8 mt-4 lg:mt-6">
           {[
             { label: '99.9% Approval', icon: '✓' },
             { label: 'Secure & Encrypted', icon: '🔒' },
