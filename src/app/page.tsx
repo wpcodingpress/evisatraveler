@@ -275,25 +275,69 @@ function PopularDestinations({ destinations }: { destinations: any[] }) {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
-          {destinations.length > 0 ? destinations.slice(0, 10).map((dest: any) => (
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {destinations.length > 0 ? destinations.slice(0, 10).map((dest: any, index: number) => (
             <Link
               key={dest.id}
               href={`/visa-search?to=${dest.toCountry?.code}`}
-              className="group bg-white rounded-2xl p-4 lg:p-5 shadow-sm border border-slate-200 hover:shadow-xl hover:border-violet-300 hover:-translate-y-1 transition-all duration-300"
+              className="group relative overflow-hidden rounded-2xl h-72 bg-white border border-slate-200 hover:border-violet-300 hover:shadow-xl hover:shadow-violet-500/20 transition-all duration-300 hover:scale-[1.02]"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-3xl lg:text-4xl">{dest.toCountry?.flag || getCountryFlagEmoji(dest.toCountry?.code)}</span>
-                <span className="text-emerald-600 font-bold text-sm">
-                  {formatPrice(Number(dest.price))}
-                </span>
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 via-white to-purple-50/30"></div>
+              
+              <div className="relative h-full p-6 flex flex-col">
+                <div className="flex items-start justify-between mb-4">
+                  <img 
+                    src={`https://flagcdn.com/w80/${dest.toCountry?.code?.toLowerCase()}.png`}
+                    alt={dest.toCountry?.name}
+                    className="w-12 h-8 object-cover rounded shadow-md"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                  <span className="px-3 py-1.5 bg-violet-100 text-violet-700 text-xs font-semibold rounded-full">
+                    {dest.visaType || 'Tourist Visa'}
+                  </span>
+                </div>
+
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-slate-900 truncate group-hover:text-violet-700 transition-colors">
+                    {dest.toCountry?.name}
+                  </h3>
+                  <p className="text-slate-500 text-sm mt-1">Visa Required</p>
+                </div>
+
+                <div className="mt-auto">
+                  <div className="flex items-center gap-4 text-slate-500 text-sm mb-4">
+                    <span className="flex items-center gap-1.5">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {dest.processingTime || '24-72h'}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {dest.maxStayDays || 30}d
+                    </span>
+                  </div>
+
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-slate-400 text-xs">From</p>
+                      <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">
+                        {formatPrice(Number(dest.price))}
+                      </p>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h3 className="font-bold text-slate-900 mb-1 group-hover:text-violet-600 transition-colors">
-                {dest.toCountry?.name}
-              </h3>
-              <p className="text-xs text-slate-500">
-                {dest.visaType || 'Tourist Visa'} • {dest.maxStayDays || 30} Days
-              </p>
             </Link>
           )) : (
             <p className="text-center text-slate-500 col-span-full py-8">No popular destinations available at the moment.</p>
