@@ -566,7 +566,7 @@ export function Header() {
 export function Footer() {
   return (
     <footer className="bg-slate-950 text-white">
-      <div className="container-custom py-8 lg:py-10">
+      <div className="container-custom py-16 lg:py-20">
         
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-10 lg:gap-12">
@@ -701,43 +701,32 @@ export function Footer() {
           <div className="xl:col-span-1">
             <h4 className="font-semibold mb-5 text-white text-base">Payment Methods</h4>
             <div className="space-y-4">
-              <div className="flex flex-wrap gap-3 items-center">
-                {/* Visa */}
-                <div className="flex items-center justify-center">
-                  <svg viewBox="0 0 50 30" className="h-8 w-auto" fill="none">
-                    <rect width="50" height="30" rx="3" fill="#1A1F71"/>
-                    <path d="M19 21H17L18.75 11H21.25L19.5 21Z" fill="white"/>
-                    <path d="M28 11.5C27.5 11.3 26.75 11.1 25.75 11.1C23.25 11.1 21.5 12.4 21.5 14.2C21.5 15.6 22.75 16.3 23.75 16.8C24.75 17.3 25.25 17.6 25.25 18C25.25 18.7 24.5 19 23.75 19C22.75 19 22.25 18.9 21.25 18.4L21 18.2L20.75 20.3C21.5 20.6 22.75 20.9 24 20.9C26.75 20.9 28.5 19.5 28.5 17.5C28.5 16.3 27.75 15.4 26.25 14.7C25.25 14.2 24.5 13.9 24.5 13.3C24.5 12.8 25 12.4 25.75 12.4C26.5 12.4 27 12.5 27.5 12.7L27.75 12.85L28 11.5Z" fill="white"/>
-                    <path d="M32.5 11H30.75C30.25 11 29.75 11.2 29.5 11.7L26 21H28.75L29.25 19.5H32.25L32.5 21H34.75L32.5 11ZM30 17.5L31 14L31.5 17.5H30Z" fill="white"/>
-                    <path d="M15.5 11L13 18L12.75 16.8C12.25 15.5 10.75 13.6 9 12.6L11 21H13.75L18.25 11H15.5Z" fill="white"/>
-                    <path d="M12 11H8L7.75 12.2C10.5 13.2 12.25 15.3 12.75 17.5L11.75 11H12Z" fill="white"/>
-                  </svg>
-                </div>
-                {/* Mastercard */}
-                <div className="flex items-center justify-center">
-                  <svg viewBox="0 0 50 30" className="h-8 w-auto" fill="none">
-                    <rect width="50" height="30" rx="3" fill="#000000"/>
-                    <circle cx="19.5" cy="15" r="7.5" fill="#EB001B"/>
-                    <circle cx="30.5" cy="15" r="7.5" fill="#F79E1B"/>
-                    <path d="M25 9C27.2 10.8 28.5 13.5 28.5 16.5C28.5 19.5 27.2 22.2 25 24C22.8 22.2 21.5 19.5 21.5 16.5C21.5 13.5 22.8 10.8 25 9Z" fill="#FF5F00"/>
-                  </svg>
-                </div>
-                {/* PayPal */}
-                <div className="flex items-center justify-center">
-                  <svg viewBox="0 0 50 30" className="h-7 w-auto" fill="none">
-                    <rect width="50" height="30" rx="3" fill="#003087"/>
-                    <text x="25" y="19" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold" fontFamily="Arial">PayPal</text>
-                  </svg>
-                </div>
-                {/* American Express */}
-                <div className="flex items-center justify-center">
-                  <svg viewBox="0 0 50 30" className="h-7 w-auto" fill="none">
-                    <rect width="50" height="30" rx="3" fill="#2E77BC"/>
-                    <text x="25" y="20" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold" fontFamily="Arial">AMEX</text>
-                  </svg>
-                </div>
+              <div className="flex flex-wrap gap-2">
+                <div className="bg-white/10 rounded-lg px-3 py-2 text-xs font-medium text-slate-300">Visa</div>
+                <div className="bg-white/10 rounded-lg px-3 py-2 text-xs font-medium text-slate-300">Mastercard</div>
+                <div className="bg-white/10 rounded-lg px-3 py-2 text-xs font-medium text-slate-300">UnionPay</div>
+                <div className="bg-white/10 rounded-lg px-3 py-2 text-xs font-medium text-slate-300">Visa Electron</div>
               </div>
               <p className="text-xs text-slate-500">Secure payment with 256-bit SSL encryption</p>
+            </div>
+
+            {/* Social Media */}
+            <div className="mt-6">
+              <h4 className="font-semibold mb-4 text-white text-base">Follow Us</h4>
+              <div className="flex gap-3">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-violet-600 flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.77,7.46H14.5v-1.9c0-.9.6-1.1,1-1.1h3V.5h-4.33C10.24.5,9.5,3.44,9.5,5.32v2.15h-3v4h3v12h4v-12h3.85l.42-4Z"/></svg>
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-violet-600 flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12,2.16c3.2,0,3.58,0,4.85.07,1.17.07,1.76.28,2.14.49s1,.55,1.38.93c.38.38.7.89.93,1.38s.42,.97.49,2.14c.07,1.27.07,1.65.07,4.85s0,3.58-.07,4.85c-.07,1.17-.28,1.76-.49,2.14s-.55,1-.93,1.38c-.38.38-.89.7-1.38.93s-.97.42-2.14.49c-1.27.07-1.65.07-4.85.07s-3.58,0-4.85-.07c-1.17-.07-1.76-.28-2.14-.49s-1-.55-1.38-.93c-.38-.38-.7-.89-.93-1.38s-.42-.97-.49-2.14C2.16,15.22,2.16,14.84,2.16,12s0-3.58.07-4.85c.07-1.17.28-1.76.49-2.14s.55-1,.93-1.38c.38-.38.89-.7,1.38-.93s.97-.42,2.14-.49ZM12,0C8.74,0,8.33,0,7.05.07,5.78.14,4.89.35,4.15.6c-.77.25-1.44.58-2.1,1.24S.85,3.38.6,4.15c-.25.74-.46,1.63-.58,2.9-.07,1.28-.07,1.69-.07,4.96s0,3.68.07,4.96c.12,1.27.33,2.16.58,2.9s.58,1.44,1.24,2.1,1.44.58,2.1,1.24c.74.25,1.63.46,2.9.58,1.28.07,1.69.07,4.96.07s3.68,0,4.96-.07c1.27-.12,2.16-.33,2.9-.58s1.44-.58,2.1-1.24,1.24-1.44,1.24-2.1c.25-.74.46-1.63.58-2.9.07-1.28.07-1.69.07-4.96s0-3.68-.07-4.96c-.12-1.27-.33-2.16-.58-2.9s-.58-1.44-1.24-2.1-1.44-.58-2.1-1.24-1.44-.58-2.1-1.24c-.74-.25-1.63-.46-2.9-.58C15.96.35,15.07.14,13.8.07,12.52,0,12.1,0,8.74,0ZM12,5.84c-3.4,0-6.16,2.76-6.16,6.16s2.76,6.16,6.16,6.16,6.16-2.76,6.16-6.16S15.4,5.84,12,5.84ZM12,16c-2.21,0-4-1.79-4-4s1.79-4,4-4,4,1.79,4,4-1.79,4-4,4ZM18.35,4.15c.77,0,1.39.62,1.39,1.39s-.62,1.39-1.39,1.39-1.39-.62-1.39-1.39S17.58,4.15,18.35,4.15Z"/></svg>
+                </a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-violet-600 flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26h8.97l5.69-8.262h-7.32L15.32 3.25h3.308l-4.338 7.027 4.338 7.262h-7.32l-5.69-8.262h-3.308l7.227 8.26H2.75l5.69 8.262h4.924l5.69-8.262h3.308L18.244 2.25zM6.336 21.75c.59 0 1.07-.48 1.07-1.07s-.48-1.07-1.07-1.07-1.07.48-1.07 1.07.48 1.07 1.07 1.07zm4.294-1.07c.59 0 1.07-.48 1.07-1.07s-.48-1.07-1.07-1.07-1.07.48-1.07 1.07.48 1.07 1.07 1.07zm2.205-1.613c.59 0 1.07-.48 1.07-1.07s-.48-1.07-1.07-1.07-1.07.48-1.07 1.07.48 1.07 1.07 1.07zm1.613-2.205c.59 0 1.07-.48 1.07-1.071s-.48-1.07-1.07-1.07-1.07.48-1.07 1.07.48 1.07 1.07 1.071z"/></svg>
+                </a>
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/10 hover:bg-violet-600 flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.19a2.98 2.98 0 00-2.1-2.12A3.08 3.08 0 0019.54 3.9c-2.31 0-4.63 0-6.93 0a3.08 3.08 0 00-2.87 1.24 2.98 2.98 0 00-2.1 2.12c01.79 0 3.56 0 5.35 0a2.98 2.98 0 002.12 2.1 2.98 2.98 0 002.1-2.1c0-1.79 0-3.56 0-5.35a2.98 2.98 0 00-2.1-2.12A3.08 3.08 0 0012 1.65c-2.14 0-4.27 0-6.41 0a3.08 3.08 0 00-2.87 1.24 2.98 2.98 0 00-2.1 2.12c-1.79 0-3.56 0-5.35 0a2.98 2.98 0 00-2.12 2.1A3.08 3.08 0 00.01 12c0 2.14 0 4.27 0 6.41a3.08 3.08 0 001.24 2.87 2.98 2.98 0 002.12 2.1c-1.79 0-3.56 0-5.35 0a2.98 2.98 0 00-2.1 2.12A3.08 3.08 0 00.01 19.19c2.31 0 4.63 0 6.93 0a3.08 3.08 0 002.87-1.24 2.98 2.98 0 002.1-2.12c0-1.79 0-3.56 0-5.35a2.98 2.98 0 002.1-2.12 2.98 2.98 0 00-2.1-2.1c0-1.79 0-3.56 0-5.35a2.98 2.98 0 002.1-2.12A3.08 3.08 0 0012 23.19c2.14 0 4.27 0 6.41 0a3.08 3.08 0 002.87-1.24 2.98 2.98 0 002.1-2.12c0-1.79 0-3.56 0-5.35a2.98 2.98 0 002.12-2.1A3.08 3.08 0 0023.5 6.19zM9.55 15.57V8.43L15.83 12z"/></svg>
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -751,20 +740,6 @@ export function Footer() {
               <Link href="/privacy" className="text-slate-500 hover:text-white transition-colors">Privacy Policy</Link>
               <Link href="/cookies" className="text-slate-500 hover:text-white transition-colors">Cookie Policy</Link>
             </div>
-          </div>
-          <div className="mt-6 pt-6 border-t border-slate-800/60 text-center">
-            <p className="text-sm text-slate-500">
-              Designed &amp; Developed by{' '}
-              <a 
-                href="https://wpcodingpress.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-violet-400 hover:text-violet-300 transition-colors font-medium"
-              >
-                WPCodingPress
-              </a>
-              {' '}&mdash; AI-Powered Web Development Agency
-            </p>
           </div>
         </div>
       </div>
