@@ -45,12 +45,26 @@ interface Application {
   };
 }
 
+interface InsuranceOrder {
+  id: string;
+  orderNumber: string;
+  status: string;
+  paymentStatus: string;
+  totalAmount: number;
+  currency: string;
+  createdAt: string;
+  insurance?: {
+    name: string;
+  };
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { formatPrice } = useCurrency();
   const [user, setUser] = useState<User | null>(null);
   const [progressList, setProgressList] = useState<ApplicationProgress[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [insuranceOrders, setInsuranceOrders] = useState<InsuranceOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,9 +92,10 @@ export default function DashboardPage() {
 
   const loadData = async () => {
     try {
-      const [progressRes, appsRes] = await Promise.all([
+      const [progressRes, appsRes, insuranceRes] = await Promise.all([
         fetch('/api/applications/progress'),
         fetch('/api/applications'),
+        fetch('/api/user/insurance'),
       ]);
 
       if (progressRes.ok) {
@@ -91,6 +106,11 @@ export default function DashboardPage() {
       if (appsRes.ok) {
         const appsData = await appsRes.json();
         setApplications(Array.isArray(appsData) ? appsData : []);
+      }
+
+      if (insuranceRes.ok) {
+        const insuranceData = await insuranceRes.json();
+        setInsuranceOrders(Array.isArray(insuranceData) ? insuranceData : []);
       }
     } catch (error) {
       console.error('Load data error:', error);
@@ -439,6 +459,73 @@ export default function DashboardPage() {
                             </button>
                           )}
                         </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Insurance Orders Section */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Insurance Orders</h2>
+              <p className="text-sm text-slate-500">Your travel insurance purchases</p>
+            </div>
+            <Link href="/insurance" className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors">
+              Buy Insurance
+            </Link>
+          </div>
+          
+          {insuranceOrders.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.121-5.129a7 7 0 1110.129-10.121 7 7 0 01-10.129 10.121z" />
+                </svg>
+              </div>
+              <p className="text-slate-600 mb-4">No insurance orders yet</p>
+              <Link href="/insurance" className="inline-flex items-center gap-2 text-emerald-600 font-semibold hover:text-emerald-700">
+                Get travel insurance
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-100">
+                  <tr>
+                    <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase">Order</th>
+                    <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase">Insurance</th>
+                    <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase">Status</th>
+                    <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase">Date</th>
+                    <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {insuranceOrders.slice(0, 5).map((order) => (
+                    <tr key={order.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-4 px-6">
+                        <p className="font-semibold text-slate-900">{order.orderNumber}</p>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className="text-slate-600">{order.insurance?.name}</span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold capitalize border ${getStatusColor(order.status)}`}>
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-slate-600">
+                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '-'}
+                      </td>
+                      <td className="py-4 px-6 text-right font-semibold text-slate-900">
+                        {formatPrice(order.totalAmount)}
                       </td>
                     </tr>
                   ))}

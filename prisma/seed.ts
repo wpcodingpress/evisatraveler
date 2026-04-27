@@ -266,6 +266,67 @@ async function main() {
   }
   console.log('✅ Visa rules created');
 
+  // Create Insurance Packages
+  const insurances = [
+    {
+      name: 'Basic Protection',
+      description: 'Essential travel insurance covering medical emergencies up to $25,000. Perfect for short trips.',
+      price: 3,
+      coverage: '$25,000',
+      duration: 'Per Trip',
+      benefits: JSON.stringify([
+        'Medical emergency coverage up to $25,000',
+        'Trip cancellation protection',
+        '24/7 emergency assistance',
+        'Lost baggage coverage',
+      ]),
+      sortOrder: 1,
+    },
+    {
+      name: 'Standard Plus',
+      description: 'Comprehensive coverage with higher limits. Ideal for family travelers and longer trips.',
+      price: 5,
+      coverage: '$50,000',
+      duration: 'Per Trip',
+      benefits: JSON.stringify([
+        'Medical emergency coverage up to $50,000',
+        'Trip cancellation & interruption',
+        '24/7 emergency assistance',
+        'Lost baggage coverage',
+        'Flight delay reimbursement',
+        'Travel accident coverage',
+      ]),
+      sortOrder: 2,
+    },
+    {
+      name: 'Premium Shield',
+      description: 'Maximum protection for worry-free travel. Includes adventure sports coverage.',
+      price: 10,
+      coverage: '$100,000',
+      duration: 'Per Trip',
+      benefits: JSON.stringify([
+        'Medical emergency coverage up to $100,000',
+        'Full trip cancellation',
+        '24/7 emergency assistance',
+        'Lost baggage coverage',
+        'Flight delay reimbursement',
+        'Adventure sports coverage',
+        'Personal liability protection',
+        'Home burglary protection',
+      ]),
+      sortOrder: 3,
+    },
+  ];
+
+  for (const insurance of insurances) {
+    await prisma.insurance.upsert({
+      where: { name: insurance.name },
+      update: {},
+      create: insurance,
+    });
+  }
+  console.log('✅ Insurance packages created');
+
   console.log('🌸 Seed completed successfully!');
 }
 

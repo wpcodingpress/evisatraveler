@@ -20,6 +20,7 @@ model User {
   applications Application[]
   applicationProgress ApplicationProgress[]
   notifications Notification[]
+  insuranceOrders   InsuranceOrder[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 }
@@ -127,4 +128,38 @@ model Notification {
   userId      String?
   user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
+}
+
+model Insurance {
+  id          String           @id @default(cuid())
+  name        String
+  description String         @db.Text
+  price       Decimal         @db.Decimal(10, 2)
+  currency   String          @default("USD")
+  coverage   String
+  duration  String
+  benefits   Json
+  isActive   Boolean         @default(true)
+  sortOrder  Int             @default(0)
+  orders    InsuranceOrder[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model InsuranceOrder {
+  id                String     @id @default(cuid())
+  userId            String?
+  user              User?      @relation(fields: [userId], references: [id])
+  insuranceId       String
+  insurance         Insurance  @relation(fields: [insuranceId], references: [id])
+  orderNumber       String     @unique
+  status            String     @default("pending")
+  formData          Json
+  totalAmount       Decimal    @db.Decimal(10, 2)
+  currency          String     @default("USD")
+  paymentStatus     String     @default("pending")
+  paymentMethod     String?
+  processedAt       DateTime?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 }
