@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       merchantHash: process.env.BANK_ALFALAH_SECRET_KEY || 'OUU362MB1upc67ZO/pNWYAfQ8A/8LuYyWpNuGSXiBtFvFzk4yqF7CA==',
       key1: process.env.BANK_ALFALAH_KEY1 || 'FWBhnJmJWXuUee2J',
       key2: process.env.BANK_ALFALAH_KEY2 || '3200254418025343',
-      returnUrl: process.env.PAYMENT_INSURANCE_RETURN_URL || 'https://evisatraveler.com/api/payment/insurance-return',
+      returnUrl: process.env.BANK_ALFALAH_RETURN_URL || 'https://evisatraveler.com/api/payment/return',
       transactionRef,
       amount: amountInPkr,
     };

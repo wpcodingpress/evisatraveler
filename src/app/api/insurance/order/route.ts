@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 
 function generateOrderNumber(): string {
@@ -31,11 +32,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const userId = (await cookies()).get('user_id')?.value;
+    
     const order = await prisma.insuranceOrder.create({
       data: {
         insuranceId,
         orderNumber: generateOrderNumber(),
         formData,
+        userId: userId || undefined,
         totalAmount: insurance.price,
         currency: insurance.currency,
         status: 'pending',
