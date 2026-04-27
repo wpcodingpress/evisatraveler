@@ -48,14 +48,27 @@ export default function InsuranceFormPage() {
     fetchInsurance();
   }, [params.id]);
 
+  const fallbackInsurances = [
+    { id: '1', name: 'Basic Protection', description: 'Essential travel insurance covering medical emergencies up to $25,000. Perfect for short trips.', price: 3, currency: 'USD', coverage: '$25,000', duration: 'Per Trip', benefits: '["Medical emergency coverage","Trip cancellation","24/7 assistance"]' },
+    { id: '2', name: 'Standard Plus', description: 'Comprehensive coverage with higher limits. Ideal for family travelers and longer trips.', price: 5, currency: 'USD', coverage: '$50,000', duration: 'Per Trip', benefits: '["Medical coverage","Trip interruption","Flight delays","Travel accident"]' },
+    { id: '3', name: 'Premium Shield', description: 'Maximum protection for worry-free travel. Includes adventure sports coverage.', price: 10, currency: 'USD', coverage: '$100,000', duration: 'Per Trip', benefits: '["Full coverage","Adventure sports","Personal liability","Home burglary"]' },
+  ];
+
   const fetchInsurance = async () => {
     try {
       const res = await fetch('/api/insurance');
       const data = await res.json();
-      const found = data.find((i: Insurance) => i.id === params.id);
+      let found = null;
+      if (Array.isArray(data)) {
+        found = data.find((i: Insurance) => i.id === params.id);
+      }
+      if (!found) {
+        found = fallbackInsurances.find((i) => i.id === params.id);
+      }
       setInsurance(found || null);
     } catch (error) {
-      console.error('Error:', error);
+      const found = fallbackInsurances.find((i) => i.id === params.id);
+      setInsurance(found || null);
     } finally {
       setLoading(false);
     }

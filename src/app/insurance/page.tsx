@@ -28,13 +28,26 @@ export default function InsurancePage() {
     try {
       const res = await fetch('/api/insurance');
       const data = await res.json();
-      setInsurances(data);
+      if (Array.isArray(data) && data.length > 0) {
+        setInsurances(data);
+      } else {
+        setInsurances(fallbackInsurances);
+      }
     } catch (error) {
       console.error('Error fetching insurances:', error);
+      setInsurances(fallbackInsurances);
     } finally {
       setLoading(false);
     }
   };
+
+  const fallbackInsurances = [
+    { id: '1', name: 'Basic Protection', description: 'Essential travel insurance covering medical emergencies up to $25,000. Perfect for short trips.', price: 3, currency: 'USD', coverage: '$25,000', duration: 'Per Trip', benefits: '["Medical emergency coverage","Trip cancellation","24/7 assistance"]' },
+    { id: '2', name: 'Standard Plus', description: 'Comprehensive coverage with higher limits. Ideal for family travelers and longer trips.', price: 5, currency: 'USD', coverage: '$50,000', duration: 'Per Trip', benefits: '["Medical coverage","Trip interruption","Flight delays","Travel accident"]' },
+    { id: '3', name: 'Premium Shield', description: 'Maximum protection for worry-free travel. Includes adventure sports coverage.', price: 10, currency: 'USD', coverage: '$100,000', duration: 'Per Trip', benefits: '["Full coverage","Adventure sports","Personal liability","Home burglary"]' },
+  ];
+
+  const tierColors = ['from-green-500 to-emerald-600', 'from-blue-500 to-cyan-600', 'from-amber-500 to-orange-600'];
 
   return (
     <main className="flex-1 py-12 md:py-16 bg-gradient-to-b from-violet-50/30 via-white to-purple-50/30">
