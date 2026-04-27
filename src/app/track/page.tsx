@@ -193,7 +193,7 @@ export default function TrackPage() {
             </div>
           </div>
 
-          <div className="mt-8 text-center">
+<div className="mt-8 text-center">
             <p className="text-slate-600">
               Need help?{' '}
               <a href="/support" className="text-violet-600 font-semibold hover:text-violet-700 transition-colors">
@@ -203,6 +203,9 @@ export default function TrackPage() {
           </div>
         </div>
       </div>
+
+      {/* Spacer for gap between Need help? and Why Choose */}
+      <div className="h-16 md:h-24"></div>
 
       {/* PromoBranding Section */}
       <section className="py-20 lg:py-32 pb-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
