@@ -38,7 +38,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     <>
       <Header />
       {mounted && <MobileMenuRoot user={user} />}
-      {children}
+      <main className="flex-1 min-h-screen">{children}</main>
       <Footer />
     </>
   );
