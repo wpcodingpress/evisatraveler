@@ -76,29 +76,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      {/* Team */}
-      <section className="py-20 bg-white">
-        <div className="container-custom">
-          <div className="text-center mb-16">
-            <span className="inline-block px-4 py-1.5 rounded-full bg-purple-100 text-purple-700 text-sm font-medium mb-4">Our Team</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Meet the Leaders</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {[
-              { name: 'Ahmed Al-Rashid', role: 'CEO & Founder', emoji: '👨‍💼' },
-              { name: 'Sarah Chen', role: 'Chief Technology Officer', emoji: '👩‍💻' },
-              { name: 'Michael Brown', role: 'Head of Operations', emoji: '👨‍💼' },
-            ].map((t, i) => (
-              <div key={i} className="text-center">
-                <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500 to-green-500 flex items-center justify-center text-6xl">{t.emoji}</div>
-                <h3 className="text-xl font-bold text-slate-900">{t.name}</h3>
-                <p className="text-slate-600">{t.role}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
     </main>
   );
 }
