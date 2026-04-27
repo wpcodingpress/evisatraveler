@@ -62,7 +62,7 @@ export default function AdminInsurancePage() {
         await fetch('/api/admin/insurance', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: formData,
+          body: JSON.stringify(formData),
         });
       }
       setShowModal(false);
