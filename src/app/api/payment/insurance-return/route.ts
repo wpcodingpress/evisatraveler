@@ -6,7 +6,6 @@ export async function GET(request: NextRequest) {
   
   try {
     const searchParams = request.nextUrl.searchParams;
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://evisatraveler.com';
     
     let transactionStatus = searchParams.get('TS') || searchParams.get('transactionStatus');
     let responseCode = searchParams.get('RC') || searchParams.get('responseCode');
@@ -53,6 +52,7 @@ export async function GET(request: NextRequest) {
         },
       });
       
+      // Notify user
       if (order.userId) {
         await prisma.notification.create({
           data: {
@@ -62,6 +62,25 @@ export async function GET(request: NextRequest) {
             userId: order.userId,
           },
         });
+      }
+      
+      // Notify admin
+      try {
+        const adminUser = await prisma.user.findFirst({
+          where: { role: 'admin' },
+        });
+        if (adminUser) {
+          await prisma.notification.create({
+            data: {
+              type: 'insurance_payment_received',
+              title: 'Insurance Payment Received!',
+              message: `Payment received for ${order.insurance?.name || 'Travel'} insurance. Order: ${order.orderNumber} - $${order.totalAmount}`,
+              userId: adminUser.id,
+            },
+          });
+        }
+      } catch (notifError) {
+        console.error('Failed to create admin notification:', notifError);
       }
       
       console.log('Insurance payment successful for order:', order.orderNumber);
