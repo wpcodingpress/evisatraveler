@@ -41,7 +41,7 @@ export default function SupportPage() {
   ];
 
   return (
-    <main className="flex-1 pt-12 md:pt-20 pb-0 bg-gradient-to-b from-violet-50/30 to-white">
+    <main className="flex-1 bg-gradient-to-b from-violet-50/30 to-white">
       <div className="container-custom">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
