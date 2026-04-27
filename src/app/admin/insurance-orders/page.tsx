@@ -319,7 +319,7 @@ export default function AdminInsuranceOrdersPage() {
                       <p className="font-medium text-slate-900">{order.insurance?.name}</p>
                       <p className="text-sm text-slate-500">{order.insurance?.coverage}</p>
                     </td>
-                    <td className="py-4 px-6 font-semibold text-slate-900">{formatPrice(order.totalAmount, order.currency)}</td>
+                    <td className="py-4 px-6 font-semibold text-slate-900">{formatPrice(Number(order.totalAmount))}</td>
                     <td className="py-4 px-6">{getStatusBadge(order.status, order.paymentStatus)}</td>
                     <td className="py-4 px-6 text-slate-600 text-sm">{formatDate(order.createdAt)}</td>
                     <td className="py-4 px-6 text-right">
@@ -448,7 +448,7 @@ export default function AdminInsuranceOrdersPage() {
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-sm text-slate-500">Amount</p>
-                  <p className="font-semibold text-slate-900">{formatPrice(selectedOrder.totalAmount, selectedOrder.currency)}</p>
+                  <p className="font-semibold text-slate-900">{formatPrice(Number(selectedOrder.totalAmount))}</p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <p className="text-sm text-slate-500">Created</p>
