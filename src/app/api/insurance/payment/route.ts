@@ -29,10 +29,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const order = await prisma.insuranceOrder.findUnique({
-      where: { id: orderId },
-      include: { user: true, insurance: true },
-    });
+    let order;
+    try {
+      order = await prisma.insuranceOrder.findUnique({
+        where: { id: orderId },
+        include: { user: true, insurance: true },
+      });
+      
+      if (!order) {
+        order = await prisma.insuranceOrder.findFirst({
+          where: { orderNumber: orderId },
+          include: { user: true, insurance: true },
+        });
+      }
+    } catch {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
 
     if (!order) {
       return NextResponse.json(
@@ -109,6 +121,7 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
   };
 
   const requestHash = generateHandshakeHash(params, config.key1, config.key2);
+
   const formData = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     formData.append(key, value);
@@ -121,7 +134,9 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json, text/html, */*',
-        'User-Agent': 'Mozilla/5.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Origin': 'https://evisatraveler.com',
+        'Referer': 'https://evisatraveler.com/',
       },
       body: formData.toString(),
       redirect: 'follow',
@@ -129,20 +144,21 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
     });
 
     const text = await response.text();
+    const status = response.status;
     const contentType = response.headers.get('content-type') || '';
-
-    if (response.status === 200 && contentType.includes('text/html')) {
+    
+    if (status === 200 && contentType.includes('text/html')) {
       const tokenMatch = text.match(/AuthToken["\s]*[:=]["\s]*([\w+/=-]+)/i);
       if (tokenMatch) {
         return { success: true, authToken: tokenMatch[1] };
       }
     }
 
-    if (response.status === 302 || response.status === 301) {
+    if (status === 302 || status === 301) {
       const location = response.headers.get('location');
       if (location) {
         const url = new URL(location, 'https://payments.bankalfalah.com');
-        const token = url.searchParams.get('AuthToken');
+        const token = url.searchParams.get('AuthToken') || url.searchParams.get('authToken') || url.searchParams.get('token');
         if (token) {
           return { success: true, authToken: token };
         }
@@ -151,22 +167,38 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
 
     try {
       const data = JSON.parse(text);
-      if (data.AuthToken) {
-        return { success: true, authToken: data.AuthToken };
+      console.log('Handshake response:', JSON.stringify(data));
+      
+      if (data.AuthToken || data.authToken || data.ResponseAuthToken) {
+        return { success: true, authToken: data.AuthToken || data.authToken || data.ResponseAuthToken };
       }
-      if (data.ResponseCode === '00') {
-        return { success: true, authToken: data.AuthToken };
+      
+      if (data.ResponseCode === '00' || data.ResponseCode === '000' || data.ResponseStatus === 'Success') {
+        return { success: true, authToken: data.AuthToken || data.authToken };
       }
-      return { success: false, error: data.ResponseMessage || 'Invalid Request' };
+      
+      return {
+        success: false,
+        error: data.ResponseMessage || data.ErrorMessage || data.message || 'Invalid Request',
+      };
     } catch {
-      const match = text.match(/"AuthToken"\s*:\s*"?([\w+/=-]+)"?/);
-      if (match) {
-        return { success: true, authToken: match[1] };
+      const patterns = [
+        /"AuthToken"\s*:\s*"?([\w+/=-]+)"?/,
+        /AuthToken\s*[:=]\s*([\w+/=-]+)/,
+        /authToken\s*[:=]\s*([\w+/=-]+)/,
+      ];
+      
+      for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match) {
+          return { success: true, authToken: match[1] };
+        }
       }
+      
       return { success: false, error: 'Failed to get auth token' };
     }
   } catch (error: any) {
     console.error('Handshake error:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error.message || 'Failed to connect to payment gateway' };
   }
 }
