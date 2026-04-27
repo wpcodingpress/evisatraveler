@@ -1,6 +1,8 @@
 /**
  * Insurance Payment Initiation API
  * POST /api/insurance/payment
+ * 
+ * Uses exact same logic as visa payment to work with Bank Alfalah
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { createSSOFormData, createSSOFormHtml, convertUsdToPkr, generateTransactionRef, generateHandshakeHash } from '@/lib/alfalah-payment';
@@ -80,6 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     const authToken = handshakeResult.authToken!;
+    console.log('Insurance handshake successful, AuthToken:', authToken.substring(0, 30) + '...');
 
     const paymentRequest = {
       transactionReferenceNumber: transactionRef,
@@ -99,7 +102,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('Payment initiation error:', error);
+    console.error('Insurance payment initiation error:', error);
     return NextResponse.json(
       { error: 'Failed to initiate payment', message: error.message },
       { status: 500 }
@@ -128,6 +131,8 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
   });
   formData.append('HS_RequestHash', requestHash);
 
+  console.log('Insurance Handshake request payload:', formData.toString());
+
   try {
     const response = await fetch('https://payments.bankalfalah.com/HS/HS/HS', {
       method: 'POST',
@@ -147,58 +152,106 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
     const status = response.status;
     const contentType = response.headers.get('content-type') || '';
     
+    console.log('Insurance Handshake response status:', status);
+    console.log('Insurance Handshake response content-type:', contentType);
+    console.log('Insurance Handshake response:', text.substring(0, 500));
+
     if (status === 200 && contentType.includes('text/html')) {
       const tokenMatch = text.match(/AuthToken["\s]*[:=]["\s]*([\w+/=-]+)/i);
       if (tokenMatch) {
+        console.log('Found auth token in response body');
         return { success: true, authToken: tokenMatch[1] };
       }
     }
 
     if (status === 302 || status === 301) {
       const location = response.headers.get('location');
+      console.log('Redirect location:', location);
+      
       if (location) {
         const url = new URL(location, 'https://payments.bankalfalah.com');
-        const token = url.searchParams.get('AuthToken') || url.searchParams.get('authToken') || url.searchParams.get('token');
+        const token = url.searchParams.get('AuthToken') || 
+                      url.searchParams.get('authToken') ||
+                      url.searchParams.get('token');
         if (token) {
+          console.log('Found auth token in redirect URL');
           return { success: true, authToken: token };
         }
       }
     }
 
+    const setCookie = response.headers.get('set-cookie') || '';
+    const cookieTokenMatch = setCookie.match(/AuthToken=([^;]+)/) || 
+                       setCookie.match(/authToken=([^;]+)/) ||
+                       setCookie.match(/token=([^;]+)/);
+    if (cookieTokenMatch) {
+      console.log('Found auth token in cookie');
+      return { success: true, authToken: cookieTokenMatch[1] };
+    }
+
     try {
       const data = JSON.parse(text);
-      console.log('Handshake response:', JSON.stringify(data));
+      console.log('Parsed insurance handshake data:', JSON.stringify(data));
       
-      if (data.AuthToken || data.authToken || data.ResponseAuthToken) {
-        return { success: true, authToken: data.AuthToken || data.authToken || data.ResponseAuthToken };
+      const authToken = data.AuthToken || data.authToken || data.ResponseAuthToken;
+      
+      if (authToken) {
+        return { success: true, authToken: authToken };
       }
       
-      if (data.ResponseCode === '00' || data.ResponseCode === '000' || data.ResponseStatus === 'Success') {
+      const responseCode = data.ResponseCode || data.responseCode || data.ResponseStatus || data.status;
+      if (responseCode === '00' || responseCode === '000' || responseCode === 'Success' || responseCode === 0) {
         return { success: true, authToken: data.AuthToken || data.authToken };
       }
       
       return {
         success: false,
-        error: data.ResponseMessage || data.ErrorMessage || data.message || 'Invalid Request',
+        error: data.ResponseMessage || data.ErrorMessage || data.errorMessage || data.Message || 'Invalid Request',
       };
     } catch {
       const patterns = [
         /"AuthToken"\s*:\s*"?([\w+/=-]+)"?/,
         /AuthToken\s*[:=]\s*([\w+/=-]+)/,
         /authToken\s*[:=]\s*([\w+/=-]+)/,
+        /ResponseAuthToken\s*[:=]\s*([\w+/=-]+)/,
+        /token["\s]*[:=]\s*"?([\w+/=-]+)"?/,
       ];
       
       for (const pattern of patterns) {
         const match = text.match(pattern);
         if (match) {
+          console.log('Found auth token via regex');
           return { success: true, authToken: match[1] };
         }
       }
       
-      return { success: false, error: 'Failed to get auth token' };
+      let errorMsg = 'Unknown error from payment gateway';
+      
+      const errorPatterns = [
+        /ErrorMessage[^>]*>([^<]+)</,
+        /<span[^>]*class=["']error["'][^>]*>([^<]+)</,
+        /<div[^>]*class=["'][^"']*error[^"'][^>]*>([^<]+)</,
+        /<title>([^<]*Error[^<]*)<\/title>/i,
+      ];
+      
+      for (const pattern of errorPatterns) {
+        const match = text.match(pattern);
+        if (match) {
+          errorMsg = match[1].trim().substring(0, 200);
+          break;
+        }
+      }
+      
+      return { success: false, error: errorMsg };
     }
   } catch (error: any) {
-    console.error('Handshake error:', error);
+    console.error('Insurance handshake error:', error);
+    if (error.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' || error.code === 'ETIMEDOUT') {
+      return { 
+        success: false, 
+        error: 'Unable to connect to payment gateway. Please try again later.' 
+      };
+    }
     return { success: false, error: error.message || 'Failed to connect to payment gateway' };
   }
 }
