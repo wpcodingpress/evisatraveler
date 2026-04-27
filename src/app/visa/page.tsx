@@ -325,12 +325,13 @@ export default function VisaPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </Link>
+</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
-
-      {/* PromoBranding Section */}
+    </main>
       <section className="py-20 lg:py-32 pb-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl" />
@@ -386,6 +387,55 @@ export default function VisaPage() {
               </div>
               <div className="w-px h-5 bg-white/20" />
               <div className="text-slate-300">Trusted by 50,000+ Travelers</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section - AFTER Why Choose */}
+      <section className="py-16 lg:py-20 bg-slate-50">
+        <div className="container-custom">
+          <div className="text-center mb-10 lg:mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-violet-100 text-violet-700 rounded-full text-sm font-medium mb-4">
+              FAQ
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-slate-600 mt-2 max-w-xl mx-auto">
+              Quick answers to common questions
+            </p>
+          </div>
+
+          <div className="max-w-3xl mx-auto">
+            <div className="space-y-4">
+              {[
+                { q: 'How long does visa processing take?', a: 'Processing times vary by destination. Most tourist visas are processed within 3-5 business days.' },
+                { q: 'What documents do I need?', a: 'Typically, you\'ll need a valid passport, recent passport-sized photo, and travel itinerary.' },
+                { q: 'Is my information secure?', a: 'Yes! We use 256-bit SSL encryption to protect your personal data.' },
+                { q: 'Can I get a refund if my visa is denied?', a: 'Our refund policy varies. Contact our support team for specific situations.' },
+                { q: 'How will I receive my visa?', a: 'Approved visas are sent to your email as a PDF document.' },
+              ].map((faq, i) => (
+                <div key={i} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">
+                  <button
+                    className="w-full flex items-center justify-between p-5 lg:p-6 text-left hover:bg-slate-50 transition-colors"
+                  >
+                    <span className="font-semibold text-slate-900 pr-4">{faq.q}</span>
+                    <svg className="w-5 h-5 text-violet-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 text-center">
+              <Link href="/faq" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/30 transition-all hover:scale-105">
+                View All FAQs
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
             </div>
           </div>
         </div>

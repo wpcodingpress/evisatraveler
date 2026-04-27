@@ -259,7 +259,32 @@ export default function TrackPage() {
             </div>
           </div>
         </div>
-</section>
+      </section>
+
+      {/* FAQ Section - AFTER Why Choose */}
+      <section className="py-16 bg-slate-50">
+        <div className="container-custom">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-slate-900">
+                Frequently Asked Questions
+              </h2>
+            </div>
+            <div className="space-y-4">
+              {[
+                { q: 'How do I track my visa application?', a: 'Enter your application ID in the search box above to track your visa status in real-time.' },
+                { q: 'What if I lost my application ID?', a: 'Contact our support team with your registered email and we can help you retrieve it.' },
+                { q: 'How long does processing take?', a: 'Most visas are processed within 3-5 business days. Rush options available for urgent travel.' },
+              ].map((faq, i) => (
+                <div key={i} className="bg-white rounded-xl border border-slate-200 p-5">
+                  <h3 className="font-semibold text-slate-900 mb-2">{faq.q}</h3>
+                  <p className="text-slate-600 text-sm">{faq.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
