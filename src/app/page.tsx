@@ -586,14 +586,111 @@ function FAQSection() {
 function InsuranceSection() {
   const { formatPrice } = useCurrency();
   const [insurances, setInsurances] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const tierColors = ['from-green-500 to-emerald-600', 'from-blue-500 to-cyan-600', 'from-amber-500 to-orange-600'];
 
   useEffect(() => {
     fetch('/api/insurance')
       .then(r => r.json())
-      .then(setInsurances);
+      .then(data => {
+        if (data.error) setError(true);
+        else setInsurances(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, []);
 
-  const tierColors = ['from-green-500 to-emerald-600', 'from-blue-500 to-cyan-600', 'from-amber-500 to-orange-600'];
+  if (loading) {
+    return (
+      <section className="py-16 lg:py-20 bg-white">
+        <div className="container-custom">
+          <div className="text-center mb-10 lg:mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">
+              Travel Insurance
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
+              Protect Your Trip with Insurance
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-slate-100 rounded-2xl h-64 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || insurances.length === 0) {
+    return (
+      <section className="py-16 lg:py-20 bg-white">
+        <div className="container-custom">
+          <div className="text-center mb-10 lg:mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 0 0018 7c0 1.653-.573 3.184-1.546 4.526l-1.43 1.433A.999.999 0 0115 15h-4a1 1 0 01-.707-1.707l1.432-1.433A11.954 11.954 0 012 11.055 9 9 9 0 0010 16a9 9 0 008-8 9 9 0 00-6.834-8.001z" clipRule="evenodd" />
+              </svg>
+              Travel Insurance
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
+              Protect Your Trip with{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">
+                Insurance
+              </span>
+            </h2>
+            <p className="text-slate-600 mt-2 max-w-xl mx-auto">
+              Comprehensive travel insurance for worry-free journeys
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
+            {[
+              { name: 'Basic Protection', description: 'Essential coverage for short trips', price: 3, coverage: '$25,000' },
+              { name: 'Standard Plus', description: 'Comprehensive family coverage', price: 5, coverage: '$50,000' },
+              { name: 'Premium Shield', description: 'Maximum adventure protection', price: 10, coverage: '$100,000' },
+            ].map((insurance, index) => (
+              <div key={index} className="group relative bg-white rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <div className={`absolute inset-0 bg-gradient-to-br ${tierColors[index]} opacity-5`}></div>
+                <div className="relative p-6 lg:p-8">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${tierColors[index]}`}>
+                      {index === 0 ? 'Basic' : index === 1 ? 'Standard' : 'Premium'}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">{insurance.name}</h3>
+                  <p className="text-slate-600 text-sm mb-4">{insurance.description}</p>
+                  <div className="mb-4">
+                    <p className="text-xs text-slate-500">Coverage: {insurance.coverage}</p>
+                  </div>
+                  <div className="flex items-end justify-between pt-4 border-t border-slate-100">
+                    <div>
+                      <p className="text-slate-500 text-xs">From</p>
+                      <p className="text-2xl font-bold text-slate-900">{formatPrice(insurance.price)}</p>
+                    </div>
+                    <Link href="/insurance" className={`px-5 py-2.5 rounded-xl text-white font-semibold bg-gradient-to-r ${tierColors[index]} hover:shadow-lg transition-all`}>
+                      Get Now
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-10">
+            <Link href="/insurance" className="inline-flex items-center gap-2 px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all">
+              View All Insurance Plans
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 lg:py-20 bg-white">
