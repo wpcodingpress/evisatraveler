@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://evisatraveler.com';
+  
   try {
     const searchParams = request.nextUrl.searchParams;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://evisatraveler.com';
