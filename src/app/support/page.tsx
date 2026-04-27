@@ -41,7 +41,7 @@ export default function SupportPage() {
   ];
 
   return (
-    <div className="flex-1 bg-gradient-to-b from-violet-50/30 to-white">
+    <main className="flex-1 bg-gradient-to-b from-violet-50/30 to-white">
       <div className="container-custom">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -255,6 +255,6 @@ export default function SupportPage() {
           </div>
         </div>
       </section>
-    </div>
+    </main>
   );
 }
