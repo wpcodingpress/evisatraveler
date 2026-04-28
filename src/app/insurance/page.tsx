@@ -19,6 +19,7 @@ export default function InsurancePage() {
   const { formatPrice } = useCurrency();
   const [insurances, setInsurances] = useState<Insurance[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   useEffect(() => {
     fetchInsurances();
@@ -192,9 +193,43 @@ export default function InsurancePage() {
               <div className="w-px h-5 bg-white/20" />
               <div className="text-slate-300">Trusted by 50,000+ Travelers</div>
             </div>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
-}
+             </div>
+         </div>
+       </section>
+
+       {/* FAQ Section */}
+       <section className="py-16 lg:py-20 bg-slate-50">
+         <div className="container-custom">
+           <div className="text-center mb-10 lg:mb-12">
+             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">Frequently Asked Questions</h2>
+           </div>
+           <div className="max-w-3xl mx-auto space-y-4">
+             {[
+               { q: 'How long does visa processing take?', a: 'Most tourist visas are processed within 3-5 business days. Rush options available.' },
+               { q: 'What documents do I need?', a: 'Typically just your passport and a recent photo. Some destinations may require additional documents.' },
+               { q: 'Is my information secure?', a: 'Yes! We use 256-bit SSL encryption to protect your personal data.' },
+               { q: 'How will I receive my visa?', a: 'Approved visas are sent to your email as a PDF document.' },
+             ].map((faq, i) => (
+               <div key={i} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                 <button
+                   className="w-full flex items-center justify-between p-5 lg:p-6 text-left"
+                   onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                 >
+                   <span className="font-semibold text-slate-900 pr-4">{faq.q}</span>
+                   <svg className={`w-5 h-5 text-violet-600 flex-shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                   </svg>
+                 </button>
+                 {openIndex === i && (
+                   <div className="px-5 lg:px-6 pb-5 lg:pb-6 text-slate-600">
+                     {faq.a}
+                   </div>
+                 )}
+               </div>
+             ))}
+           </div>
+         </div>
+       </section>
+     </main>
+   );
+ }
