@@ -39,7 +39,7 @@ export default function AdminInsurancePage() {
 
   const fetchInsurances = async () => {
     try {
-      const res = await fetch('/api/admin/insurance');
+      const res = await fetch('/api/admin/insurance', { cache: 'no-store' });
       const data = await res.json();
       setInsurances(data);
     } catch (error) {

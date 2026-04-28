@@ -27,7 +27,7 @@ export default function InsurancePage() {
 
   const fetchInsurances = async () => {
     try {
-      const res = await fetch('/api/insurance');
+      const res = await fetch('/api/insurance', { cache: 'no-store' });
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
         setInsurances(data);

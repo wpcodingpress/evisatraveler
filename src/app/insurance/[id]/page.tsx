@@ -25,8 +25,6 @@ interface FormData {
   dateOfBirth: string;
   travelDate: string;
   returnDate: string;
-  beneficiaryName: string;
-  beneficiaryRelation: string;
 }
 
 export default function InsuranceFormPage() {
@@ -47,8 +45,6 @@ export default function InsuranceFormPage() {
     dateOfBirth: '',
     travelDate: '',
     returnDate: '',
-    beneficiaryName: '',
-    beneficiaryRelation: '',
   });
 
   useEffect(() => {
@@ -77,7 +73,7 @@ export default function InsuranceFormPage() {
 
   const fetchInsurance = async () => {
     try {
-      const res = await fetch('/api/insurance');
+      const res = await fetch('/api/insurance', { cache: 'no-store' });
       const data = await res.json();
       let found = null;
       if (Array.isArray(data)) {
@@ -108,9 +104,7 @@ export default function InsuranceFormPage() {
       formData.passportNumber.trim() &&
       formData.dateOfBirth &&
       formData.travelDate &&
-      formData.returnDate &&
-      formData.beneficiaryName.trim() &&
-      formData.beneficiaryRelation
+      formData.returnDate
     );
   };
 
@@ -317,17 +311,58 @@ export default function InsuranceFormPage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Travel Start Date *</label>
-                    <input
-                      type="date"
-                      name="travelDate"
-                      required
-                      value={formData.travelDate}
-                      onChange={handleChange}
-                      className="w-full rounded-xl border border-violet-200 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    />
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Date of Birth *</label>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        name="dateOfBirth"
+                        required
+                        value={formData.dateOfBirth}
+                        onChange={handleChange}
+                        className="w-full rounded-xl border border-violet-200 px-4 py-3 pl-10 text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      />
+                      <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-violet-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
                   </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Travel Start Date *</label>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        name="travelDate"
+                        required
+                        value={formData.travelDate}
+                        onChange={handleChange}
+                        className="w-full rounded-xl border border-violet-200 px-4 py-3 pl-10 text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      />
+                      <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-violet-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Return Date *</label>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        name="returnDate"
+                        required
+                        value={formData.returnDate}
+                        onChange={handleChange}
+                        className="w-full rounded-xl border border-violet-200 px-4 py-3 pl-10 text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      />
+                      <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-violet-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Return Date *</label>
                     <input

@@ -592,7 +592,7 @@ function InsuranceSection() {
   const tierColors = ['from-green-500 to-emerald-600', 'from-blue-500 to-cyan-600', 'from-amber-500 to-orange-600'];
 
   useEffect(() => {
-    fetch('/api/insurance')
+    fetch('/api/insurance', { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
         if (data.error) setError(true);
