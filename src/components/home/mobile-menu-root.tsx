@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { CurrencySelector } from '@/components/CurrencySelector';
 
 type User = { firstName: string; email: string } | null;
 
@@ -114,7 +115,13 @@ export function MobileMenuRoot({ user }: { user: User }) {
                 ))}
               </nav>
 
-              <div className="mt-6 pt-6 border-t border-slate-100">
+               {/* Currency Switcher - Mobile */}
+               <div className="px-4 py-3 border-t border-slate-100">
+                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Currency</p>
+                 <CurrencySelector />
+               </div>
+
+               <div className="mt-6 pt-6 border-t border-slate-100">
                 {user ? (
                   <button onClick={() => setShowUserMenu(!showUserMenu)} className="w-full px-5 py-3.5 text-center text-sm text-slate-700 border border-slate-200 rounded-xl">
                     My Account

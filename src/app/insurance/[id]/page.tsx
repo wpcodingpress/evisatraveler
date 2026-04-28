@@ -123,7 +123,6 @@ export default function InsuranceFormPage() {
         }
       };
       
-      // Try to create order in database first
       const res = await fetch('/api/insurance/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -131,7 +130,6 @@ export default function InsuranceFormPage() {
       });
       
       let orderId = null;
-      let useDirectPayment = false;
       
       if (res.ok) {
         const result = await res.json();
@@ -140,14 +138,10 @@ export default function InsuranceFormPage() {
         }
       }
       
-      // If no database order, use direct payment (for fallback without DB)
       if (!orderId) {
-        // Generate a temporary order reference
         orderId = `INS-TEMP-${Date.now()}`;
-        useDirectPayment = true;
       }
       
-      // Now initiate payment via same endpoint
       const payRes = await fetch('/api/insurance/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -297,20 +291,6 @@ export default function InsuranceFormPage() {
                       className="w-full rounded-xl border border-violet-200 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Date of Birth *</label>
-                    <input
-                      type="date"
-                      name="dateOfBirth"
-                      required
-                      value={formData.dateOfBirth}
-                      onChange={handleChange}
-                      className="w-full rounded-xl border border-violet-200 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-5">
                   <div className="relative">
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Date of Birth *</label>
                     <div className="relative">
@@ -361,51 +341,6 @@ export default function InsuranceFormPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
-                  </div>
-                </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Return Date *</label>
-                    <input
-                      type="date"
-                      name="returnDate"
-                      required
-                      value={formData.returnDate}
-                      onChange={handleChange}
-                      className="w-full rounded-xl border border-violet-200 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Beneficiary Name *</label>
-                    <input
-                      type="text"
-                      name="beneficiaryName"
-                      required
-                      value={formData.beneficiaryName}
-                      onChange={handleChange}
-                      placeholder="Emergency contact name"
-                      className="w-full rounded-xl border border-violet-200 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Relationship *</label>
-                    <select
-                      name="beneficiaryRelation"
-                      required
-                      value={formData.beneficiaryRelation}
-                      onChange={handleChange}
-                      className="w-full rounded-xl border border-violet-200 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    >
-                      <option value="">Select</option>
-                      <option value="spouse">Spouse</option>
-                      <option value="parent">Parent</option>
-                      <option value="sibling">Sibling</option>
-                      <option value="child">Child</option>
-                      <option value="friend">Friend</option>
-                      <option value="other">Other</option>
-                    </select>
                   </div>
                 </div>
 

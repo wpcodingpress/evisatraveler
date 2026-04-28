@@ -287,9 +287,15 @@ function MobileMenuButton({ user, onLogout }: { user: { firstName: string; email
                     </Link>
                   );
                 })}
-              </nav>
+               </nav>
 
-              <div className="mt-6 pt-6 border-t border-slate-100 space-y-3">
+               {/* Currency Switcher - Mobile */}
+               <div className="px-4 py-3 border-t border-slate-100">
+                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Currency</p>
+                 <CurrencySelector />
+               </div>
+
+               <div className="mt-6 pt-6 border-t border-slate-100 space-y-3">
                 {user ? (
                   <button
                     onClick={() => { setShowUserMenu(!showUserMenu); }}

@@ -275,6 +275,15 @@ export function createSSOFormData(payment: PaymentRequest, authToken: string): P
   // Generate SSO RequestHash
   const requestHash = generateSSOHash(ssoParams, config.key1, config.key2);
   
+  console.log('SSO Form Data Generated:', {
+    authToken: authToken.substring(0, 20) + '...',
+    requestHash: requestHash.substring(0, 20) + '...',
+    merchantId: config.merchantId,
+    transactionRef: payment.transactionReferenceNumber,
+    amount: amountStr,
+    ssoMapString: generateSSOMapString(ssoParams),
+  });
+  
   return {
     channelId: '1001',
     merchantId: config.merchantId,
@@ -489,7 +498,21 @@ export function createSSOFormHtml(formData: PaymentFormData): string {
      </div>
    </div>
    <script>
+     // Debug: Log form data before submit
+     console.log('Submitting SSO form to:', '${gatewayUrl}');
+     const form = document.getElementById('ssoForm');
+     const formData = new FormData(form);
+     console.log('SSO Form Fields:');
+     for (const [key, value] of formData.entries()) {
+       if (key === 'MerchantPassword' || key === 'MerchantHash') {
+         console.log(key + ':', '***hidden***');
+       } else {
+         console.log(key + ':', value);
+       }
+     }
+     
      setTimeout(function() {
+       console.log('Submitting SSO form now...');
        document.getElementById('ssoForm').submit();
      }, 1000);
    </script>

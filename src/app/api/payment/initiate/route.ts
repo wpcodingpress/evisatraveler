@@ -149,34 +149,20 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json, text/html, */*',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Origin': 'https://evisatraveler.com',
-        'Referer': 'https://evisatraveler.com/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
       body: formData.toString(),
-      redirect: 'follow',
+      redirect: 'manual', // Don't follow redirects - we need to capture the token
       signal: AbortSignal.timeout(30000),
     });
 
-    const text = await response.text();
     const status = response.status;
     const contentType = response.headers.get('content-type') || '';
     
     console.log('Handshake response status:', status);
-    console.log('Handshake response content-type:', contentType);
-    console.log('Handshake response:', text.substring(0, 500));
-
-    // If redirect followed and we got a response
-    if (status === 200 && contentType.includes('text/html')) {
-      // Look for AuthToken in the response
-      const tokenMatch = text.match(/AuthToken["\s]*[:=]["\s]*([\w+/=-]+)/i);
-      if (tokenMatch) {
-        console.log('Found auth token in response body');
-        return { success: true, authToken: tokenMatch[1] };
-      }
-    }
-
-    // Check for redirect with token in URL (when redirect: 'manual')
+    console.log('Handshake response headers:', JSON.stringify(Object.fromEntries(response.headers.entries())));
+    
+    // Check for redirect with token in URL (302/301)
     if (status === 302 || status === 301) {
       const location = response.headers.get('location');
       console.log('Redirect location:', location);
@@ -192,74 +178,39 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
         }
       }
     }
-
-    // Check for token in cookies
-    const setCookie = response.headers.get('set-cookie') || '';
-    const tokenMatch = setCookie.match(/AuthToken=([^;]+)/) || 
-                       setCookie.match(/authToken=([^;]+)/) ||
-                       setCookie.match(/token=([^;]+)/);
+    
+    const text = await response.text();
+    console.log('Handshake response body (first 500 chars):', text.substring(0, 500));
+    
+    // Try to find AuthToken in response body
+    const tokenMatch = text.match(/AuthToken["\s]*[:=]["\s]*([\w+/=-]+)/i) ||
+                      text.match(/authToken["\s]*[:=]["\s]*([\w+/=-]+)/i);
     if (tokenMatch) {
-      console.log('Found auth token in cookie');
+      console.log('Found auth token in response body');
       return { success: true, authToken: tokenMatch[1] };
     }
-
+    
     // Try JSON parsing
     try {
       const data = JSON.parse(text);
-      console.log('Parsed handshake data:', JSON.stringify(data));
+      console.log('Parsed handshake JSON:', JSON.stringify(data));
       
-      const authToken = data.AuthToken || data.authToken || data.ResponseAuthToken;
+      const authToken = data.AuthToken || data.authToken || data.ResponseAuthToken || data.Token;
       
       if (authToken) {
         return { success: true, authToken: authToken };
       }
       
-      const responseCode = data.ResponseCode || data.responseCode || data.ResponseStatus || data.status;
-      if (responseCode === '00' || responseCode === '000' || responseCode === 'Success' || responseCode === 0) {
-        return { success: true, authToken: data.AuthToken || data.authToken };
-      }
-      
       return {
         success: false,
-        error: data.ResponseMessage || data.ErrorMessage || data.errorMessage || data.Message || 'Invalid Request',
+        error: data.ResponseMessage || data.ErrorMessage || data.errorMessage || data.Message || 'Invalid Request - No Token',
       };
-    } catch {
-      // Try regex patterns for token extraction
-      const patterns = [
-        /"AuthToken"\s*:\s*"?([\w+/=-]+)"?/,
-        /AuthToken\s*[:=]\s*([\w+/=-]+)/,
-        /authToken\s*[:=]\s*([\w+/=-]+)/,
-        /ResponseAuthToken\s*[:=]\s*([\w+/=-]+)/,
-        /token["\s]*[:=]\s*"?([\w+/=-]+)"?/,
-      ];
-      
-      for (const pattern of patterns) {
-        const match = text.match(pattern);
-        if (match) {
-          console.log('Found auth token via regex');
-          return { success: true, authToken: match[1] };
-        }
-      }
-      
-      // Extract error from HTML
-      let errorMsg = 'Unknown error from payment gateway';
-      
-      const errorPatterns = [
-        /ErrorMessage[^>]*>([^<]+)</,
-        /<span[^>]*class=["']error["'][^>]*>([^<]+)</,
-        /<div[^>]*class=["'][^"']*error[^"'][^>]*>([^<]+)</,
-        /<title>([^<]*Error[^<]*)<\/title>/i,
-      ];
-      
-      for (const pattern of errorPatterns) {
-        const match = text.match(pattern);
-        if (match) {
-          errorMsg = match[1].trim().substring(0, 200);
-          break;
-        }
-      }
-      
-      return { success: false, error: errorMsg };
+    } catch (e) {
+      // Not JSON, return error with response text
+      return { 
+        success: false, 
+        error: 'Handshake failed: ' + text.substring(0, 200) 
+      };
     }
   } catch (error: any) {
     console.error('Handshake error:', error);
