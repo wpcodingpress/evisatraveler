@@ -29,7 +29,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    const isValidPassword = user.password ? await bcrypt.compare(currentPassword, user.password) : false;
     if (!isValidPassword) {
       return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 });
     }
