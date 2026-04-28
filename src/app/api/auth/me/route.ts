@@ -9,11 +9,12 @@ export async function GET() {
     const userId = cookieStore.get('user_id');
     const userEmail = cookieStore.get('user_email');
     const userName = cookieStore.get('user_name');
-
+    const userRole = cookieStore.get('user_role');
+    
     if (!token || !userId) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
-
+    
     let user;
     try {
       user = await prisma.user.findUnique({
@@ -24,12 +25,13 @@ export async function GET() {
           lastName: true,
           email: true,
           phone: true,
+          role: true,
         },
       });
     } catch {
       user = null;
     }
-
+    
     if (user) {
       return NextResponse.json({
         authenticated: true,
@@ -39,18 +41,24 @@ export async function GET() {
           firstName: user.firstName,
           lastName: user.lastName,
           phone: user.phone,
+          role: user.role,
         },
       });
     }
-
+    
+    // User not in DB, return cookie data
+    const nameParts = userName?.value?.split(' ') || ['User'];
+    const role = userRole?.value || 'user';
+    
     return NextResponse.json({
       authenticated: true,
       user: {
         id: userId.value,
         email: userEmail?.value || '',
-        firstName: userName?.value || 'User',
-        lastName: '',
+        firstName: nameParts[0] || 'User',
+        lastName: nameParts[1] || '',
         phone: '',
+        role: role,
       },
     });
   } catch (error) {

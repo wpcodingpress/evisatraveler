@@ -38,6 +38,7 @@ export async function POST(request: Request) {
         cookieStore.set('user_id', user.id, { path: '/' });
         cookieStore.set('user_email', user.email, { path: '/' });
         cookieStore.set('user_name', `${user.firstName} ${user.lastName}`, { path: '/' });
+        cookieStore.set('user_role', user.role, { path: '/' });
         
         return NextResponse.json({
           user: {
@@ -86,7 +87,8 @@ export async function POST(request: Request) {
     cookieStore.set('user_id', user!.id, { path: '/' });
     cookieStore.set('user_email', user!.email, { path: '/' });
     cookieStore.set('user_name', `${user!.firstName} ${user!.lastName || ''}`.trim(), { path: '/' });
-
+    cookieStore.set('user_role', user!.role || 'user', { path: '/' });
+    
     return NextResponse.json({
       user: {
         id: user!.id,
