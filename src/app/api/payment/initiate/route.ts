@@ -122,12 +122,12 @@ async function doHandshake(config: any): Promise<{ success: boolean; authToken?:
   const params: Record<string, string> = {
     HS_ChannelId: '1001',
     HS_IsRedirectionRequest: '1',
-    HS_MerchantHash: config.merchantHash,
     HS_MerchantId: config.merchantId,
-    HS_MerchantPassword: config.password,
-    HS_MerchantUsername: config.username,
-    HS_ReturnURL: config.returnUrl,
     HS_StoreId: config.storeId,
+    HS_ReturnURL: config.returnUrl,
+    HS_MerchantHash: config.merchantHash,
+    HS_MerchantUsername: config.username,
+    HS_MerchantPassword: config.password,
     HS_TransactionReferenceNumber: config.transactionRef,
   };
 
