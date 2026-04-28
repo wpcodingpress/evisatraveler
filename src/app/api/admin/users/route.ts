@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { cookies } from 'next/headers';
 
 export async function GET(request: Request) {
   try {
@@ -74,6 +75,25 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
+    // If trying to set super_admin role, verify requester is super_admin
+    if (role === 'super_admin') {
+      // Get the requester's ID from cookies
+      const cookieStore = await cookies();
+      const requesterId = cookieStore.get('user_id')?.value;
+      
+      if (requesterId) {
+        const requester = await prisma.user.findUnique({ 
+          where: { id: requesterId } 
+        });
+        
+        if (!requester || requester.role !== 'super_admin') {
+          return NextResponse.json({ error: 'Only super admin can assign super admin role' }, { status: 403 });
+        }
+      } else {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+
     const updateData: any = {};
     if (isActive !== undefined) updateData.isActive = isActive;
     if (firstName) updateData.firstName = firstName;
@@ -102,6 +122,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
+    // Get the user to be deleted
     const user = await prisma.user.findUnique({
       where: { id },
     });
@@ -110,8 +131,14 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Prevent deletion of super_admin
+    if (user.role === 'super_admin') {
+      return NextResponse.json({ error: 'Cannot delete super admin' }, { status: 400 });
+    }
+
+    // Prevent deletion of admin by non-super-admin (will be enforced by frontend)
     if (user.role === 'admin') {
-      return NextResponse.json({ error: 'Cannot delete admin users' }, { status: 400 });
+      return NextResponse.json({ error: 'Cannot delete admin users. Only super admin can delete admins.' }, { status: 400 });
     }
 
     await prisma.user.delete({

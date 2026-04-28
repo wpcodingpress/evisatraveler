@@ -13,24 +13,51 @@ export async function POST(request: Request) {
     }
 
     let user;
+
+    // CHECK ENV VARS FIRST (for super admin / admin bypass)
+    if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+      if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+        user = {
+          id: 'super-admin',
+          email: email,
+          firstName: 'Rahman',
+          lastName: 'CEO',
+          role: 'super_admin',
+          isActive: true,
+        };
+        
+        // Set auth cookies
+        const cookieStore = await cookies();
+        cookieStore.set('auth_token', 'logged_in', { 
+          httpOnly: true, 
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7,
+          path: '/',
+        });
+        cookieStore.set('user_id', user.id, { path: '/' });
+        cookieStore.set('user_email', user.email, { path: '/' });
+        cookieStore.set('user_name', `${user.firstName} ${user.lastName}`, { path: '/' });
+        
+        return NextResponse.json({
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+          },
+        });
+      }
+    }
+
+    // THEN check database
     try {
       user = await prisma.user.findUnique({
         where: { email },
       });
     } catch {
-      // Database not available - check against env credentials
-      if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-        user = {
-          id: 'admin',
-          email: email,
-          firstName: 'Admin',
-          lastName: 'User',
-          role: 'admin',
-          isActive: true,
-        };
-      } else {
-        return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-      }
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     if (user) {

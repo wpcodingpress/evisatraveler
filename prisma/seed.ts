@@ -6,17 +6,33 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Create Admin User
-  const hashedPassword = await bcrypt.hash('S0pnahenayf', 12);
+  // Create Super Admin
+  const superAdminPassword = await bcrypt.hash('S0pnahenayf', 12);
   
-  const adminUser = await prisma.user.upsert({
+  const superAdmin = await prisma.user.upsert({
     where: { email: 'rahman.ceo@wpcodingpress.com' },
-    update: {},
+    update: { role: 'super_admin', password: superAdminPassword },
     create: {
       email: 'rahman.ceo@wpcodingpress.com',
-      password: hashedPassword,
+      password: superAdminPassword,
       firstName: 'Rahman',
       lastName: 'CEO',
+      role: 'super_admin',
+    },
+  });
+  console.log('✅ Super Admin created:', superAdmin.email);
+
+  // Create Admin
+  const adminPassword = await bcrypt.hash('Mahnoor@1234', 12);
+  
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'Sheikhshoaibahmed81@gmail.com' },
+    update: { role: 'admin', password: adminPassword },
+    create: {
+      email: 'Sheikhshoaibahmed81@gmail.com',
+      password: adminPassword,
+      firstName: 'Sheikh',
+      lastName: 'Shoaib',
       role: 'admin',
     },
   });

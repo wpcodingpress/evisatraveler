@@ -26,9 +26,20 @@ export default function UsersPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<User> | null>(null);
   const [saving, setSaving] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordUser, setPasswordUser] = useState<User | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     fetchUsers();
+    // Get current user role
+    fetch('/api/auth/me').then(res => res.json()).then(data => {
+      if (data.authenticated) {
+        setCurrentUserRole(data.user?.role || 'user');
+      }
+    }).catch(() => {});
   }, [search, roleFilter]);
 
   const fetchUsers = async () => {
@@ -69,10 +80,25 @@ export default function UsersPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, userRole: string) => {
+    // Only super admin can delete
+    if (currentUserRole !== 'super_admin') {
+      alert('Only super admin can delete users');
+      return;
+    }
+    
+    // Cannot delete super admin
+    if (userRole === 'super_admin') {
+      alert('Cannot delete super admin');
+      return;
+    }
+    
+    // Admin can only be deleted by super admin (already checked above)
+    
     if (!confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')) {
       return;
     }
+    
     try {
       const res = await fetch(`/api/admin/users?id=${id}`, {
         method: 'DELETE',
@@ -135,6 +161,37 @@ export default function UsersPage() {
       alert(err.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!passwordUser) return;
+    
+    setChangingPassword(true);
+    try {
+      const res = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetUserId: passwordUser.id,
+          newPassword: newPassword,
+        }),
+      });
+      
+      if (res.ok) {
+        alert('Password changed successfully');
+        setShowPasswordModal(false);
+        setPasswordUser(null);
+        setNewPassword('');
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to change password');
+      }
+    } catch {
+      alert('Failed to change password');
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -226,21 +283,21 @@ export default function UsersPage() {
               className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
             />
           </div>
-          <div className="flex gap-2">
-            {['all', 'user', 'admin'].map((role) => (
-              <button
-                key={role}
-                onClick={() => setRoleFilter(role)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize ${
-                  roleFilter === role
-                    ? 'bg-violet-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {role}
-              </button>
-            ))}
-          </div>
+            <div className="flex gap-2">
+              {['all', 'user', 'admin', 'super_admin'].map((role) => (
+                <button
+                  key={role}
+                  onClick={() => setRoleFilter(role)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize ${
+                    roleFilter === role
+                      ? 'bg-violet-600 text-white'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {role.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
         </div>
       </div>
 
@@ -275,9 +332,10 @@ export default function UsersPage() {
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1.5 text-sm rounded-lg font-medium ${
+                      user.role === 'super_admin' ? 'bg-purple-100 text-purple-700' :
                       user.role === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
                     }`}>
-                      {user.role}
+                      {user.role === 'super_admin' ? 'Super Admin' : user.role}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -308,9 +366,22 @@ export default function UsersPage() {
                       >
                         Edit
                       </button>
-                      {user.role !== 'admin' && (
+                      {/* Change Password - Super Admin only */}
+                      {currentUserRole === 'super_admin' && (
                         <button 
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => {
+                            setPasswordUser(user);
+                            setShowPasswordModal(true);
+                          }}
+                          className="text-sm font-medium text-green-600 hover:text-green-700"
+                        >
+                          Password
+                        </button>
+                      )}
+                      {/* Delete - Super Admin only, cannot delete super_admin */}
+                      {currentUserRole === 'super_admin' && user.role !== 'super_admin' && (
+                        <button 
+                          onClick={() => handleDelete(user.id, user.role)}
                           className="text-sm font-medium text-red-600 hover:text-red-700"
                         >
                           Delete
@@ -438,6 +509,9 @@ export default function UsersPage() {
                 >
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
+                  {currentUserRole === 'super_admin' && (
+                    <option value="super_admin">Super Admin</option>
+                  )}
                 </select>
               </div>
               <div className="flex gap-3 pt-4">
