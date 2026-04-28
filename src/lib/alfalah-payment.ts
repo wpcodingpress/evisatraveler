@@ -160,11 +160,11 @@ export function generateHandshakeMapString(params: Record<string, string>): stri
 
 /**
  * Generate SSO map string in specific order matching Bank Alfalah spec
+ * NOTE: RequestHash is NOT included - it's generated FROM these params
  */
 export function generateSSOMapString(params: Record<string, string>): string {
   const order = [
     'AuthToken',
-    'RequestHash',
     'ChannelId',
     'Currency',
     'IsBIN',
@@ -190,6 +190,15 @@ export function generateSSOMapString(params: Record<string, string>): string {
  */
 export function generateHandshakeHash(params: Record<string, string>, key1: string, key2: string): string {
   const mapString = generateHandshakeMapString(params);
+  return encryptRequestHash(mapString, key1, key2);
+}
+
+/**
+ * Generate SSO Request Hash
+ * SSO requires RequestHash encrypted with same AES-128-CBC as handshake
+ */
+export function generateSSOHash(params: Record<string, string>, key1: string, key2: string): string {
+  const mapString = generateSSOMapString(params);
   return encryptRequestHash(mapString, key1, key2);
 }
 
@@ -238,13 +247,33 @@ export function convertUsdToPkr(usdAmount: number): number {
 
 /**
  * Create SSO form data (after receiving AuthToken)
- * RequestHash is EMPTY for SSO per Bank Alfalah official spec
+ * RequestHash MUST be generated for SSO - not empty!
  */
 export function createSSOFormData(payment: PaymentRequest, authToken: string): PaymentFormData {
   const config = getConfig();
   const currency = payment.currency || 'PKR';
   const transactionTypeId = payment.transactionTypeId || '3';
   const amountStr = payment.amount.toFixed(2);
+  
+  // Build SSO params for hash generation (RequestHash excluded - it's being generated!)
+  const ssoParams: Record<string, string> = {
+    AuthToken: authToken,
+    ChannelId: '1001',
+    Currency: currency,
+    IsBIN: '0',
+    ReturnURL: config.returnUrl,
+    MerchantId: config.merchantId,
+    StoreId: config.storeId,
+    MerchantHash: config.merchantHash,
+    MerchantUsername: config.username,
+    MerchantPassword: config.password,
+    TransactionTypeId: transactionTypeId,
+    TransactionReferenceNumber: payment.transactionReferenceNumber,
+    TransactionAmount: amountStr,
+  };
+  
+  // Generate SSO RequestHash
+  const requestHash = generateSSOHash(ssoParams, config.key1, config.key2);
   
   return {
     channelId: '1001',
@@ -255,7 +284,7 @@ export function createSSOFormData(payment: PaymentRequest, authToken: string): P
     merchantUsername: config.username,
     merchantPassword: config.password,
     transactionReferenceNumber: payment.transactionReferenceNumber,
-    requestHash: '',
+    requestHash,
     authToken,
     currency,
     transactionTypeId,
@@ -436,7 +465,7 @@ export function createSSOFormHtml(formData: PaymentFormData): string {
     <p>You will be redirected to enter your payment details...</p>
 <form id="ssoForm" method="POST" action="${gatewayUrl}">
        <input type="hidden" name="AuthToken" value="${formData.authToken}">
-       <input type="hidden" name="RequestHash" value="">
+       <input type="hidden" name="RequestHash" value="${formData.requestHash}">
        <input type="hidden" name="ChannelId" value="${formData.channelId}">
        <input type="hidden" name="Currency" value="${formData.currency}">
        <input type="hidden" name="IsBIN" value="0">
