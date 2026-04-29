@@ -14,17 +14,46 @@ export async function POST(request: Request) {
 
     let user;
 
-    // CHECK ENV VARS FIRST (for super admin / admin bypass)
+    // CHECK ENV VARS FIRST (for super admin bypass)
     if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
       if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-        user = {
-          id: 'super-admin',
-          email: email,
-          firstName: 'Rahman',
-          lastName: 'CEO',
-          role: 'super_admin',
-          isActive: true,
-        };
+        // Try to find user in DB first to get real ID
+        let dbUser;
+        try {
+          dbUser = await prisma.user.findUnique({
+            where: { email },
+          });
+        } catch {
+          dbUser = null;
+        }
+
+        // If user exists in DB, update to super_admin role
+        if (dbUser) {
+          if (dbUser.role !== 'super_admin') {
+            dbUser = await prisma.user.update({
+              where: { id: dbUser.id },
+              data: { role: 'super_admin' },
+            });
+          }
+          user = {
+            id: dbUser.id,
+            email: dbUser.email,
+            firstName: dbUser.firstName,
+            lastName: dbUser.lastName,
+            role: 'super_admin',
+            isActive: true,
+          };
+        } else {
+          // User doesn't exist in DB, use env var credentials
+          user = {
+            id: 'super-admin',
+            email: email,
+            firstName: 'Rahman',
+            lastName: 'CEO',
+            role: 'super_admin',
+            isActive: true,
+          };
+        }
         
         // Set auth cookies
         const cookieStore = await cookies();
