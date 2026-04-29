@@ -6,6 +6,14 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('general');
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [passwordError, setPasswordError] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
   const [settings, setSettings] = useState({
     siteName: 'eVisaTraveler',
     siteUrl: 'https://evisatraveler.com',
@@ -386,6 +394,87 @@ export default function SettingsPage() {
                     <p className="text-amber-600 text-sm mt-1">Enable 2FA to add an extra layer of security to your admin account</p>
                     <button className="mt-3 px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors">
                       Enable 2FA
+                    </button>
+                  </div>
+                </div>
+
+                {/* Password Change Section */}
+                <div className="border border-slate-200 rounded-2xl p-6">
+                  <h3 className="text-lg font-bold text-slate-900 mb-4">Change Account Password</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Current Password</label>
+                      <input
+                        type="password"
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        placeholder="Enter current password"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">New Password</label>
+                      <input
+                        type="password"
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        placeholder="Enter new password"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Confirm New Password</label>
+                      <input
+                        type="password"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        placeholder="Confirm new password"
+                      />
+                    </div>
+                    {passwordError && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                        {passwordError}
+                      </div>
+                    )}
+                    <button
+                      onClick={async () => {
+                        setPasswordError('');
+                        if (passwordData.newPassword !== passwordData.confirmPassword) {
+                          setPasswordError('New passwords do not match');
+                          return;
+                        }
+                        if (passwordData.newPassword.length < 6) {
+                          setPasswordError('Password must be at least 6 characters');
+                          return;
+                        }
+                        setChangingPassword(true);
+                        try {
+                          const res = await fetch('/api/user/password', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              currentPassword: passwordData.currentPassword,
+                              newPassword: passwordData.newPassword,
+                            }),
+                          });
+                          if (res.ok) {
+                            alert('Password changed successfully!');
+                            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                          } else {
+                            const data = await res.json();
+                            setPasswordError(data.error || 'Failed to change password');
+                          }
+                        } catch {
+                          setPasswordError('Failed to change password');
+                        } finally {
+                          setChangingPassword(false);
+                        }
+                      }}
+                      disabled={changingPassword}
+                      className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium rounded-xl hover:from-violet-500 hover:to-purple-500 transition-all disabled:opacity-50"
+                    >
+                      {changingPassword ? 'Changing...' : 'Change Password'}
                     </button>
                   </div>
                 </div>

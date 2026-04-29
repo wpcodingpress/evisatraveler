@@ -58,7 +58,7 @@ export default function ProConsoleLogin() {
       if (!res.ok) {
         setGeneralError(data.error || 'Login failed');
       } else {
-        if (data.user.role === 'admin') {
+        if (data.user.role === 'admin' || data.user.role === 'super_admin') {
           if (rememberMe) {
             localStorage.setItem('evisa_user', JSON.stringify(data.user));
           } else {

@@ -21,7 +21,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const pathname = usePathname();
+
+  useEffect(() => {
+    fetch('/api/auth/me').then(res => res.json()).then(data => {
+      if (data.authenticated) {
+        setCurrentUser(data.user);
+      }
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchNotifications();
@@ -137,12 +146,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
             <div className="mt-4 px-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                  A
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                  {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">Admin</p>
-                  <p className="text-xs text-slate-400">admin@evisa.com</p>
+                  <p className="text-sm font-medium text-white">{currentUser?.firstName} {currentUser?.lastName}</p>
+                  <p className="text-xs text-slate-400">{currentUser?.email}</p>
+                  <span className={`text-xs px-2 py-0.5 rounded-full inline-block mt-1 ${
+                    currentUser?.role === 'super_admin' ? 'bg-purple-500/30 text-purple-200' :
+                    currentUser?.role === 'admin' ? 'bg-amber-500/30 text-amber-200' :
+                    'bg-slate-500/30 text-slate-200'
+                  }`}>
+                    {currentUser?.role === 'super_admin' ? 'Super Admin' : currentUser?.role || 'User'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -217,9 +233,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div className="hidden sm:flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                  A
+                  {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
                 </div>
-                <span className="text-sm font-medium text-slate-700">Admin</span>
+                <span className="text-sm font-medium text-slate-700">{currentUser?.firstName} {currentUser?.lastName}</span>
               </div>
             </div>
           </div>
