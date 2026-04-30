@@ -110,25 +110,54 @@ export async function POST(request: Request) {
         // For demo without database - accept any password
         if (user.id !== 'admin' || process.env.NODE_ENV === 'production') {
           return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-        }
       }
     }
+  }
 
-    // Set auth cookies
-    const cookieStore = await cookies();
-    cookieStore.set('auth_token', 'logged_in', { 
-      httpOnly: true, 
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
+  // THEN check database (only if env check failed)
+  try {
+    user = await prisma.user.findUnique({
+      where: { email },
     });
-    cookieStore.set('user_id', user!.id, { path: '/' });
-    cookieStore.set('user_email', user!.email, { path: '/' });
-    cookieStore.set('user_name', `${user!.firstName} ${user!.lastName || ''}`.trim(), { path: '/' });
-    cookieStore.set('user_role', user!.role || 'user', { path: '/' });
-    
-    return NextResponse.json({
+  } catch (error) {
+    // Database unavailable - cannot authenticate without DB
+    console.error('Database error during login:', error);
+    return NextResponse.json({ 
+      error: 'Authentication service unavailable. Please contact administrator.' 
+    }, { status: 503 });
+  }
+
+  if (!user) {
+    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+  }
+
+  if (user.isActive === false) {
+    return NextResponse.json({ error: 'Account is disabled' }, { status: 401 });
+  }
+
+  const isValidPassword = user.password ? await bcrypt.compare(password, user.password) : false;
+  if (!user.password || !isValidPassword) {
+    // For demo without database - accept any password
+    if (user.id !== 'admin' || process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+  }
+
+  // Set auth cookies
+  const cookieStore = await cookies();
+  cookieStore.set('auth_token', 'logged_in', { 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    path: '/',
+  });
+  cookieStore.set('user_id', user!.id, { path: '/' });
+  cookieStore.set('user_email', user!.email, { path: '/' });
+  cookieStore.set('user_name', `${user!.firstName} ${user!.lastName || ''}`.trim(), { path: '/' });
+  cookieStore.set('user_role', user!.role || 'user', { path: '/' });
+  
+  return NextResponse.json({
       user: {
         id: user!.id,
         email: user!.email,
