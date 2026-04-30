@@ -1,3 +1,4 @@
+#!/usr/bin/env tsx
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
@@ -34,7 +35,7 @@ async function main() {
   });
   
   console.log('✅ Admin user:', admin.email, 'Role:', admin.role);
-  
+
   // List all users
   const users = await prisma.user.findMany({
     select: { email: true, role: true },

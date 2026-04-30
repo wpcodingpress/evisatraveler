@@ -56,7 +56,13 @@ export default function ProConsoleLogin() {
       const data = await res.json();
 
       if (!res.ok) {
-        setGeneralError(data.error || 'Login failed');
+        if (res.status === 503) {
+          setGeneralError('Database unavailable. Please try again later.');
+        } else if (res.status === 500) {
+          setGeneralError('Server error. Please contact administrator.');
+        } else {
+          setGeneralError(data.error || 'Login failed. Check credentials.');
+        }
       } else {
         if (data.user.role === 'admin' || data.user.role === 'super_admin') {
           if (rememberMe) {
@@ -69,8 +75,8 @@ export default function ProConsoleLogin() {
           setGeneralError('Access denied. Admin credentials required.');
         }
       }
-    } catch {
-      setGeneralError('An error occurred. Please try again.');
+    } catch (err) {
+      setGeneralError('Cannot connect to server. Check network.');
     }
     setLoading(false);
   };
