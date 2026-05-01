@@ -532,9 +532,21 @@ export default function ApplicationsPage() {
                     <h3 className="font-bold text-slate-900 text-base sm:text-lg mb-4">Uploaded Documents and Photos</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                       {selectedApp.documents.map((doc) => {
-                        const imageUrl = doc.filePath
-                          ? (doc.filePath.startsWith('http') ? doc.filePath : (doc.filePath.startsWith('/') ? doc.filePath : `/${doc.filePath}`))
-                          : `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`
+                        // Build correct image URL - check all possible path formats
+                        let imageUrl = '';
+                        if (doc.filePath) {
+                          if (doc.filePath.startsWith('http')) {
+                            imageUrl = doc.filePath;
+                          } else if (doc.filePath.startsWith('/')) {
+                            imageUrl = doc.filePath;
+                          } else if (doc.filePath.startsWith('uploads/')) {
+                            imageUrl = '/' + doc.filePath;
+                          } else {
+                            imageUrl = '/uploads/' + doc.filePath;
+                          }
+                        } else if (doc.fileName && selectedApp.applicationNumber) {
+                          imageUrl = `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`;
+                        }
                         const isImage = doc.mimeType?.startsWith('image/') ||
                           doc.fileName?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
                         return (
@@ -564,8 +576,8 @@ export default function ApplicationsPage() {
                                     download={doc.originalName || doc.fileName}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-full py-2 px-3 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
                                     onClick={(e) => e.stopPropagation()}
+                                    className="w-full py-2 px-3 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
                                   >
                                     Download
                                   </a>

@@ -80,14 +80,26 @@ export default function SettingsPage() {
     { id: 'security' as TabType, label: 'Security', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
   ];
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
     setSaveMessage('');
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
+      if (res.ok) {
+        setSaveMessage('Settings saved successfully!');
+      } else {
+        setSaveMessage('Failed to save settings');
+      }
+    } catch {
+      setSaveMessage('Error saving settings');
+    } finally {
       setSaving(false);
-      setSaveMessage('Settings saved successfully!');
       setTimeout(() => setSaveMessage(''), 3000);
-    }, 500);
+    }
   };
 
   const handleSaveCurrency = async () => {
