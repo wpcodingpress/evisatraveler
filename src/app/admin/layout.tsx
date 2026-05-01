@@ -126,6 +126,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <button
               onClick={async () => {
                 await fetch('/api/auth/logout', { method: 'POST' });
+                localStorage.removeItem('evisa_user');
+                sessionStorage.removeItem('evisa_user');
                 window.location.href = '/pro-console';
               }}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all w-full"

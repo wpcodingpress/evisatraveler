@@ -9,6 +9,7 @@ export async function POST() {
     cookieStore.delete('user_id');
     cookieStore.delete('user_email');
     cookieStore.delete('user_name');
+    cookieStore.delete('user_role');
 
     return NextResponse.json({ success: true });
   } catch (error) {

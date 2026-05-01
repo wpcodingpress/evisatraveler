@@ -20,13 +20,17 @@ export default function ProConsoleLogin() {
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
-    const user = localStorage.getItem('evisa_user');
-    if (user) {
-      const userData = JSON.parse(user);
-      if (userData.role === 'admin') {
-        router.push('/admin/dashboard');
-      }
-    }
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.authenticated && (data.user.role === 'admin' || data.user.role === 'super_admin')) {
+          router.push('/admin/dashboard');
+        } else {
+          localStorage.removeItem('evisa_user');
+          sessionStorage.removeItem('evisa_user');
+        }
+      })
+      .catch(() => {});
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
