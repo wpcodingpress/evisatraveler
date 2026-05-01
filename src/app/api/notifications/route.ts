@@ -34,8 +34,8 @@ export async function GET(request: Request) {
       where.isRead = false;
     }
 
-    // Admin sees all notifications, user sees only their own
-    if (user.role !== 'admin') {
+    // Admin and Super Admin see all notifications, user sees only their own
+    if (!['admin', 'super_admin'].includes(user.role || '')) {
       where.OR = [
         { userId: userId.value },
         { userId: null },
@@ -151,7 +151,7 @@ export async function PATCH(request: Request) {
 
     if (markAllRead) {
       const where: any = {};
-      if (user.role !== 'admin') {
+      if (!['admin', 'super_admin'].includes(user.role || '')) {
         where.userId = userId.value;
       }
       where.isRead = false;
@@ -169,12 +169,12 @@ export async function PATCH(request: Request) {
       if (!notif) {
         return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
       }
-      if (user.role !== 'admin' && notif.userId !== userId.value) {
+      if (!['admin', 'super_admin'].includes(user.role || '') && notif.userId !== userId.value) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
       await prisma.notification.update({
         where: { id },
-        data: { isRead },
+        data: { isRead: true },
       });
     }
 

@@ -359,14 +359,14 @@ export default function ApplicationsPage() {
               <div className="max-h-[75vh] sm:max-h-[80vh] overflow-y-auto p-4 sm:p-6 space-y-6">
                 <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl">
                   <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                    {(selectedApp.user?.firstName?.[0] || '?')}{(selectedApp.user?.lastName?.[0] || '')}
+                    {(selectedApp.formData?.firstName?.[0] || selectedApp.user?.firstName?.[0] || '?')}{(selectedApp.formData?.lastName?.[0] || selectedApp.user?.lastName?.[0] || '')}
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-bold text-slate-900 text-base sm:text-lg truncate">
-                      {selectedApp.user?.firstName || 'Unknown'} {selectedApp.user?.lastName || 'User'}
+                      {selectedApp.formData?.firstName || selectedApp.user?.firstName || 'Unknown'} {selectedApp.formData?.lastName || selectedApp.user?.lastName || 'User'}
                     </h3>
-                    <p className="text-slate-500 text-sm truncate">{selectedApp.user?.email || 'No email'}</p>
-                    {selectedApp.user?.phone && <p className="text-slate-500 text-sm">{selectedApp.user.phone}</p>}
+                    <p className="text-slate-500 text-sm truncate">{selectedApp.formData?.email || selectedApp.user?.email || 'No email'}</p>
+                    {(selectedApp.formData?.phone || selectedApp.user?.phone) && <p className="text-slate-500 text-sm">{selectedApp.formData?.phone || selectedApp.user?.phone}</p>}
                   </div>
                 </div>
 
@@ -532,20 +532,19 @@ export default function ApplicationsPage() {
                     <h3 className="font-bold text-slate-900 text-base sm:text-lg mb-4">Uploaded Documents and Photos</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                       {selectedApp.documents.map((doc) => {
-                        const imageUrl = doc.filePath 
-                          ? (doc.filePath.startsWith('/') ? doc.filePath : `/${doc.filePath}`)
+                        const imageUrl = doc.filePath
+                          ? (doc.filePath.startsWith('http') ? doc.filePath : (doc.filePath.startsWith('/') ? doc.filePath : `/${doc.filePath}`))
                           : `/uploads/${selectedApp.applicationNumber}/${doc.fileName}`
-                        const isImage = doc.mimeType?.startsWith('image/') || 
+                        const isImage = doc.mimeType?.startsWith('image/') ||
                           doc.fileName?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
                         return (
                           <div key={doc.id} className="group relative bg-slate-50 rounded-xl overflow-hidden border-2 border-slate-200 hover:border-violet-400 hover:shadow-lg transition-all">
                             {isImage ? (
                               <div className="relative aspect-square">
-                                <img 
+                                <img
                                   src={imageUrl}
                                   alt={doc.originalName || doc.type}
-                                  className="w-full h-full object-cover cursor-pointer"
-                                  onClick={() => window.open(imageUrl, '_blank')}
+                                  className="w-full h-full object-cover"
                                   onError={(e) => {
                                     const img = e.target as HTMLImageElement
                                     img.style.display = 'none'
@@ -554,18 +553,19 @@ export default function ApplicationsPage() {
                                   }}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 sm:p-3">
-                                  <button 
-                                    onClick={() => window.open(imageUrl, '_blank')}
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); window.open(imageUrl, '_blank') }}
                                     className="w-full py-2 px-3 bg-white/90 hover:bg-white text-violet-600 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors mb-1"
                                   >
                                     View Full
                                   </button>
-                                  <a 
+                                  <a
                                     href={imageUrl}
                                     download={doc.originalName || doc.fileName}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="w-full py-2 px-3 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+                                    onClick={(e) => e.stopPropagation()}
                                   >
                                     Download
                                   </a>
