@@ -461,6 +461,55 @@ export default function UsersPage() {
         </div>
       )}
 
+      {/* Change Password Modal */}
+      {showPasswordModal && passwordUser && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-slate-900">Change Password</h2>
+              <button onClick={() => { setShowPasswordModal(false); setPasswordUser(null); setNewPassword(''); }} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="mb-4 p-4 bg-slate-50 rounded-xl">
+              <p className="text-sm text-slate-500">Changing password for:</p>
+              <p className="font-semibold text-slate-900">{passwordUser.firstName} {passwordUser.lastName}</p>
+              <p className="text-sm text-slate-500">{passwordUser.email}</p>
+            </div>
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  placeholder="Enter new password (min 6 chars)"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowPasswordModal(false); setPasswordUser(null); setNewPassword(''); }}
+                  className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={changingPassword || newPassword.length < 6}
+                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-medium rounded-xl hover:from-green-500 hover:to-emerald-500 transition-all disabled:opacity-50"
+                >
+                  {changingPassword ? 'Updating...' : 'Update Password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Edit User Modal */}
       {showEditModal && editingUser && (
         <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
